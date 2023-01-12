@@ -31,8 +31,16 @@ class TestCarInterfaces(unittest.TestCase):
     assert car_interface
 
     self.assertGreater(car_params.mass, 1)
+    self.assertGreater(car_params.wheelbase, 0)
+    self.assertGreater(car_params.centerToFront, 0)
     self.assertGreater(car_params.maxLateralAccel, 0)
 
+    # Longitudinal sanity checks
+    self.assertEqual(len(car_params.longitudinalTuning.kpV), len(car_params.longitudinalTuning.kpBP))
+    self.assertEqual(len(car_params.longitudinalTuning.kiV), len(car_params.longitudinalTuning.kiBP))
+    self.assertEqual(len(car_params.longitudinalTuning.deadzoneV), len(car_params.longitudinalTuning.deadzoneBP))
+
+    # Lateral sanity checks
     if car_params.steerControlType != car.CarParams.SteerControlType.angle:
       tune = car_params.lateralTuning
       if tune.which() == 'pid':
