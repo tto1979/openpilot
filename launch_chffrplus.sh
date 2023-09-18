@@ -296,7 +296,6 @@ function launch {
 
   # start manager
   cd selfdrive/manager
-  chmod 775 manager.py
   ./build.py && ./manager.py
 
   # if broken, keep on screen error
