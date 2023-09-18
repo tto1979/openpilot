@@ -1033,6 +1033,14 @@ This may take up to a minute.</source>
         <translation>開啟此功能將會讓車道維持一直開啟，並不會被煞車給中斷。</translation>
     </message>
     <message>
+        <source>NNFF Torque Control</source>
+        <translation>開啟 NNFF 控制器</translation>
+    </message>
+    <message>
+        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.</source>
+        <translation>使用 Twilsonco 的神經網絡前饋扭矩系統可實現更精確的橫向控制。</translation>
+    </message>
+    <message>
         <source>Stop And Go</source>
         <translation>Stop And Go</translation>
     </message>
@@ -1121,22 +1129,6 @@ Enabled: Short and Long = 5.</source>
     <message>
         <source>Enable this option if you intend to run dp on Nvidia Jetson. Reboot required.</source>
         <translation>如果您打算在 Nvidia Jetson NX 上跑 TOP ，請開啟這個選項，但此選項可能造成駕駛監控被關閉，且需重新啟動後生效。</translation>
-    </message>
-    <message>
-        <source>Enable LiveTorque</source>
-        <translation>自動學習扭矩參數</translation>
-    </message>
-    <message>
-        <source>Learn torque parameters live for each car as opposed to using platform average values, which improves lateral control</source>
-        <translation>即時學習並調整您車輛的扭矩參數，而不是使用平台平均值，從而改善橫向控制。</translation>
-    </message>
-    <message>
-        <source>Lat: Use Torque Controller</source>
-        <translation>扭矩控制器橫向操控</translation>
-    </message>
-    <message>
-        <source>Experimental: use the new torque controller, please turn this off if you experience ping-pongs.</source>
-        <translation>橫向操控預設使用新的扭矩控制器，以提升橫向操控的體驗感。(若開啟後有不平穩的現象，可關閉此選項將横向操控回復為原本的PID / INDI / LQR 控制器。）</translation>
     </message>
     <message>
         <source>Experimental Mode Via ECO Button / Screen</source>

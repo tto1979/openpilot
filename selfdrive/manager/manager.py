@@ -54,11 +54,10 @@ def manager_init() -> None:
     ("NavSettingTime24h", "1"),
     ("OpenpilotEnabledToggle", "1"),
 
+    ("DistanceBasedCurvature", "1"),
     ("PrimeAd", "1"),
     ("RecordFront", "0"),
     ("TurnVisionControl", "1"),
-    ("EnableTorqueController", "1"),
-    ("LiveTorque", "1"),
     ("e2e_link", "1"),
     ("toyotaautolock", "1"),
     ("toyotaautounlock", "1"),

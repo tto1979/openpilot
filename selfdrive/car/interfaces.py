@@ -56,8 +56,7 @@ def get_torque_params(candidate):
     raise NotImplementedError(f"Did not find torque params for {candidate}")
   return {key: out[i] for i, key in enumerate(params['legend'])}
 
-
-# lateral neural network feedforward
+# Twilsonco's Lateral Neural Network Feedforward
 class FluxModel:
   # dict used to rename activation functions whose names aren't valid python identifiers
   activation_function_names = {'σ': 'sigmoid'}
@@ -80,13 +79,13 @@ class FluxModel:
       for k, v in self.activation_function_names.items():
         activation = activation.replace(k, v)
       self.layers.append((W, b, activation))
-    
+
     self.validate_layers()
-    
+
   # Begin activation functions.
   # These are called by name using the keys in the model json file
   def sigmoid(self, x):
-    return 1 / (1 + np.exp(-x))
+    return 1 / (1 + np.exp(np.clip(-x, -np.inf, 709)))
 
   def identity(self, x):
     return x
@@ -106,8 +105,8 @@ class FluxModel:
         input_array = input_array + [0] * (self.input_size - in_len)
       else:
         raise ValueError(f"Input array length {len(input_array)} must be length 2 or greater")
-        
-    input_array = np.array(input_array, dtype=np.float32)
+
+    input_array = np.array(input_array, dtype=np.float32)#.reshape(1, -1)
 
     # Rescale the input array using the input_mean and input_std
     input_array = (input_array - self.input_mean) / self.input_std
@@ -115,24 +114,28 @@ class FluxModel:
     output_array = self.forward(input_array)
 
     return float(output_array[0, 0])
-  
+
   def validate_layers(self):
     for W, b, activation in self.layers:
       if not hasattr(self, activation):
         raise ValueError(f"Unknown activation: {activation}")
+      _ = W
+      _ = b
+
+def get_nn_ff_model_path(car):
+  return f"/data/openpilot/selfdrive/car/torque_data/lat_models/{car}.json"
+
+def has_nn_ff(car):
+  model_path = get_nn_ff_model_path(car)
+  if os.path.isfile(model_path):
+    return True
+  else:
+    return False
   
-def get_nn_model_path(car, eps_firmware) -> Union[str, None]:
-  model_path = f"/data/openpilot/selfdrive/car/torque_data/lat_models/{car}_{eps_firmware}.json"
-  if not os.path.isfile(model_path):
-    model_path = f"/data/openpilot/selfdrive/car/torque_data/lat_models/{car}.json"
-    if not os.path.isfile(model_path):
-      model_path = None
-  return model_path
-  
-def get_nn_model(car, eps_firmware) -> Union[FluxModel, None]:
-  model = get_nn_model_path(car, eps_firmware)
-  if model is not None:
-    model = FluxModel(model)
+def initialize_nnff(car) -> Union[FluxModel, None]:
+  model = None
+  if has_nn_ff(car):
+    model = FluxModel(get_nn_ff_model_path(car))
   return model
 
 # generic car and radar interfaces
@@ -141,8 +144,7 @@ class CarInterfaceBase(ABC):
   def __init__(self, CP, CarController, CarState):
     self.CP = CP
     self.VM = VehicleModel(CP)
-    eps_firmware = next((fw.fwVersion for fw in CP.carFw if fw.ecu == "eps"), "")
-    self.has_lateral_torque_nn = self.initialize_lat_torque_nn(CP.carFingerprint, eps_firmware)
+    self.has_lateral_torque_nnff = self.initialize_lat_torque_nnff(CP.carFingerprint) and Params().get_bool("NNFF")
 
     self.frame = 0
     self.steering_unpressed = 0
@@ -166,13 +168,13 @@ class CarInterfaceBase(ABC):
     self.CC = None
     if CarController is not None:
       self.CC = CarController(self.cp.dbc_name, CP, self.VM)
-      
+
   def get_ff_nn(self, x):
-    return self.lat_torque_nn_model.evaluate(x)
-  
-  def initialize_lat_torque_nn(self, car, eps_firmware):
-    self.lat_torque_nn_model = get_nn_model(car, eps_firmware)
-    return (self.lat_torque_nn_model is not None)
+    return self.lat_torque_nnff_model.evaluate(x)
+
+  def initialize_lat_torque_nnff(self, car):
+    self.lat_torque_nnff_model = initialize_nnff(car)
+    return (self.lat_torque_nnff_model is not None)
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
@@ -189,18 +191,15 @@ class CarInterfaceBase(ABC):
   def get_params(cls, candidate: str, fingerprint: Dict[int, Dict[int, int]], car_fw: List[car.CarParams.CarFw], experimental_long: bool, docs: bool):
     ret = CarInterfaceBase.get_std_params(candidate)
     ret = cls._get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs)
-    
+
     # Enable torque controller for all cars
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-    eps_firmware = str(next((fw.fwVersion for fw in car_fw if fw.ecu == "eps"), ""))
-    model = get_nn_model_path(candidate, eps_firmware)
-    if model is not None:
-      ret.lateralTuning.torque.nnModelName = os.path.splitext(os.path.basename(model))[0]
 
     # Set common params using fields set by the car interface
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
+    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, ret.tireStiffnessFactor)
 
     # TODO: some car interfaces set stiffness factor
     if ret.tireStiffnessFront == 0 or ret.tireStiffnessRear == 0:
@@ -249,6 +248,7 @@ class CarInterfaceBase(ABC):
     ret.autoResumeSng = True  # describes whether car can resume from a stop automatically
 
     # standard ALC params
+    ret.tireStiffnessFactor = 1.0
     ret.steerControlType = car.CarParams.SteerControlType.torque
     ret.minSteerSpeed = 0.
     ret.wheelSpeedFactor = 1.0
@@ -275,6 +275,7 @@ class CarInterfaceBase(ABC):
     ret.steerLimitTimer = 1.0
     params = Params()
     ret.experimentalModeViaWheel = params.get_bool("e2e_link")
+    ret.twilsoncoNNFF = params.get_bool("NNFF")
     return ret
 
   @staticmethod

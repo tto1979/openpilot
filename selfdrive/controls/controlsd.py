@@ -124,7 +124,6 @@ class Controls:
     self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     passive = self.params.get_bool("Passive") or not openpilot_enabled_toggle
-    self.live_torque = self.params.get_bool("LiveTorque")
 
     # detect sound card presence and ensure successful init
     sounds_available = HARDWARE.get_sound_card_online()
@@ -188,13 +187,13 @@ class Controls:
     self.experimental_mode = False
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.recalibrating_seen = False
+    self.nnff_alert_shown = False
+
     self.reverse_acc_change = False
-    self.nn_alert_shown = False
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
     self.can_log_mono_time = 0
-    
 
     self.startup_event = get_startup_event(car_recognized, controller_available, len(self.CP.carFw) > 0)
 
@@ -244,11 +243,14 @@ class Controls:
     # no more events while in dashcam mode
     if self.read_only:
       return
-    
+
     # show alert to indicate whether NNFF is loaded
-    if not self.nn_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque':
-      self.nn_alert_shown = True
-      self.events.add(EventName.torqueNNLoad)
+    if not self.nnff_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque' and self.CP.twilsoncoNNFF:
+      self.nnff_alert_shown = True
+      if self.LaC.use_nn:
+        self.events.add(EventName.torqueNNFFLoadSuccess)
+      else: 
+        self.events.add(EventName.torqueNNFFNotLoaded)
 
     # Block resume if cruise never previously enabled
     resume_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)
@@ -618,9 +620,7 @@ class Controls:
     if not standstill and CS.cruiseState.available and self.dp_atl:
       if self.sm['liveCalibration'].calStatus != log.LiveCalibrationData.Status.calibrated:
         pass
-      elif CS.steerFaultTemporary:
-        pass
-      elif CS.steerFaultPermanent:
+      elif CS.steerFaultTemporary or CS.steerFaultPermanent:
         pass
       elif CS.gearShifter == car.CarState.GearShifter.reverse:
         pass

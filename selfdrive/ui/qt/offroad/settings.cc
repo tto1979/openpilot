@@ -571,6 +571,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/offroad/icon_road.png",
                                   this));
 
+  toggles.append(new ParamControl("NNFF",
+                                  tr("NNFF Torque Control"),
+                                  tr("Use Twilsonco's Neural Network Feedforward torque system for more precise lateral control."),
+                                  "../assets/offroad/icon_road.png",
+                                  this));
+
   toggles.append(new ParamControl("topsng",
                                   tr("Stop And Go"),
                                   tr("Enabled the Stop And Go feature and get auto hold."),
@@ -592,18 +598,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
   toggles.append(new ParamControl("TurnVisionControl",
                                   tr("Enable vision based turn control"),
                                   tr("Use vision path predictions to estimate the appropriate speed to drive through turns ahead."),
-                                  "../assets/offroad/icon_road.png",
-                                  this));
-
-  toggles.append(new ParamControl("EnableTorqueController",
-                                  tr("Lat: Use Torque Controller"),
-                                  tr("Experimental: use the new torque controller, please turn this off if you experience ping-pongs."),
-                                  "../assets/offroad/icon_road.png",
-                                  this));
-
-  toggles.append(new ParamControl("LiveTorque",
-                                  tr("Enable LiveTorque"),
-                                  tr("Learn torque parameters live for each car as opposed to using platform average values, which improves lateral control"),
                                   "../assets/offroad/icon_road.png",
                                   this));
 

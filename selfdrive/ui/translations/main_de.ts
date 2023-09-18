@@ -1037,6 +1037,14 @@ This may take up to a minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>NNFF Torque Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Stop And Go</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1069,22 +1077,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
     </message>
     <message>
         <source>Use vision path predictions to estimate the appropriate speed to drive through turns ahead.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Lat: Use Torque Controller</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Experimental: use the new torque controller, please turn this off if you experience ping-pongs.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable LiveTorque</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Learn torque parameters live for each car as opposed to using platform average values, which improves lateral control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
