@@ -199,7 +199,6 @@ class CarInterfaceBase(ABC):
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
-    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, ret.tireStiffnessFactor)
 
     # TODO: some car interfaces set stiffness factor
     if ret.tireStiffnessFront == 0 or ret.tireStiffnessRear == 0:
@@ -248,7 +247,6 @@ class CarInterfaceBase(ABC):
     ret.autoResumeSng = True  # describes whether car can resume from a stop automatically
 
     # standard ALC params
-    ret.tireStiffnessFactor = 1.0
     ret.steerControlType = car.CarParams.SteerControlType.torque
     ret.minSteerSpeed = 0.
     ret.wheelSpeedFactor = 1.0
