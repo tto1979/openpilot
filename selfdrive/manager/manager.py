@@ -31,7 +31,8 @@ def manager_init() -> None:
   set_time(cloudlog)
 
   # save boot log
-  subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "system/loggerd"))
+  if not Params().get_bool("dp_jetson"):
+    subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "system/loggerd"))
 
   params = Params()
   params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
@@ -43,9 +44,35 @@ def manager_init() -> None:
     ("DisengageOnAccelerator", "0"),
     ("GsmMetered", "1"),
     ("HasAcceptedTerms", "0"),
+    ("IsLdwEnabled", "1"),
+    ("IsMetric", "1"),
     ("LanguageSetting", "main_en"),
+    ("NavSettingTime24h", "1"),
     ("OpenpilotEnabledToggle", "1"),
+    ("RecordFront", "0"),
     ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
+
+    ("AleSato_AutomaticBrakeHold", "0"),
+    ("CarModel", ""),
+    ("DistanceBasedCurvature", "1"),
+    ("dp_atl", "0"),
+    ("dp_jetson", "0"),
+    ("dp_nav_gmap_enable", "0"),
+    ("dp_otisserv", "1"),
+    ("DrivingPersonalitiesUIWheel", "1"),
+    ("e2e_link", "1"),
+    ("MapSpeedLimitControl", "1"),
+    ("Marc_Dynamic_Follow", "0"),
+    ("NudgelessLaneChange", "0"),
+    ("NNFF", "0"),
+    ("opwebd", "1"),
+    ("PrimeAd", "1"),
+    ("ReverseAccChange", "1"),
+    ("TimSignals", "1"),
+    ("toyotaautolock", "1"),
+    ("toyotaautounlock", "1"),
+    ("toyota_bsm", "0"),
+    ("TurnVisionControl", "1"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
@@ -131,11 +158,20 @@ def manager_thread() -> None:
   params = Params()
 
   ignore: List[str] = []
+  dp_otisserv = params.get_bool("dp_otisserv")
+  dp_jetson = params.get_bool("dp_jetson")
+  ignore += ['dmonitoringmodeld', 'dmonitoringd'] if dp_jetson else []
+  ignore += ['otisserv'] if not dp_otisserv else []
+  if dp_jetson:
+    ignore += ['logcatd', 'proclogd', 'loggerd', 'logmessaged', 'encoderd', 'uploader']
+
   if params.get("DongleId", encoding='utf8') in (None, UNREGISTERED_DONGLE_ID):
     ignore += ["manage_athenad", "uploader"]
   if os.getenv("NOBOARD") is not None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
+  if not params.get_bool("opwebd"):
+    ignore += ["opwebd"]
 
   sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
   pm = messaging.PubMaster(['managerState'])
