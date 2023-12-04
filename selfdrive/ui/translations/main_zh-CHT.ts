@@ -960,6 +960,14 @@ This may take up to a minute.</source>
         <source>Select a location to download</source>
         <translation>選擇下載地區</translation>
     </message>
+    <message>
+        <source>Error Log</source>
+        <translation>錯誤日誌</translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation>觀看</translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
@@ -1199,8 +1207,8 @@ Internet access from mobile phone (tethering) is required.</source>
         <translation>開啟本地檔案服務器</translation>
     </message>
     <message>
-        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:5000*.</source>
-        <translation>以本地檔案服務器存取 openpilot 的資料及檔案。使用瀏覽器的Web界面連結下面網址以存取檔案： *http://&lt;device_ip&gt;:5000*.</translation>
+        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082/fleetmanager*.</source>
+        <translation>以本地檔案服務器存取 openpilot 的資料及檔案。使用瀏覽器的Web界面連結下面網址以存取檔案： *http://&lt;device_ip&gt;:8082/fleetmanager*.</translation>
     </message>
 </context>
 <context>

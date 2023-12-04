@@ -964,6 +964,14 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
         <source>Select a location to download</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Error Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation>VOIR</translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
@@ -1142,7 +1150,7 @@ You will need to apply your own google map api key. Enter your key detail in web
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:5000*.</source>
+        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082/fleetmanager*.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

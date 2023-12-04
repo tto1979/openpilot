@@ -4,20 +4,24 @@ import os
 from parameterized import parameterized_class
 import unittest
 from openpilot.common.params import Params
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import get_STOP_DISTANCE
+# from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import get_STOP_DISTANCE
 from openpilot.selfdrive.test.longitudinal_maneuvers.maneuver import Maneuver
 from cereal import log
 
-@parameterized_class(("personality"), (
-                      [log.LongitudinalPersonality.relaxed, # personality
-                       log.LongitudinalPersonality.standard,
-                       log.LongitudinalPersonality.aggressive])
+def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
+  if personality==log.LongitudinalPersonality.relaxed:
+    return 4.5
+  elif personality==log.LongitudinalPersonality.standard:
+    return 4.0
+  elif personality==log.LongitudinalPersonality.aggressive:
+    return 3.5
+  else:
+    raise NotImplementedError("Longitudinal personality not supported")
 
 # TODO: make new FCW tests
-def create_maneuvers(self, kwargs):
-  params = Params()
-  params.put("LongitudinalPersonality", str(self.personality))
-
+def create_maneuvers(kwargs, stop_distance=None):
+  if stop_distance is None:
+    stop_distance = get_STOP_DISTANCE()
   maneuvers = [
     Maneuver(
       'approach stopped car at 25m/s, initial distance: 120m',
@@ -143,7 +147,7 @@ def create_maneuvers(self, kwargs):
       duration=20.,
       initial_speed=0.,
       lead_relevancy=True,
-      initial_distance_lead=get_STOP_DISTANCE(self.personality),
+      initial_distance_lead=stop_distance,
       speed_lead_values=[0., 0., 2.],
       breakpoints=[1., 10., 15.],
       ensure_start=True,
@@ -169,7 +173,7 @@ class LongitudinalControl(unittest.TestCase):
     params.put_bool("OpenpilotEnabledToggle", True)
 
   def test_maneuver(self):
-    for maneuver in create_maneuvers({"e2e": self.e2e, "force_decel": self.force_decel}, self):
+    for maneuver in create_maneuvers({"e2e": self.e2e, "force_decel": self.force_decel}):
       with self.subTest(title=maneuver.title, e2e=maneuver.e2e, force_decel=maneuver.force_decel):
         print(maneuver.title, f'in {"e2e" if maneuver.e2e else "acc"} mode')
         valid, _ = maneuver.evaluate()

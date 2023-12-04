@@ -964,6 +964,14 @@ This may take up to a minute.</source>
         <source>Select a location to download</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Error Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>VIEW</source>
+        <translation>ANSEHEN</translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
@@ -1192,7 +1200,7 @@ Internet access from mobile phone (tethering) is required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:5000*.</source>
+        <source>A webserver for accessing openpilot data and files. Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082/fleetmanager*.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -129,7 +129,7 @@ class FluxModel:
     y = self.evaluate([10.0, 0.0, 0.2])
     self.friction_override = (y < 0.1)
 
-def get_nn_model_path(car, eps_firmware) -> Tuple[Union[str, None, float]]:
+def get_nn_model_path(car, eps_firmware) -> Tuple[Union[str, None], float]:
   def check_nn_path(check_model):
     model_path = None
     max_similarity = -1.0
@@ -155,10 +155,12 @@ def get_nn_model_path(car, eps_firmware) -> Tuple[Union[str, None, float]]:
       model_path = None
   return model_path, max_similarity
 
-def get_nn_model(car, eps_firmware) -> Tuple[Union[FluxModel, None, float]]:
-  model, similarity_score = get_nn_model_path(car, eps_firmware)
-  if model is not None:
-    model = FluxModel(model)
+def get_nn_model(car, eps_firmware) -> Tuple[Union[FluxModel, None], float]:
+  model_path, similarity_score = get_nn_model_path(car, eps_firmware)
+  if model_path is not None:
+    model = FluxModel(model_path)
+  else:
+    model = None
   return model, similarity_score
 
 # generic car and radar interfaces
@@ -222,7 +224,7 @@ class CarInterfaceBase(ABC):
       eps_firmware = str(next((fw.fwVersion for fw in car_fw if fw.ecu == "eps"), ""))
       model, similarity_score = get_nn_model_path(candidate, eps_firmware)
       if model is not None:
-        ret.lateralTuning.torque.nnModelName = os.path.splitext(os.path.basename(model))[0]
+        ret.lateralTuning.torque.nnModelName = candidate
         ret.lateralTuning.torque.nnModelFuzzyMatch = (similarity_score < 0.99)
 
     # Vehicle mass is published curb weight plus assumed payload such as a human driver; notCars have no assumed payload
