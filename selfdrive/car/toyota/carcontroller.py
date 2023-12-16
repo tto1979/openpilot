@@ -214,7 +214,7 @@ class CarController:
 
     # NO_STOP_TIMER_CAR will creep if compensation is applied when stopping or stopped, don't compensate when stopped or stopping
     should_compensate = True
-    if self.CP.carFingerprint in NO_STOP_TIMER_CAR and ((CS.out.vEgo <  1e-3 and actuators.accel < 1e-3) or stopping):
+    if self.CP.carFingerprint in NO_STOP_TIMER_CAR and self.CP.carFingerprint != CAR.PRIUS_V and ((CS.out.vEgo <  1e-3 and actuators.accel < 1e-3) or stopping):
       should_compensate = False
     accel_offset = 0.
     if CC.longActive and should_compensate:
