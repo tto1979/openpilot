@@ -1,7 +1,7 @@
-import yaml
 import os
 import time
 import numpy as np
+import tomllib
 from abc import abstractmethod, ABC
 from difflib import SequenceMatcher
 from json import load
@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, Tuple, List, Callable, Union
 from cereal import car
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.kalman.simple_kalman import KF1D, get_kalman_gain
+from openpilot.common.simple_kalman import KF1D, get_kalman_gain
 from openpilot.common.numpy_fast import clip
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_CTRL
@@ -29,24 +29,24 @@ ACCEL_MAX = 2.0
 ACCEL_MIN = -3.5
 FRICTION_THRESHOLD = 0.3
 
-TORQUE_PARAMS_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/params.yaml')
-TORQUE_OVERRIDE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/override.yaml')
-TORQUE_SUBSTITUTE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/substitute.yaml')
+TORQUE_PARAMS_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/params.toml')
+TORQUE_OVERRIDE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/override.toml')
+TORQUE_SUBSTITUTE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/substitute.toml')
 TORQUE_NN_MODEL_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/lat_models')
 
 def similarity(s1:str, s2:str) -> float:
   return SequenceMatcher(None, s1, s2).ratio()
 
 def get_torque_params(candidate):
-  with open(TORQUE_SUBSTITUTE_PATH) as f:
-    sub = yaml.load(f, Loader=yaml.CSafeLoader)
+  with open(TORQUE_SUBSTITUTE_PATH, 'rb') as f:
+    sub = tomllib.load(f)
   if candidate in sub:
     candidate = sub[candidate]
 
-  with open(TORQUE_PARAMS_PATH) as f:
-    params = yaml.load(f, Loader=yaml.CSafeLoader)
-  with open(TORQUE_OVERRIDE_PATH) as f:
-    override = yaml.load(f, Loader=yaml.CSafeLoader)
+  with open(TORQUE_PARAMS_PATH, 'rb') as f:
+    params = tomllib.load(f)
+  with open(TORQUE_OVERRIDE_PATH, 'rb') as f:
+    override = tomllib.load(f)
 
   # Ensure no overlap
   if sum([candidate in x for x in [sub, params, override]]) > 1:
@@ -148,10 +148,10 @@ def get_nn_model_path(car, eps_firmware) -> Tuple[Union[str, None], float]:
   else:
     check_model = car
   model_path, max_similarity = check_nn_path(check_model)
-  if 0.0 <= max_similarity < 0.9:
+  if car not in model_path or 0.0 <= max_similarity < 0.9:
     check_model = car
     model_path, max_similarity = check_nn_path(check_model)
-    if 0.0 <= max_similarity < 0.9:
+    if car not in model_path or 0.0 <= max_similarity < 0.9:
       model_path = None
   return model_path, max_similarity
 
@@ -170,6 +170,7 @@ class CarInterfaceBase(ABC):
     self.CP = CP
     self.VM = VehicleModel(CP)
     eps_firmware = str(next((fw.fwVersion for fw in CP.carFw if fw.ecu == "eps"), ""))
+    self.has_lateral_torque_nn = self.initialize_lat_torque_nn(CP.carFingerprint, eps_firmware) and Params().get_bool("NNFF")
 
     self.frame = 0
     self.steering_unpressed = 0
@@ -194,7 +195,6 @@ class CarInterfaceBase(ABC):
     if CarController is not None:
       self.CC = CarController(self.cp.dbc_name, CP, self.VM)
 
-    self.has_lateral_torque_nn = self.initialize_lat_torque_nn(CP.carFingerprint, eps_firmware) and Params().get_bool("NNFF")
   def get_ff_nn(self, x):
     return self.lat_torque_nn_model.evaluate(x)
 
@@ -224,7 +224,7 @@ class CarInterfaceBase(ABC):
       eps_firmware = str(next((fw.fwVersion for fw in car_fw if fw.ecu == "eps"), ""))
       model, similarity_score = get_nn_model_path(candidate, eps_firmware)
       if model is not None:
-        ret.lateralTuning.torque.nnModelName = candidate
+        ret.lateralTuning.torque.nnModelName = os.path.splitext(os.path.basename(model))[0]
         ret.lateralTuning.torque.nnModelFuzzyMatch = (similarity_score < 0.99)
 
     # Vehicle mass is published curb weight plus assumed payload such as a human driver; notCars have no assumed payload
@@ -480,7 +480,7 @@ class CarStateBase(ABC):
 
   def update_speed_kf(self, v_ego_raw):
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
-      self.v_ego_kf.x = [[v_ego_raw], [0.0]]
+      self.v_ego_kf.set_x([[v_ego_raw], [0.0]])
 
     v_ego_x = self.v_ego_kf.update(v_ego_raw)
     return float(v_ego_x[0]), float(v_ego_x[1])

@@ -329,6 +329,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   top_right_layout->addWidget(experimental_btn);
   top_right_layout->addWidget(recorder_btn);
 
+
   main_layout->addLayout(top_right_layout, 0);
   main_layout->setAlignment(top_right_layout, Qt::AlignTop | Qt::AlignRight);
   main_layout->setContentsMargins(0, 60, 0, 0);
@@ -1094,7 +1095,6 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   const double start_draw_t = millis_since_boot();
   const cereal::ModelDataV2::Reader &model = sm["modelV2"].getModelV2();
-  const cereal::RadarState::Reader &radar_state = sm["radarState"].getRadarState();
 
   // draw camera frame
   {
@@ -1144,17 +1144,14 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   painter.setRenderHint(QPainter::Antialiasing);
   painter.setPen(Qt::NoPen);
 
-  if (s->worldObjectsVisible()) {
-    if (sm.rcv_frame("modelV2") > s->scene.started_frame) {
-      update_model(s, model, sm["uiPlan"].getUiPlan());
-      if (sm.rcv_frame("radarState") > s->scene.started_frame) {
-        update_leads(s, radar_state, model.getPosition());
-      }
-    }
-
+  if (s->scene.world_objects_visible) {
+    update_model(s, model, sm["uiPlan"].getUiPlan());
     drawLaneLines(painter, s);
 
-    if (s->scene.longitudinal_control) {
+    if (s->scene.longitudinal_control && sm.rcv_frame("radarState") > s->scene.started_frame) {
+      auto radar_state = sm["radarState"].getRadarState();
+      update_leads(s, radar_state, model.getPosition());
+
       const auto leads = model.getLeadsV3();
       size_t leads_num = leads.size();
       for (size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){

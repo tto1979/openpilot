@@ -4,10 +4,10 @@ import time
 import numpy as np
 from cereal import log
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.params import put_nonblocking
+from openpilot.common.params import Params
 from openpilot.common.numpy_fast import clip
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags, TSS2_CAR, RADAR_ACC_CAR
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
 from openpilot.selfdrive.modeld.constants import index_function
 from openpilot.selfdrive.car.interfaces import ACCEL_MIN
@@ -232,6 +232,7 @@ def gen_long_ocp():
   ocp.constraints.x0 = x0
   ocp.parameter_values = np.array([-1.2, 1.2, 0.0, 0.0, get_T_FOLLOW(), LEAD_DANGER_FACTOR, get_STOP_DISTANCE()])
 
+
   # We put all constraint cost weights to 0 and only set them at runtime
   cost_weights = np.zeros(CONSTR_DIM)
   ocp.cost.zl = cost_weights
@@ -319,7 +320,6 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-
   def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0):
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
@@ -406,13 +406,13 @@ class LongitudinalMpc:
         profile_key = op_profile_key
 
       if profile_key == 1: # No Cut In
-        put_nonblocking('LongitudinalPersonality', str(0))
+        Params().put_nonblocking("LongitudinalPersonality", str(0))
 
       elif profile_key == 2: # Relaxed
-        put_nonblocking('LongitudinalPersonality', str(1))
+        Params().put_nonblocking("LongitudinalPersonality", str(1))
 
       elif profile_key == 3: # Let You Cut In
-        put_nonblocking('LongitudinalPersonality', str(2))
+        Params().put_nonblocking("LongitudinalPersonality", str(2))
 
   def update(self, carstate, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard, dynamic_follow=False):
     # t_follow = get_T_FOLLOW(personality)
