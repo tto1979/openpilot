@@ -27,7 +27,7 @@ A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN_VALS = [-0.01,  -0.05,  -0.6,  -0.7,  -0.7]
 A_CRUISE_MIN_BP =   [0.,     0.2,   5.0,    28.,   42.]
-A_CRUISE_MAX_VALS_DF =     [1.3, 2.4, 2.4, 2.4, 1.5, 0.88, .74, .53, .32, .09]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_VALS_DF =     [1.3, 2.4, 2.4, 2.4, 1.7, 0.92, .74, .53, .32, .09]  # Sets the limits of the planner accel, PID may exceed
 A_CRUISE_MAX_BP_DF =       [0.,  0.5, 6.,  8.,  11., 15.,   20., 25., 30., 55.]
 A_CRUISE_MAX_VALS_TOYOTA = [2.0, 1.68, 1.55, 1.25, 1.05, 0.75, 0.58, 0.4,  0.31, 0.11]  # Sets the limits of the planner accel, PID may exceed
 # A_CRUISE_MAX_VALS_TOYOTA = [2.0, 1.75, 1.3, 0.85, 0.77, 0.70, 0.58, 0.4,  0.31, 0.11]  # Sets the limits of the planner accel, PID may exceed
@@ -84,6 +84,9 @@ class LongitudinalPlanner:
     self.param_read_counter = 0
     self.read_param()
     self.personality = log.LongitudinalPersonality.standard
+    self.override_slc = False
+    self.overridden_speed = 0
+    self.slc_target = 0
     self.dynamic_follow = False
 
   def read_param(self):
@@ -120,7 +123,7 @@ class LongitudinalPlanner:
     v_ego_cluster = sm['carState'].vEgoCluster
     v_ego_diff = v_ego_raw - v_ego_cluster if v_ego_cluster > 0 else 0
     v_cruise_kph = min(sm['controlsState'].vCruise, V_CRUISE_MAX)
-    v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    v_cruise = v_cruise_kph * CV.KPH_TO_MS + v_ego_diff
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
     force_slow_decel = sm['controlsState'].forceDecel
@@ -160,10 +163,30 @@ class LongitudinalPlanner:
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
     # PFEIFER - SLC {{
+    carState = sm['carState']
+    enabled = sm['controlsState'].enabled
+
     if self.params.get_bool("SpeedLimitControl"):
       slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego)
-      if slc.speed_limit > 0 and (slc.speed_limit + slc.offset + v_ego_diff) < v_cruise:
-        v_cruise = slc.speed_limit + slc.offset + v_ego_diff
+      desired_speed_limit = slc.speed_limit + 1.5 + v_ego_diff
+
+      # Override SLC upon gas pedal press and reset upon brake/cancel button
+      self.override_slc |= carState.gasPressed
+      self.override_slc &= enabled
+      self.override_slc &= v_ego > desired_speed_limit
+
+      # Set the max speed to the manual set speed
+      if carState.gasPressed:
+        self.overridden_speed = np.clip(v_ego, desired_speed_limit, v_cruise)
+      self.overridden_speed *= enabled
+
+      # Use the speed limit if its not being overridden
+      if not self.override_slc:
+        if slc.speed_limit > 0 and desired_speed_limit < v_cruise:
+          self.slc_target = desired_speed_limit
+          v_cruise = self.slc_target
+      else:
+        self.slc_target = self.overridden_speed
     # }} PFEIFER - SLC
     # PFEIFER - VTSC {{
     vtsc.update(prev_accel_constraint, v_ego, sm)
