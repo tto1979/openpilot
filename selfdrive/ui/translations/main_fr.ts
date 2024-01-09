@@ -403,7 +403,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
+        <source>Connect your smartphone and comma device to the same Wi-Fi network and disconnect from the car&apos;s CAN signal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1141,7 +1141,7 @@ Internet access from mobile phone (tethering) is required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>This will allow you to search destination in google map api.
+        <source>This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.
 You will need to apply your own google map api key. Enter your key detail in web interface once to enable.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1174,7 +1174,7 @@ You will need to apply your own google map api key. Enter your key detail in web
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Activates the car&apos;s brakes after 3 seconds stopped. (Only support on Toyota TSS2)</source>
+        <source>Activates the car&apos;s brakes after 0.4 seconds stopped. (Only support on Toyota TSS2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

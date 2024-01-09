@@ -402,8 +402,8 @@
         <translation>觀看或下載comma設備的行車記錄影像</translation>
     </message>
     <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
-        <translation>請先將您的手機和comma裝置連接到同一個 Wi-Fi 網路上</translation>
+        <source>Connect your smartphone and comma device to the same Wi-Fi network and disconnect from the car&apos;s CAN signal</source>
+        <translation>請先將您的手機和comma裝置連接到同一個 Wi-Fi 網路上，並且與車子的CAN訊號斷開</translation>
     </message>
     <message>
         <source>Scan the QR code on the right</source>
@@ -1135,8 +1135,8 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation>自動煞停維持</translation>
     </message>
     <message>
-        <source>Activates the car&apos;s brakes after 3 seconds stopped. (Only support on Toyota TSS2)</source>
-        <translation>踩煞車踏板3秒後，啟動自動煞停維持功能。(僅適用於 Toyota TSS2 車款)</translation>
+        <source>Activates the car&apos;s brakes after 0.4 seconds stopped. (Only support on Toyota TSS2)</source>
+        <translation>踩煞車踏板0.4秒後，啟動自動煞停維持功能。(僅適用於 Toyota TSS2 車款)</translation>
     </message>
     <message>
         <source>Fix Toyota BSM Signal</source>
@@ -1195,9 +1195,9 @@ Toyota/Lexus：按下 ECO 按鈕。
         <translation>使用 Google 地圖搜尋目的地</translation>
     </message>
     <message>
-        <source>This will allow you to search destination in google map api.
+        <source>This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.
 You will need to apply your own google map api key. Enter your key detail in web interface once to enable.</source>
-        <translation>這將允許您以 google 地圖 api 搜尋目的地。
+        <translation>這將允許您以 google 地圖 api 搜尋目的地。在開啟這個功能前，請先確認您已輸入 Mapbox 身分驗證並完成重新開機。
 您將需要應用自己的 google 地圖 api 密鑰。在網路界面中輸入您的密鑰詳細訊息。</translation>
     </message>
     <message>

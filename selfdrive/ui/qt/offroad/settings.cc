@@ -581,7 +581,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
 
   toggles.append(new ParamControl("dp_nav_gmap_enable",
                                   tr("Search Destination using Google Map"),
-                                  tr("This will allow you to search destination in google map api.\nYou will need to apply your own google map api key. Enter your key detail in web interface once to enable."),
+                                  tr("This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.\nYou will need to apply your own google map api key. Enter your key detail in web interface once to enable."),
                                   "../assets/offroad/icon_road.png",
                                   this));
 
@@ -605,7 +605,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
 
   toggles.append(new ParamControl("AleSato_AutomaticBrakeHold",
                                   tr("Automatic Brake Hold"),
-                                  tr("Activates the car's brakes after 3 seconds stopped. (Only support on Toyota TSS2)"),
+                                  tr("Activates the car's brakes after 0.4 seconds stopped. (Only support on Toyota TSS2)"),
                                   "../assets/offroad/icon_road.png",
                                   this));
 
