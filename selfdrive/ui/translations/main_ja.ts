@@ -66,6 +66,26 @@
         <source>Prevent large data uploads when on a metered connection</source>
         <translation>大量のデータのアップロードを防止します。</translation>
     </message>
+    <message>
+        <source>Hidden Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CONNECT</source>
+        <translation type="unfinished">接続</translation>
+    </message>
+    <message>
+        <source>Enter SSID</source>
+        <translation type="unfinished">SSID を入力</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <translation type="unfinished">パスワードを入力</translation>
+    </message>
+    <message>
+        <source>for &quot;%1&quot;</source>
+        <translation type="unfinished">ﾈｯﾄﾜｰｸ名：%1</translation>
+    </message>
 </context>
 <context>
     <name>AnnotatedCameraWidget</name>
@@ -291,7 +311,7 @@
     </message>
 </context>
 <context>
-    <name>DriverViewScene</name>
+    <name>DriverViewWindow</name>
     <message>
         <source>camera starting</source>
         <translation>ｶﾒﾗを起動しています</translation>
@@ -402,7 +422,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
+        <source>Connect your smartphone and comma device to the same Wi-Fi network and disconnect from the car&apos;s CAN signal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -596,10 +616,6 @@
     <message>
         <source>Exit</source>
         <translation>閉じる</translation>
-    </message>
-    <message>
-        <source>dashcam</source>
-        <translation>ﾄﾞﾗｲﾌﾞﾚｺｰﾀﾞｰ</translation>
     </message>
     <message>
         <source>T.O.P</source>
@@ -1130,7 +1146,7 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Activates the car&apos;s brakes after 3 seconds stopped. (Only support on Toyota TSS2)</source>
+        <source>Activates the car&apos;s brakes after 0.3 seconds stopped. (Only support on Toyota TSS2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1149,6 +1165,14 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <source>Change the ACC +/- buttons behavior with cruise speed change in openpilot.
 Disabled (Stock): Short = 1, Long = 5.
 Enabled: Short and Long = 5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Speed Limit Control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1178,7 +1202,7 @@ Other makes: Double tapping the screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>This will allow you to search destination in google map api.
+        <source>This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.
 You will need to apply your own google map api key. Enter your key detail in web interface once to enable.</source>
         <translation type="unfinished"></translation>
     </message>

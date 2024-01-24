@@ -66,6 +66,26 @@
         <source>Prevent large data uploads when on a metered connection</source>
         <translation>防止使用行動網路上傳大量的數據</translation>
     </message>
+    <message>
+        <source>Hidden Network</source>
+        <translation>隱藏網路</translation>
+    </message>
+    <message>
+        <source>CONNECT</source>
+        <translation>雲端服務</translation>
+    </message>
+    <message>
+        <source>Enter SSID</source>
+        <translation>輸入 SSID</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <translation>輸入密碼</translation>
+    </message>
+    <message>
+        <source>for &quot;%1&quot;</source>
+        <translation>給 &quot;%1&quot;</translation>
+    </message>
 </context>
 <context>
     <name>AnnotatedCameraWidget</name>
@@ -291,7 +311,7 @@
     </message>
 </context>
 <context>
-    <name>DriverViewScene</name>
+    <name>DriverViewWindow</name>
     <message>
         <source>camera starting</source>
         <translation>開啟相機中</translation>
@@ -402,8 +422,8 @@
         <translation>觀看或下載comma設備的行車記錄影像</translation>
     </message>
     <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
-        <translation>請先將您的手機和comma裝置連接到同一個 Wi-Fi 網路上</translation>
+        <source>Connect your smartphone and comma device to the same Wi-Fi network and disconnect from the car&apos;s CAN signal</source>
+        <translation>請先將您的手機和comma裝置連接到同一個 Wi-Fi 網路上，並且與車子的CAN訊號斷開</translation>
     </message>
     <message>
         <source>Scan the QR code on the right</source>
@@ -597,10 +617,6 @@
     <message>
         <source>Exit</source>
         <translation>離開</translation>
-    </message>
-    <message>
-        <source>dashcam</source>
-        <translation>行車記錄器</translation>
     </message>
     <message>
         <source>T.O.P</source>
@@ -1135,8 +1151,8 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation>自動煞停維持</translation>
     </message>
     <message>
-        <source>Activates the car&apos;s brakes after 3 seconds stopped. (Only support on Toyota TSS2)</source>
-        <translation>踩煞車踏板3秒後，啟動自動煞停維持功能。(僅適用於 Toyota TSS2 車款)</translation>
+        <source>Activates the car&apos;s brakes after 0.3 seconds stopped. (Only support on Toyota TSS2)</source>
+        <translation>踩煞車踏板0.3秒後，啟動自動煞停維持功能。(僅適用於 Toyota TSS2 車款)</translation>
     </message>
     <message>
         <source>Fix Toyota BSM Signal</source>
@@ -1157,6 +1173,14 @@ Enabled: Short and Long = 5.</source>
         <translation>在openpilot中更改ACC +/- 按鈕的行為與巡航速度變化。
 關閉選項 (原廠設定): 短按 = 1, 長按 = 5。
 開啟選項: 短按及長按 = 5。</translation>
+    </message>
+    <message>
+        <source>Speed Limit Control</source>
+        <translation>導航地圖速限控制</translation>
+    </message>
+    <message>
+        <source>Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed.</source>
+        <translation>啟用導航地圖速限控制。啟用後，openpilot 的速度上限將調整至導航地圖資訊所提供的速度上限+5公里行駛。如果在速度限制啟動時踩下油門踏板，最高車速將回復到手動設定的速度。</translation>
     </message>
     <message>
         <source>Enable Jetson Support</source>
@@ -1187,9 +1211,9 @@ Toyota/Lexus：按下 ECO 按鈕。
         <translation>使用 Google 地圖搜尋目的地</translation>
     </message>
     <message>
-        <source>This will allow you to search destination in google map api.
+        <source>This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.
 You will need to apply your own google map api key. Enter your key detail in web interface once to enable.</source>
-        <translation>這將允許您以 google 地圖 api 搜尋目的地。
+        <translation>這將允許您以 google 地圖 api 搜尋目的地。在開啟這個功能前，請先確認您已輸入 Mapbox 身分驗證並完成重新開機。
 您將需要應用自己的 google 地圖 api 密鑰。在網路界面中輸入您的密鑰詳細訊息。</translation>
     </message>
     <message>

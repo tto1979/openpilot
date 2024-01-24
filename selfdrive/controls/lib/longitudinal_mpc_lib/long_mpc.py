@@ -4,15 +4,14 @@ import time
 import numpy as np
 from cereal import log
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.params import put_nonblocking
+from openpilot.common.params import Params
 from openpilot.common.numpy_fast import clip
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags, TSS2_CAR, RADAR_ACC_CAR
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
 from openpilot.selfdrive.modeld.constants import index_function
 from openpilot.selfdrive.car.interfaces import ACCEL_MIN
 from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
-from openpilot.selfdrive.controls.distance_based_curvature import dbc
 
 if __name__ == '__main__':  # generating code
   from openpilot.third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
@@ -85,14 +84,14 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
 def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
   # The Dynamic follow function is adjusted by Marc(cgw1968-5779)
   if personality==log.LongitudinalPersonality.relaxed:
-    x_vel =  [0.0,  3.0,  8.33,  8.34,  13.89, 13.90,  19.99, 20,    25,   40]
-    y_dist = [1.0,  1.2,  1.7,   1.70,  1.70,  1.65,   1.65,  1.85,  1.85, 2.0]
+    x_vel =  [0.0,  3.0,  8.33,  13.90,  20,    25,   40]
+    y_dist = [1.3,  1.4,  1.70,  1.65,   1.65,  1.85, 2.0]
   elif personality==log.LongitudinalPersonality.standard:
-    x_vel =  [0.0,  3.0,  3.01,  8.33,  8.34,  13.89, 13.90,  19.99, 20,    25,   40]
-    y_dist = [1.0,  1.2,  1.4,   1.4,   1.4,   1.4,   1.40,   1.40,  1.45,  1.45, 1.5]
+    x_vel =  [0.0,  3.0,  8.33,  13.90,  20,    25,   40]
+    y_dist = [1.2,  1.3,  1.4,   1.40,   1.45,  1.45, 1.5]
   elif personality==log.LongitudinalPersonality.aggressive:
-    x_vel =  [0.0,  3.0,  3.01,  8.33,  8.34,  13.89, 13.90,  19.99, 20,    25,   40]
-    y_dist = [1.0,  1.0,  1.00,  1.00,  1.05,  1.05,   1.05,    1.05,  1.05,  1.11, 1.12]
+    x_vel =  [0.0,  13.89,  20,    25,   40]
+    y_dist = [1.1,   1.00,   1.05,  1.105, 1.12]
   else:
     raise NotImplementedError("Dynamic Follow personality not supported")
   return np.interp(v_ego, x_vel, y_dist)
@@ -102,9 +101,9 @@ def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
     return 4.5
   elif personality==log.LongitudinalPersonality.standard:
-    return 4.0
+    return 4.25
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 3.5
+    return 4.0
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -232,6 +231,7 @@ def gen_long_ocp():
   ocp.constraints.x0 = x0
   ocp.parameter_values = np.array([-1.2, 1.2, 0.0, 0.0, get_T_FOLLOW(), LEAD_DANGER_FACTOR, get_STOP_DISTANCE()])
 
+
   # We put all constraint cost weights to 0 and only set them at runtime
   cost_weights = np.zeros(CONSTR_DIM)
   ocp.cost.zl = cost_weights
@@ -319,7 +319,6 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-
   def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0):
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
@@ -406,13 +405,13 @@ class LongitudinalMpc:
         profile_key = op_profile_key
 
       if profile_key == 1: # No Cut In
-        put_nonblocking('LongitudinalPersonality', str(0))
+        Params().put_nonblocking("LongitudinalPersonality", str(0))
 
       elif profile_key == 2: # Relaxed
-        put_nonblocking('LongitudinalPersonality', str(1))
+        Params().put_nonblocking("LongitudinalPersonality", str(1))
 
       elif profile_key == 3: # Let You Cut In
-        put_nonblocking('LongitudinalPersonality', str(2))
+        Params().put_nonblocking("LongitudinalPersonality", str(2))
 
   def update(self, carstate, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard, dynamic_follow=False):
     # t_follow = get_T_FOLLOW(personality)
@@ -420,7 +419,7 @@ class LongitudinalMpc:
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
     if not (self.CP.flags & ToyotaFlags.SMART_DSU) or dynamic_follow:
-      stop_distance += 0.5
+      stop_distance += 0.75
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
@@ -527,7 +526,6 @@ class LongitudinalMpc:
     for i in range(N):
       self.u_sol[i] = self.solver.get(i, 'u')
 
-    dbc.distances = self.x_sol[:,0]
     self.v_solution = self.x_sol[:,1]
     self.a_solution = self.x_sol[:,2]
     self.j_solution = self.u_sol[:,0]

@@ -17,7 +17,7 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                     distance_along_geometry, maxspeed_to_ms,
                                     minimum_distance,
                                     parse_banner_instructions)
-from openpilot.system.swaglog import cloudlog
+from openpilot.common.swaglog import cloudlog
 
 # PFEIFER - SLC {{
 from openpilot.selfdrive.controls.speed_limit_controller import slc
@@ -92,8 +92,11 @@ class RouteEngine:
         self.ui_pid = ui_pid[0]
 
     self.update_location()
-    self.recompute_route()
-    self.send_instruction()
+    try:
+      self.recompute_route()
+      self.send_instruction()
+    except Exception:
+      cloudlog.exception("navd.failed_to_compute")
 
   def update_location(self):
     location = self.sm['liveLocationKalman']
@@ -243,7 +246,7 @@ class RouteEngine:
     self.send_route()
 
   def send_instruction(self):
-    msg = messaging.new_message('navInstruction')
+    msg = messaging.new_message('navInstruction', valid=True)
 
     if self.step_idx is None:
       msg.valid = False
@@ -308,7 +311,10 @@ class RouteEngine:
     for i in range(self.step_idx + 1, len(self.route)):
       total_distance_remaining += self.route[i]['distance']
       total_time_remaining += self.route[i]['duration']
-      total_typical_time_remaining += self.route[i]['duration_typical']
+      if self.route[i]['duration_typical'] is None:
+        total_typical_time_remaining += self.route[i]['duration']
+      else:
+        total_typical_time_remaining += self.route[i]['duration_typical']
 
     msg.navInstruction.distanceRemaining = total_distance_remaining
     msg.navInstruction.timeRemaining = total_time_remaining
@@ -373,7 +379,7 @@ class RouteEngine:
       for path in self.route_geometry:
         coords += [c.as_dict() for c in path]
 
-    msg = messaging.new_message('navRoute')
+    msg = messaging.new_message('navRoute', valid=True)
     msg.navRoute.coordinates = coords
     self.pm.send('navRoute', msg)
 

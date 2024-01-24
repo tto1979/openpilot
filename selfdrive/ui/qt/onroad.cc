@@ -1,5 +1,4 @@
 #include "selfdrive/ui/qt/onroad.h"
-#include "selfdrive/ui/qt/screenrecorder/screenrecorder.h"
 
 #include <algorithm>
 #include <chrono>
@@ -13,6 +12,7 @@
 #include <QMouseEvent>
 #include <QTimer>
 
+#include "common/swaglog.h"
 #include "common/timing.h"
 #include "selfdrive/ui/qt/util.h"
 #ifdef ENABLE_MAPS
@@ -321,31 +321,14 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->setMargin(UI_BORDER_SIZE);
   main_layout->setSpacing(0);
 
-  // Neokii screen recorder
-  QGridLayout *top_right_layout = new QGridLayout();
-  top_right_layout->setSpacing(0);
-  recorder_btn = new ScreenRecorder(this);
   experimental_btn = new ExperimentalButton(this);
-  top_right_layout->addWidget(experimental_btn);
-  top_right_layout->addWidget(recorder_btn);
-
-  main_layout->addLayout(top_right_layout, 0);
-  main_layout->setAlignment(top_right_layout, Qt::AlignTop | Qt::AlignRight);
+  main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
   main_layout->setContentsMargins(0, 60, 0, 0);
 
   map_settings_btn = new MapSettingsButton(this);
   main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
-
-  // Screen recorder
-  QTimer *record_timer = new QTimer(this);
-  connect(record_timer, &QTimer::timeout, this, [this]() {
-    if (this->recorder_btn) {
-      this->recorder_btn->update_screen();
-    }
-  });
-  record_timer->start(1000 / UI_FREQ);
 
   // Driving personalities profiles
   profile_data = {
@@ -1086,15 +1069,10 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
 }
 
 void AnnotatedCameraWidget::paintGL() {
-}
-
-void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
   UIState *s = uiState();
   SubMaster &sm = *(s->sm);
-  QPainter painter(this);
   const double start_draw_t = millis_since_boot();
   const cereal::ModelDataV2::Reader &model = sm["modelV2"].getModelV2();
-  const cereal::RadarState::Reader &radar_state = sm["radarState"].getRadarState();
 
   // draw camera frame
   {
@@ -1135,26 +1113,22 @@ void AnnotatedCameraWidget::paintEvent(QPaintEvent *event) {
     } else {
       CameraWidget::updateCalibration(DEFAULT_CALIBRATION);
     }
-    painter.beginNativePainting();
     CameraWidget::setFrameId(model.getFrameId());
     CameraWidget::paintGL();
-    painter.endNativePainting();
   }
 
+  QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.setPen(Qt::NoPen);
 
-  if (s->worldObjectsVisible()) {
-    if (sm.rcv_frame("modelV2") > s->scene.started_frame) {
-      update_model(s, model, sm["uiPlan"].getUiPlan());
-      if (sm.rcv_frame("radarState") > s->scene.started_frame) {
-        update_leads(s, radar_state, model.getPosition());
-      }
-    }
-
+  if (s->scene.world_objects_visible) {
+    update_model(s, model, sm["uiPlan"].getUiPlan());
     drawLaneLines(painter, s);
 
-    if (s->scene.longitudinal_control) {
+    if (s->scene.longitudinal_control && sm.rcv_frame("radarState") > s->scene.started_frame) {
+      auto radar_state = sm["radarState"].getRadarState();
+      update_leads(s, radar_state, model.getPosition());
+
       const auto leads = model.getLeadsV3();
       size_t leads_num = leads.size();
       for (size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
