@@ -578,7 +578,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
 
   toggles.append(new ParamControl("dp_nav_gmap_enable",
                                   tr("Search Destination using Google Map"),
-                                  tr("This will allow you to search destination in google map api.\nYou will need to apply your own google map api key. Enter your key detail in web interface once to enable."),
+                                  tr("This will allow you to search destination in google map api. Before turning on this function, please confirm that you have entered the mapbox token and completed the reboot.\nYou will need to apply your own google map api key. Enter your key detail in web interface once to enable."),
                                   "../assets/offroad/icon_road.png",
                                   this));
 
@@ -602,7 +602,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
 
   toggles.append(new ParamControl("AleSato_AutomaticBrakeHold",
                                   tr("Automatic Brake Hold"),
-                                  tr("Activates the car's brakes after 3 seconds stopped. (Only support on Toyota TSS2)"),
+                                  tr("Activates the car's brakes after 0.3 seconds stopped. (Only support on Toyota TSS2)"),
                                   "../assets/offroad/icon_road.png",
                                   this));
 
@@ -616,6 +616,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   tr("ACC +/-: Long Press Reverse"),
                                   tr("Change the ACC +/- buttons behavior with cruise speed change in openpilot.\nDisabled (Stock): Short = 1, Long = 5.\nEnabled: Short and Long = 5."),
                                   "../assets/offroad/icon_acc_change.png",
+                                  this));
+
+  toggles.append(new ParamControl("SpeedLimitControl",
+                                  tr("Speed Limit Control"),
+                                  tr("Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed."),
+                                  "../assets/img_experimental_white.svg",
                                   this));
 
   toggles.append(new ParamControl("dp_jetson",

@@ -13,6 +13,7 @@ from openpilot.common.retry import retry
 from openpilot.common.swaglog import cloudlog
 
 from openpilot.system import micd
+from openpilot.common.params import Params
 
 SAMPLE_RATE = 48000
 SAMPLE_BUFFER = 4096 # (approx 100ms)
@@ -26,7 +27,6 @@ DB_SCALE = 30 # AMBIENT_DB + DB_SCALE is where MAX_VOLUME is applied
 
 AudibleAlert = car.CarControl.HUDControl.AudibleAlert
 
-
 sound_list: Dict[int, Tuple[str, Optional[int], float]] = {
   # AudibleAlert, file name, play count (none for infinite)
   AudibleAlert.engage: ("engage.wav", 1, MAX_VOLUME),
@@ -39,6 +39,8 @@ sound_list: Dict[int, Tuple[str, Optional[int], float]] = {
 
   AudibleAlert.warningSoft: ("warning_soft.wav", None, MAX_VOLUME),
   AudibleAlert.warningImmediate: ("warning_immediate.wav", None, MAX_VOLUME),
+
+  AudibleAlert.engageBrakehold: ("engage_brakehold.wav", 1, MAX_VOLUME),
 }
 
 def check_controls_timeout_alert(sm):
@@ -49,7 +51,6 @@ def check_controls_timeout_alert(sm):
       return True
 
   return False
-
 
 class Soundd:
   def __init__(self):
@@ -90,6 +91,11 @@ class Soundd:
 
       current_sound_frame = self.current_sound_frame % len(sound_data)
       loops = self.current_sound_frame // len(sound_data)
+
+      # Check if QuietDrive is enabled
+      quiet_drive = Params().get_bool("QuietDrive")
+      if quiet_drive and self.current_alert not in [AudibleAlert.warningSoft, AudibleAlert.warningImmediate]:
+        return ret * self.current_volume
 
       while written_frames < frames and (num_loops is None or loops < num_loops):
         available_frames = sound_data.shape[0] - current_sound_frame

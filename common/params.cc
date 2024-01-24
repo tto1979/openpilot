@@ -213,8 +213,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CarModel", PERSISTENT},
     {"dp_atl", PERSISTENT},
     {"dp_jetson", PERSISTENT},
-    {"DistanceBasedCurvature", PERSISTENT},
-    {"Distances", PERSISTENT},
     {"DrivingPersonalitiesUIWheel", PERSISTENT},
     {"MapSelected", PERSISTENT},
     {"OSM", PERSISTENT},
@@ -224,6 +222,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"NNFF", PERSISTENT},
     {"NudgelessLaneChange", PERSISTENT},
     // PFEIFER - SLC {{
+    {"SpeedLimitControl", PERSISTENT},
     {"NavSpeedLimitControl", PERSISTENT},
     {"MapSpeedLimitControl", PERSISTENT},
     {"CarSpeedLimitControl", PERSISTENT},
@@ -233,9 +232,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"NavSpeedLimit", PERSISTENT},
     {"CarSpeedLimit", PERSISTENT},
     {"SpeedLimitOffset", PERSISTENT},
-    {"NextMapAdvisoryLimit", PERSISTENT},
-    {"MapHazard", PERSISTENT},
-    {"NextMapHazard", PERSISTENT},
     // }} PFEIFER - SLC
     {"OnroadScreenOff", PERSISTENT},
     {"PrimeAd", PERSISTENT},
