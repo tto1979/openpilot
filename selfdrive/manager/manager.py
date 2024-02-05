@@ -11,7 +11,6 @@ import cereal.messaging as messaging
 import openpilot.selfdrive.sentry as sentry
 from openpilot.common.params import Params, ParamKeyType
 from openpilot.common.text_window import TextWindow
-from openpilot.selfdrive.boardd.set_time import set_time
 from openpilot.system.hardware import HARDWARE, PC
 from openpilot.selfdrive.manager.helpers import unblock_stdout, write_onroad_params, save_bootlog
 from openpilot.selfdrive.manager.process import ensure_running
@@ -25,10 +24,6 @@ from openpilot.system.version import is_dirty, get_commit, get_version, get_orig
 
 
 def manager_init() -> None:
-  # update system time from panda
-  set_time(cloudlog)
-
-  # save boot log
   if not Params().get_bool("dp_jetson"):
     save_bootlog()
 
@@ -64,6 +59,7 @@ def manager_init() -> None:
     ("MapSpeedLimitControl", "1"),
     ("NavSpeedLimitControl", "1"),
     ("Marc_Dynamic_Follow", "0"),
+    ("MTSCEnabled", "0"),
     ("NudgelessLaneChange", "0"),
     ("NNFF", "0"),
     ("opwebd", "1"),
@@ -98,9 +94,9 @@ def manager_init() -> None:
   params.put("Version", get_version())
   params.put("TermsVersion", terms_version)
   params.put("TrainingVersion", training_version)
-  params.put("GitCommit", get_commit(default=""))
-  params.put("GitBranch", get_short_branch(default=""))
-  params.put("GitRemote", get_origin(default=""))
+  params.put("GitCommit", get_commit())
+  params.put("GitBranch", get_short_branch())
+  params.put("GitRemote", get_origin())
   params.put_bool("IsTestedBranch", is_tested_branch())
   params.put_bool("IsReleaseBranch", is_release_branch())
 
@@ -112,6 +108,9 @@ def manager_init() -> None:
     serial = params.get("HardwareSerial")
     raise Exception(f"Registration failed for device {serial}")
   os.environ['DONGLE_ID'] = dongle_id  # Needed for swaglog
+  os.environ['GIT_ORIGIN'] = get_normalized_origin() # Needed for swaglog
+  os.environ['GIT_BRANCH'] = get_short_branch() # Needed for swaglog
+  os.environ['GIT_COMMIT'] = get_commit() # Needed for swaglog
 
   if not is_dirty():
     os.environ['CLEAN'] = '1'
