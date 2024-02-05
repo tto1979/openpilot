@@ -11,6 +11,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.car.interfaces import ACCEL_MIN, ACCEL_MAX
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
@@ -19,20 +20,27 @@ from openpilot.common.swaglog import cloudlog
 # PFEIFER - SLC {{
 from openpilot.selfdrive.controls.speed_limit_controller import slc
 # }} PFEIFER - SLC
+# PFEIFER - VTSC {{
 from openpilot.selfdrive.controls.vtsc import vtsc
+# }} PFEIFER - VTSC
+# PFEIFER - MTSC {{
+from openpilot.selfdrive.controls.mtsc import mtsc
+# }} PFEIFER - MTSC
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
-A_CRUISE_MIN_VALS = [-0.004, -0.16, -0.36, -0.6, -0.6]
-A_CRUISE_MIN_BP =   [0.,     8.,    16.,   28.,  42.]
-A_CRUISE_MAX_VALS_DF =     [2.4, 2.4, 2.4, 2.0, 1.45, .88, .72, .52, .34, .11]  # Sets the limits of the planner accel, PID may exceed
-A_CRUISE_MAX_BP_DF =       [0.,  0.5, 6.,  8.,  11., 15.,   20., 25., 30., 55.]
+A_CRUISE_MIN_VALS =    [-0.18, -0.17,  -0.16, -0.36, -0.6, -0.6]
+A_CRUISE_MIN_BP =      [0.,    1.,    8.,    16.,   28.,  42.]
+A_CRUISE_MIN_VALS_DF = [-0.14, -0.40,  -0.14,  -0.14, -0.28, -0.6, -0.6]
+A_CRUISE_MIN_BP_DF =   [0.,    0.5,    1.0,    8.,    16.,   28.,  42.]
+A_CRUISE_MAX_VALS_DF =     [1.5, 2.4, 2.4, 2.1, 1.56, 1.23, .88, .660, .478, .328, .09]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_BP_DF =       [0.,  0.1,  3.,  6.,  8.,    11.,   15.,   20.,  25.,  30.,  55.]
 # A_CRUISE_MAX_VALS_TOYOTA = [2.0, 1.68, 1.58, 1.3,  1.15, 0.92, 0.72, 0.52, 0.34, 0.11]  # Sets the limits of the planner accel, PID may exceed
-A_CRUISE_MAX_VALS_TOYOTA =   [2.0, 1.65, 1.52, 1.35, 1.15, 0.88, 0.72, 0.52, 0.34, 0.11]  # Sets the limits of the planner accel, PID may exceed
-# CRUISE_MAX_BP in kmh =     [0.,  10,   20,   30,   40,   53,   72,   90,   107,  150]
-A_CRUISE_MAX_BP_TOYOTA =     [0.,  3,    6.,   8.,   11.,  15.,  20.,  25.,  30.,  55.]
+A_CRUISE_MAX_VALS_TOYOTA =   [2.0, 1.62, 1.45, 1.28, 1.1, 0.85, 0.68, 0.48, 0.33, 0.11]  # Sets the limits of the planner accel, PID may exceed
+# CRUISE_MAX_BP in kmh =     [0.,  10,   20,  30,  40,  53,   72,   90,   107,  150]
+A_CRUISE_MAX_BP_TOYOTA =     [0.,  3,    6.,  8.,  11., 15.,  20.,  25.,  30.,  55.]
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
@@ -44,6 +52,9 @@ def get_max_accel(v_ego):
 
 def get_min_accel(v_ego):
   return interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
+
+def get_min_accel_df(v_ego):
+  return interp(v_ego, A_CRUISE_MIN_BP_DF, A_CRUISE_MIN_VALS_DF)
 
 def get_max_accel_df(v_ego):
   return interp(v_ego, A_CRUISE_MAX_BP_DF, A_CRUISE_MAX_VALS_DF)
@@ -136,10 +147,10 @@ class LongitudinalPlanner:
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
     if self.mpc.mode == 'acc':
-      if self.dynamic_follow:
-        accel_limits = [get_min_accel(v_ego), get_max_accel_df(v_ego)]
-      elif not self.dynamic_follow and self.CP.carName == "toyota":
+      if self.CP.carName == "toyota":
         accel_limits = [get_min_accel(v_ego), get_max_accel_toyota(v_ego)]
+      elif self.dynamic_follow and self.CP.carFingerprint in TSS2_CAR:
+        accel_limits = [get_min_accel_df(v_ego), get_max_accel_df(v_ego)]
       else:
         accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
@@ -194,6 +205,12 @@ class LongitudinalPlanner:
     if vtsc.active and v_cruise > vtsc.v_target:
       v_cruise = vtsc.v_target
     # }} PFEIFER - VTSC
+
+    # PFEIFER - MTSC {{
+    mtsc_v = mtsc.target_speed(v_cruise, v_ego, sm['carState'].aEgo, self.j_desired_trajectory.tolist()[0])
+    if v_cruise > mtsc_v and mtsc_v != 0:
+      v_cruise = mtsc_v
+    # }} PFEIFER - MTSC
 
     lead_xv_0 = self.mpc.process_lead(sm['radarState'].leadOne)
     lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)

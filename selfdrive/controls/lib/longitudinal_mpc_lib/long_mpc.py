@@ -84,14 +84,14 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
 def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
   # The Dynamic follow function is adjusted by Marc(cgw1968-5779)
   if personality==log.LongitudinalPersonality.relaxed:
-    x_vel =  [0.0,  3.0,  8.33,  13.90,  20,    25,   40]
-    y_dist = [1.3,  1.4,  1.70,  1.65,   1.65,  1.85, 2.0]
+    x_vel =  [0.0,  13.90,  20,    25,   40]
+    y_dist = [1.4,  1.65,   1.65,  1.85, 2.0]
   elif personality==log.LongitudinalPersonality.standard:
-    x_vel =  [0.0,  3.0,  8.33,  13.90,  20,    25,   40]
-    y_dist = [1.2,  1.3,  1.4,   1.40,   1.45,  1.45, 1.5]
+    x_vel =  [0.0,  13.90,  20,    25,   40]
+    y_dist = [1.25, 1.45,   1.45,  1.45, 1.5]
   elif personality==log.LongitudinalPersonality.aggressive:
     x_vel =  [0.0,  13.89,  20,    25,   40]
-    y_dist = [1.1,   1.00,   1.05,  1.105, 1.12]
+    y_dist = [1.1,  1.00,   1.05,  1.105, 1.12]
   else:
     raise NotImplementedError("Dynamic Follow personality not supported")
   return np.interp(v_ego, x_vel, y_dist)
@@ -99,9 +99,9 @@ def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
 
 def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
-    return 4.5
+    return 5.0
   elif personality==log.LongitudinalPersonality.standard:
-    return 4.25
+    return 4.5
   elif personality==log.LongitudinalPersonality.aggressive:
     return 4.0
   else:
@@ -269,6 +269,8 @@ def gen_long_ocp():
 class LongitudinalMpc:
   def __init__(self, CP, mode='acc'):
     self.CP = CP
+    self.braking_offset = 1
+
     self.mode = mode
     self.solver = AcadosOcpSolverCython(MODEL_NAME, ACADOS_SOLVER_TYPE, N)
     self.reset()
@@ -419,7 +421,7 @@ class LongitudinalMpc:
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
     if not (self.CP.flags & ToyotaFlags.SMART_DSU) or dynamic_follow:
-      stop_distance += 0.75
+      stop_distance += 1.0
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
@@ -427,6 +429,15 @@ class LongitudinalMpc:
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
     self.update_TF(carstate)
+
+    self.smoother_braking = True
+    if self.smoother_braking:
+      distance_factor = np.maximum(1, lead_xv_0[:,0] - (lead_xv_0[:,1] * t_follow))
+      self.braking_offset = np.clip((v_ego - lead_xv_0[:,1]) - COMFORT_BRAKE, 1, distance_factor)
+      t_follow = t_follow / self.braking_offset
+    else:
+      self.braking_offset = 1
+
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
     # and then treat that as a stopped car/obstacle at this new distance.
