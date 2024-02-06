@@ -62,31 +62,6 @@ def footage():
   return render_template("footage.html", rows=fleet.all_routes())
 
 
-@app.route("/screenrecords/")
-@app.route("/screenrecords")
-def screenrecords():
-  rows = fleet.list_files(fleet.SCREENRECORD_PATH)
-  if not rows:
-    return render_template("error.html", error="no screenrecords found at:<br><br>" + fleet.SCREENRECORD_PATH)
-  return render_template("screenrecords.html", rows=rows, clip=rows[0])
-
-
-@app.route("/screenrecords/<clip>")
-def screenrecord(clip):
-  return render_template("screenrecords.html", rows=fleet.list_files(fleet.SCREENRECORD_PATH), clip=clip)
-
-
-@app.route("/screenrecords/play/pipe/<file>")
-def videoscreenrecord(file):
-  file_name = fleet.SCREENRECORD_PATH + file
-  return Response(fleet.ffplay_mp4_wrap_process_builder(file_name).stdout.read(), status=200, mimetype='video/mp4')
-
-
-@app.route("/screenrecords/download/<clip>")
-def download_file(clip):
-  return send_from_directory(fleet.SCREENRECORD_PATH, clip, as_attachment=True)
-
-
 @app.route("/about")
 def about():
   return render_template("about.html")
