@@ -563,12 +563,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/offroad/icon_road.png",
                                   this));
 
-  toggles.append(new ParamControl("MTSCEnabled",
-                                  tr("Map Turn Speed Control"),
-                                  tr("Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2."),
-                                  "../assets/offroad/icon_road.png",
-                                  this));
-
   toggles.append(new ParamControl("e2e_link",
                                   tr("Experimental Mode Via ECO Button / Screen"),
                                   tr("Quick enable Experimental Mode (End-to-End longitudinal).\nToyota/Lexus: Press the ECO button.\nOther makes: Double tapping the screen."),

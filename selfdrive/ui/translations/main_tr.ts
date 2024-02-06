@@ -1126,14 +1126,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Map Turn Speed Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Experimental Mode Via ECO Button / Screen</source>
         <translation type="unfinished"></translation>
     </message>
