@@ -240,15 +240,15 @@ def nav_confirmed(postvars):
         type_label_ids["recent"].append(idx)
       idx += 1
     if save_type == "recent":
-      dest_id = None
+      id = None
       if len(type_label_ids["recent"]) > 10:
         dests.pop(type_label_ids["recent"][-1])
     else:
-      dest_id = type_label_ids[save_type]
-    if dest_id is None:
+      id = type_label_ids[save_type]
+    if id is None:
       dests.insert(0, new_dest)
     else:
-      dests[dest_id] = new_dest
+      dests[id] = new_dest
     params.put("ApiCache_NavDestinations", json.dumps(dests).rstrip("\n\r"))
 
 def public_token_input(postvars):
