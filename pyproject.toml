@@ -126,7 +126,7 @@ inputs = "*"
 Jinja2 = "*"
 lru-dict = "*"
 matplotlib = "*"
-metadrive-simulator = { version = "0.4.2.2", markers = "platform_machine != 'aarch64'" } # no linux/aarch64 wheels for certain dependencies
+metadrive-simulator = { version = "0.4.2.3", markers = "platform_machine != 'aarch64'" } # no linux/aarch64 wheels for certain dependencies
 mpld3 = "*"
 mypy = "*"
 myst-parser = "*"
@@ -180,8 +180,8 @@ exclude = [
   "teleoprtc_repo",
   "third_party",
 ]
-flake8-implicit-str-concat.allow-multiline=false
-[tool.ruff.flake8-tidy-imports.banned-api]
+lint.flake8-implicit-str-concat.allow-multiline=false
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
 "selfdrive".msg = "Use openpilot.selfdrive"
 "common".msg = "Use openpilot.common"
 "system".msg = "Use openpilot.system"
