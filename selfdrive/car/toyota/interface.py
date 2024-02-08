@@ -289,8 +289,8 @@ class CarInterface(CarInterfaceBase):
       ret.stoppingDecelRate = 0.006  # reach stopping target smoothly on TSS2.0
     tune.kpBP = [0.]
     tune.kpV =  [1.]
-    tune.kiBP = [0., 1., 2.]
-    tune.kiV =  [.1, .1, 1.]
+    tune.kiBP = [0.]
+    tune.kiV =  [1.]
 
     return ret
 
