@@ -168,7 +168,7 @@ def manager_thread() -> None:
   if not params.get_bool("opwebd"):
     ignore += ["opwebd"]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
+  sm = messaging.SubMaster(['deviceState', 'carParams'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   write_onroad_params(False, params)
@@ -177,7 +177,7 @@ def manager_thread() -> None:
   started_prev = False
 
   while True:
-    sm.update()
+    sm.update(1000)
 
     started = sm['deviceState'].started
 
