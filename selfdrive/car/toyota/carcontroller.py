@@ -1,6 +1,6 @@
 from cereal import car
 from openpilot.common.numpy_fast import clip, interp
-from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, \
+from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, \
                           create_gas_interceptor_command, make_can_msg
 from openpilot.selfdrive.car.toyota import toyotacan
 from openpilot.selfdrive.car.toyota.values import CAR, STATIC_DSU_MSGS, NO_STOP_TIMER_CAR, TSS2_CAR, RADAR_ACC_CAR, \
@@ -28,7 +28,10 @@ MAX_LTA_ANGLE = 94.9461  # deg
 MAX_LTA_DRIVER_TORQUE_ALLOWANCE = 150  # slightly above steering pressed allows some resistance when changing lanes
 
 # PCM compensatory force calculation threshold
-COMPENSATORY_CALCULATION_THRESHOLD = -0.25  # m/s^2
+# a variation in accel command is more pronounced at higher speeds, let compensatory forces ramp to zero before
+# applying when speed is high
+COMPENSATORY_CALCULATION_THRESHOLD_V = [-0.3, -0.25, 0.]  # m/s^2
+COMPENSATORY_CALCULATION_THRESHOLD_BP = [0., 11., 23.]  # m/s
 
 GearShifter = car.CarState.GearShifter
 UNLOCK_CMD = b'\x40\x05\x30\x11\x00\x40\x00\x00'
@@ -154,25 +157,18 @@ class CarController:
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
 
-    # Count up to MAX_STEER_RATE_FRAMES, at which point we need to cut torque to avoid a steering fault
-    if lat_active and abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE:
-      self.steer_rate_counter += 1
-    else:
-      self.steer_rate_counter = 0
+    # >100 degree/sec steering fault prevention
+    self.steer_rate_counter, apply_steer_req = common_fault_avoidance(abs(CS.out.steeringRateDeg) >= MAX_STEER_RATE, lat_active,
+                                                                      self.steer_rate_counter, MAX_STEER_RATE_FRAMES)
 
-    apply_steer_req = 1
     if not lat_active:
       apply_steer = 0
-      apply_steer_req = 0
-    elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
-      apply_steer_req = 0
-      self.steer_rate_counter = 0
 
     # *** steer angle ***
     if self.CP.steerControlType == SteerControlType.angle:
       # If using LTA control, disable LKA and set steering angle command
       apply_steer = 0
-      apply_steer_req = 0
+      apply_steer_req = False
       if self.frame % 2 == 0:
         # EPS uses the torque sensor angle to control with, offset to compensate
         apply_angle = actuators.steeringAngleDeg + CS.out.steeringAngleOffsetDeg
@@ -225,10 +221,10 @@ class CarController:
     # prohibit negative compensatory calculations when first activating long after accelerator depression or engagement
     if not CC.longActive:
       self.prohibit_neg_calculation = True
+    comp_thresh = interp(CS.out.vEgo, COMPENSATORY_CALCULATION_THRESHOLD_BP, COMPENSATORY_CALCULATION_THRESHOLD_V)
     # don't reset until a reasonable compensatory value is reached
-    if CS.pcm_neutral_force > COMPENSATORY_CALCULATION_THRESHOLD * self.CP.mass:
+    if CS.pcm_neutral_force > comp_thresh * self.CP.mass:
       self.prohibit_neg_calculation = False
-
     # NO_STOP_TIMER_CAR will creep if compensation is applied when stopping or stopped, don't compensate when stopped or stopping
     should_compensate = True
     if (self.CP.carFingerprint in NO_STOP_TIMER_CAR and actuators.accel < 1e-3 or stopping) or CS.out.vEgo < 1e-3:
@@ -252,7 +248,6 @@ class CarController:
     if not CC.enabled and CS.pcm_acc_status:
       pcm_cancel_cmd = 1
 
-    # resume request
     # on entering standstill, send standstill request
     if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor) and \
       not self.topsng:
