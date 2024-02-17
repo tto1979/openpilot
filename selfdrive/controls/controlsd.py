@@ -191,8 +191,8 @@ class Controls:
     self.experimental_mode = False
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.recalibrating_seen = False
-    self.nnff_alert_shown = False
 
+    self.nn_alert_shown = False
     self.reverse_acc_change = False
     self.live_torque = self.params.get_bool("NNFF")
 
