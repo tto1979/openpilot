@@ -34,6 +34,9 @@ TORQUE_SUBSTITUTE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/substi
 TORQUE_NN_MODEL_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/lat_models')
 
 
+def similarity(s1:str, s2:str) -> float:
+  return SequenceMatcher(None, s1, s2).ratio()
+
 def get_torque_params(candidate):
   with open(TORQUE_SUBSTITUTE_PATH) as f:
     sub = yaml.load(f, Loader=yaml.Loader)
