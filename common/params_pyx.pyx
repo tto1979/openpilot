@@ -20,6 +20,9 @@ cdef extern from "common/params.h":
     int getInt(string, bool) nogil
     int remove(string) nogil
     int put(string, string) nogil
+    void putNonBlocking(string, string) nogil
+    void putBoolNonBlocking(string, bool) nogil
+    void putIntNonBlocking(string, int) nogil
     int putBool(string, bool) nogil
     int putInt(string, int) nogil
     bool checkKey(string) nogil
