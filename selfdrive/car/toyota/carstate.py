@@ -4,7 +4,7 @@ from cereal import car
 from common.conversions import Conversions as CV
 from common.numpy_fast import mean
 from common.filter_simple import FirstOrderFilter
-from common.params import Params
+from common.params import Params, put_int_nonblocking
 from common.realtime import DT_CTRL
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
