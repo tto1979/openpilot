@@ -11,7 +11,7 @@ from common.filter_simple import FirstOrderFilter
 # from common.params import Params
 from common.realtime import DT_MDL
 from selfdrive.hybrid_modeld.constants import T_IDXS
-from openpilot.selfdrive.car.toyota.values import TSS2_CAR
+from selfdrive.car.toyota.values import TSS2_CAR
 from selfdrive.controls.lib.longcontrol import LongCtrlState
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, MIN_ACCEL, MAX_ACCEL
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
