@@ -42,21 +42,22 @@ class CarState(CarStateBase):
 
     self.low_speed_lockout = False
     self.acc_type = 1
+    self.lkas_hud = {}
     self.params = Params()
-    self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
 
     # KRKeegan - Add support for toyota distance button
-    self.frame = 0
+    self.distance_lines = 0
+    self.previous_distance_lines = 0
     self.distance_btn = 0
-    self.e2e_link = Params().get_bool('e2e_link')
+    self.e2e_link = Params().get_bool("e2e_link")
+    self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
     self.ispressed_prev = 2
     self.ispressed_init = 0
     self.e2e_init = 0
-    self.topsng = Params().get_bool('topsng')
-    self.lkas_hud = {}
+    self.topsng = Params().get_bool("topsng")
+
     # bsm
     self.toyota_bsm = Params().get_bool("toyota_bsm")
-
     self.left_blindspot = False
     self.left_blindspot_d1 = 0
     self.left_blindspot_d2 = 0
@@ -66,6 +67,8 @@ class CarState(CarStateBase):
     self.right_blindspot_d1 = 0
     self.right_blindspot_d2 = 0
     self.right_blindspot_counter = 0
+
+    self.frame = 0
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
@@ -96,7 +99,7 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.vEgoCluster = ret.vEgo * 1.015  # minimum of all the cars
 
-    ret.standstill = ret.vEgoRaw == 0
+    ret.standstill = abs(ret.vEgoRaw) < 1e-3
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
@@ -167,7 +170,7 @@ class CarState(CarStateBase):
       self.low_speed_lockout = cp.vl["PCM_CRUISE_2"]["LOW_SPEED_LOCKOUT"] == 2
 
     self.pcm_acc_status = cp.vl["PCM_CRUISE"]["CRUISE_STATE"]
-    if self.topsng and (self.CP.flags & ToyotaFlags.HYBRID) and (self.CP.flags & ToyotaFlags.SMART_DSU):
+    if self.topsng and (self.CP.flags & ToyotaFlags.HYBRID.value) and (self.CP.flags & ToyotaFlags.SMART_DSU.value):
       # ignore standstill in hybrid vehicles, since pcm allows to restart without
       # receiving any special command. Also if interceptor is detected
       ret.cruiseState.standstill = False
@@ -189,7 +192,7 @@ class CarState(CarStateBase):
 
     # DP: Enable blindspot debug mode once (@arne182)
     # let's keep all the commented out code for easy debug purpose for future.
-    if self.toyota_bsm and self.frame > 1999: #self.CP.carFingerprint == CAR.PRIUS_TSS2: #not (self.CP.carFingerprint in TSS2_CAR or self.CP.carFingerprint == CAR.CAMRY or self.CP.carFingerprint == CAR.CAMRYH):
+    if self.toyota_bsm and self.frame > 199: #self.CP.carFingerprint == CAR.PRIUS_TSS2: #not (self.CP.carFingerprint in TSS2_CAR or self.CP.carFingerprint == CAR.CAMRY or self.CP.carFingerprint == CAR.CAMRYH):
       distance_1 = cp.vl["DEBUG"].get('BLINDSPOTD1')
       distance_2 = cp.vl["DEBUG"].get('BLINDSPOTD2')
       side = cp.vl["DEBUG"].get('BLINDSPOTSIDE')
@@ -215,14 +218,14 @@ class CarState(CarStateBase):
             self.right_blindspot = True
 
         if self.left_blindspot_counter > 0:
-          self.left_blindspot_counter -= 2
+          self.left_blindspot_counter -= 1
         else:
           self.left_blindspot = False
           self.left_blindspot_d1 = 0
           self.left_blindspot_d2 = 0
 
         if self.right_blindspot_counter > 0:
-          self.right_blindspot_counter -= 2
+          self.right_blindspot_counter -= 1
         else:
           self.right_blindspot = False
           self.right_blindspot_d1 = 0
@@ -239,16 +242,16 @@ class CarState(CarStateBase):
 
     # Driving personalities function
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
-      self.distance_btn = 1 if cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
-    elif self.CP.carFingerprint in RADAR_ACC_CAR:
-      self.distance_btn = 1 if cp.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
-    elif self.CP.flags & ToyotaFlags.SMART_DSU:
-      self.distance_btn = 1 if cp.vl["SDSU"]["FD_BUTTON"] == 1 else 0
+      self.distance_btn = 1 if cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
+    elif self.CP.flags & ToyotaFlags.SMART_DSU.value:
+      self.distance_btn = 1 if cp_acc.vl["SDSU"]["FD_BUTTON"] == 1 else 0
+    self.distance_lines = max(cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1, 0)
 
-    ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
+    if self.distance_lines != self.previous_distance_lines:
+      self.params.put_int_nonblocking('LongitudinalPersonality', self.distance_lines)
+      self.previous_distance_lines = self.distance_lines
 
     if self.e2e_link:
-      # lkas_button = self.CP.experimentalModeViaWheel and self.CP.openpilotLongitudinalControl
       self.ispressed = cp.vl["GEAR_PACKET"]["ECON_ON"]
       self.ispressed_init += int(self.ispressed)
       self.e2e_init += int(self.params.get_bool("ExperimentalMode"))
@@ -260,9 +263,6 @@ class CarState(CarStateBase):
       self.ispressed_init = 2
       self.e2e_init = 2
 
-    # ret.drivingProfilesViaWheelCar = True if (self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU)) else False
-    # ret.drivingProfilesViaWheelCar = False
-    #**Disable the onroad widgets since they're not needed, change the above two lines of switching conditions
     ret.steeringWheelCar = True if self.CP.carName == "toyota" else False
 
     return ret
@@ -372,6 +372,7 @@ class CarState(CarStateBase):
         ("BLINDSPOTD1", "DEBUG"),
         ("BLINDSPOTD2", "DEBUG"),
       ]
+      checks.append(("DEBUG", 65))
 
     if CP.carFingerprint in RADAR_ACC_CAR:
       if not CP.flags & ToyotaFlags.SMART_DSU.value:

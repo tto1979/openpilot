@@ -67,7 +67,6 @@ class CarController:
 
     self.last_off_frame = 0
     self.permit_braking = True
-    self.e2e_long = Params().get_bool("ExperimentalMode")
 
     self.last_gear = GearShifter.park
     self.lock_once = False
@@ -113,9 +112,6 @@ class CarController:
     elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
       apply_steer_req = 0
       self.steer_rate_counter = 0
-
-    lead_vehicle_stopped = (hud_control.leadVelocity < 0.5 and hud_control.leadVisible) and not self.e2e_long
-    # lead_vehicle_stopped = hud_control.leadVelocity < 0.5 and hud_control.leadVisible  # Give radar some room for error
 
     # *** steer angle ***
     if self.CP.steerControlType == SteerControlType.angle:
@@ -170,7 +166,7 @@ class CarController:
 
     # resume request
     # on entering standstill, send standstill request
-    if CS.out.standstill and lead_vehicle_stopped and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
+    if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -193,10 +189,11 @@ class CarController:
         can_sends.append(make_can_msg(0x750, LOCK_CMD, 0))
         self.lock_once = True
       self.last_gear = gear
-    # DP: Enable blindspot debug mode once (@arne182)
+
+    # Enable blindspot debug mode once (@arne182)
     # let's keep all the commented out code for easy debug purpose for future.
     if self.toyota_bsm:
-      if self.frame > 2000:
+      #if self.frame > 200:
         #left bsm
         if not self.blindspot_debug_enabled_left:
           if (self.blindspot_always_on or (CS.out.leftBlinker and CS.out.vEgo > 6)): # eagle eye camera will stop working if right bsm is switched on under 6m/s
@@ -204,7 +201,7 @@ class CarController:
             self.blindspot_debug_enabled_left = True
             # print("bsm debug left, on")
         else:
-          if not self.blindspot_always_on and not CS.out.leftBlinker and self.frame - self.blindspot_frame > 500:
+          if not self.blindspot_always_on and not CS.out.leftBlinker and self.frame - self.blindspot_frame > 50:
             can_sends.append(set_blindspot_debug_mode(LEFT_BLINDSPOT, False))
             self.blindspot_debug_enabled_left = False
             # print("bsm debug left, off")
@@ -221,7 +218,7 @@ class CarController:
             self.blindspot_debug_enabled_right = True
             # print("bsm debug right, on")
         else:
-          if not self.blindspot_always_on and not CS.out.rightBlinker and self.frame - self.blindspot_frame > 500:
+          if not self.blindspot_always_on and not CS.out.rightBlinker and self.frame - self.blindspot_frame > 50:
             can_sends.append(set_blindspot_debug_mode(RIGHT_BLINDSPOT, False))
             self.blindspot_debug_enabled_right = False
             # print("bsm debug right, off")
@@ -256,10 +253,10 @@ class CarController:
       if pcm_cancel_cmd and self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
         can_sends.append(create_acc_cancel_command(self.packer))
       elif self.CP.openpilotLongitudinalControl:
-        can_sends.append(create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, CS.distance_btn, self.permit_braking, lead_vehicle_stopped, reverse_acc))
+        can_sends.append(create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, CS.distance_btn, self.permit_braking, reverse_acc))
         self.accel = pcm_accel_cmd
       else:
-        can_sends.append(create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, CS.distance_btn, False, False, reverse_acc))
+        can_sends.append(create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, CS.distance_btn, False, reverse_acc))
 
     if self.frame % 2 == 0 and self.CP.enableGasInterceptor and self.CP.openpilotLongitudinalControl:
       # send exactly zero if gas cmd is zero. Interceptor will send the max between read value and gas cmd.
