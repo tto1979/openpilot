@@ -443,8 +443,6 @@ selfdrive/loggerd/xattr_cache.py
 selfdrive/mapd/__init__.py
 selfdrive/mapd/config.py
 selfdrive/mapd/default_speeds_generator.py
-selfdrive/mapd/gpx_uploader.py
-selfdrive/mapd/gpxd.py
 selfdrive/mapd/mapd.py
 selfdrive/mapd/mapd_helpers.py
 selfdrive/mapd/lib/geo.py

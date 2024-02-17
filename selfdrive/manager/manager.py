@@ -71,8 +71,6 @@ def manager_init() -> None:
     ("DisableUpdates", "1"),
     ("dp_no_gps_ctrl", "0"),
     ("dp_no_fan_ctrl", "1"),
-    ("dp_logging", "0"),
-    ("dp_fileserv", "0"),
     ("dp_otisserv", "0"),
   ]
   if not PC:
@@ -159,26 +157,20 @@ def manager_thread() -> None:
   params = Params()
 
   ignore: List[str] = []
-  dp_jetson = params.get_bool('dp_jetson')
-  ignore += ['dmonitoringmodeld', 'dmonitoringd'] if dp_jetson else []
-  ignore += ['uploader'] if dp_jetson else []
-  ignore += ['logcatd', 'proclogd', 'loggerd', 'logmessaged', 'encoderd', '']
   if params.get("DongleId", encoding='utf8') in (None, UNREGISTERED_DONGLE_ID):
     ignore += ["manage_athenad", "uploader"]
   if os.getenv("NOBOARD") is not None:
     ignore.append("pandad")
-
-  if not params.get_bool("dp_logging"):
-    ignore += ["logcatd", "proclogd", "loggerd"]
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
+  if params.get_bool("dp_jetson"):
+    ignore += ["dmonitoringmodeld", "dmonitoringd", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"]
+
   if not params.get_bool("dp_mapd") or params.get_bool("dp_no_gps_ctrl"):
-    ignore += ["mapd", "gpx_uploader", "gpxd"]
+    ignore += ["mapd"]
+
   if params.get_bool("dp_no_gps_ctrl"):
     ignore.append("ubloxd")
-
-  if not params.get_bool("dp_fileserv"):
-    ignore += ["fileserv"]
 
   if not params.get_bool("dp_otisserv"):
     ignore += ["otisserv"]

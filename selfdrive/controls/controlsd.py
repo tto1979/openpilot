@@ -36,7 +36,7 @@ REPLAY = "REPLAY" in os.environ
 SIMULATION = "SIMULATION" in os.environ
 TESTING_CLOSET = "TESTING_CLOSET" in os.environ
 NOSENSOR = "NOSENSOR" in os.environ
-IGNORE_PROCESSES = {"loggerd", "encoderd", "statsd", "mapd", "gpxd", "gpxd_uploader"}
+IGNORE_PROCESSES = {"loggerd", "encoderd", "statsd", "mapd"}
 
 ThermalStatus = log.DeviceState.ThermalStatus
 State = log.ControlsState.OpenpilotState
@@ -63,7 +63,7 @@ class Controls:
     self.branch = get_short_branch("")
 
     self.params = Params()
-    self.dp_jetson = self.params.get_bool('dp_jetson')
+    self.dp_jetson = self.params.get_bool("dp_jetson")
     # Setup sockets
     self.pm = pm
     if self.pm is None:
@@ -84,6 +84,10 @@ class Controls:
     self.params = Params()
     self.dp_no_gps_ctrl = self.params.get_bool("dp_no_gps_ctrl")
     self.dp_no_fan_ctrl = self.params.get_bool("dp_no_fan_ctrl")
+
+    if self.dp_jetson:
+      IGNORE_PROCESSES.update({"dmonitoringd", "dmonitoringmodeld", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"})
+
     self.sm = sm
     if self.sm is None:
       ignore = ['testJoystick']
@@ -190,6 +194,7 @@ class Controls:
     self.nnff_alert_shown = False
 
     self.reverse_acc_change = False
+    self.live_torque = self.params.get_bool("NNFF")
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -245,12 +250,9 @@ class Controls:
       return
 
     # show alert to indicate whether NNFF is loaded
-    if not self.nnff_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque' and self.CP.twilsoncoNNFF:
-      self.nnff_alert_shown = True
-      if self.LaC.use_nn:
-        self.events.add(EventName.torqueNNFFLoadSuccess)
-      else: 
-        self.events.add(EventName.torqueNNFFNotLoaded)
+    if not self.nn_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque' and self.CP.twilsoncoNNFF:
+      self.nn_alert_shown = True
+      self.events.add(EventName.torqueNNLoad)
 
     # Block resume if cruise never previously enabled
     resume_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)

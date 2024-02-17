@@ -213,8 +213,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"DrivingPersonalitiesUIWheel", PERSISTENT},
     {"dynamic_lane", PERSISTENT},
     {"e2e_link", PERSISTENT},
-    {"GpxDeleteAfterUpload", PERSISTENT},
-    {"GpxDeleteIfUploaded", PERSISTENT},
     {"LastGPSPosition", PERSISTENT},
     {"LateralAllowed", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"NNFF", PERSISTENT},
