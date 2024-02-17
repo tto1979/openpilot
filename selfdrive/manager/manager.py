@@ -31,7 +31,7 @@ def manager_init() -> None:
   set_time(cloudlog)
 
   # save boot log
-  if not Params().get_bool('dp_jetson'):
+  if not Params().get_bool("dp_jetson"):
     subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   params = Params()
@@ -71,7 +71,6 @@ def manager_init() -> None:
     ("DisableUpdates", "1"),
     ("dp_no_gps_ctrl", "0"),
     ("dp_no_fan_ctrl", "1"),
-    ("dp_otisserv", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
@@ -164,16 +163,13 @@ def manager_thread() -> None:
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
   if params.get_bool("dp_jetson"):
-    ignore += ["dmonitoringmodeld", "dmonitoringd", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"]
+    ignore += ["deleter", "dmonitoringmodeld", "dmonitoringd", "encoderd", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"]
 
   if not params.get_bool("dp_mapd") or params.get_bool("dp_no_gps_ctrl"):
     ignore += ["mapd"]
 
   if params.get_bool("dp_no_gps_ctrl"):
     ignore.append("ubloxd")
-
-  if not params.get_bool("dp_otisserv"):
-    ignore += ["otisserv"]
 
   sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
   pm = messaging.PubMaster(['managerState'])

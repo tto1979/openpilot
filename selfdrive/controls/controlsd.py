@@ -36,7 +36,7 @@ REPLAY = "REPLAY" in os.environ
 SIMULATION = "SIMULATION" in os.environ
 TESTING_CLOSET = "TESTING_CLOSET" in os.environ
 NOSENSOR = "NOSENSOR" in os.environ
-IGNORE_PROCESSES = {"loggerd", "encoderd", "statsd", "mapd"}
+IGNORE_PROCESSES = {"bridge", "clocksd", "loggerd", "manage_athenad", "mapd", "micd", "mapsd", "navmodeld", "navd", "pigeond", "proclogd", "rawgpsd", "rtshield", "shutdownd", "statsd", "timezoned", "updated", "webjoystick"}
 
 ThermalStatus = log.DeviceState.ThermalStatus
 State = log.ControlsState.OpenpilotState
@@ -86,7 +86,7 @@ class Controls:
     self.dp_no_fan_ctrl = self.params.get_bool("dp_no_fan_ctrl")
 
     if self.dp_jetson:
-      IGNORE_PROCESSES.update({"dmonitoringd", "dmonitoringmodeld", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"})
+      IGNORE_PROCESSES.update({"deleter", "dmonitoringd", "dmonitoringmodeld", "encoderd", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"})
 
     self.sm = sm
     if self.sm is None:
