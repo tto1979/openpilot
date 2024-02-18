@@ -1,3 +1,7 @@
+#pragma once
+
+#include <tuple>
+
 #include <QMap>
 #include <QSoundEffect>
 #include <QString>
@@ -28,8 +32,8 @@ protected:
   void setAlert(const Alert &alert);
   bool shouldPlaySound(const Alert &alert);
 
+  SubMaster sm;
   Alert current_alert = {};
   QMap<AudibleAlert, QPair<QSoundEffect *, int>> sounds;
-  SubMaster sm;
-  uint64_t started_frame;
+  int current_volume = -1;
 };

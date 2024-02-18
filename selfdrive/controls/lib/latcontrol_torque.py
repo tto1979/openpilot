@@ -3,12 +3,12 @@ import math
 import numpy as np
 
 from cereal import log
-from common.filter_simple import FirstOrderFilter
-from common.numpy_fast import interp
-from selfdrive.controls.lib.drive_helpers import CONTROL_N, apply_deadzone
-from selfdrive.controls.lib.latcontrol import LatControl
-from selfdrive.controls.lib.pid import PIDController
-from selfdrive.controls.lib.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
+from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.numpy_fast import interp
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, apply_deadzone
+from openpilot.selfdrive.controls.lib.latcontrol import LatControl
+from openpilot.selfdrive.controls.lib.pid import PIDController
+from openpilot.selfdrive.controls.lib.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 from selfdrive.modeld.constants import T_IDXS
 
 # At higher speeds (25+mph) we can assume:
@@ -99,7 +99,7 @@ class LatControlTorque(LatControl):
       self.friction_look_ahead_bp = [9.0, 35.0] # corresponding speeds in m/s in [0, ~40] in 1.0 increments
       # Additionally, we use a deadzone to make sure that we only put additional torque
       # when the jerk is large enough to be significant.
-      self.lat_jerk_deadzone = 0.0 # m/s^3 in [0, ¡Û] in 0.05 increments
+      self.lat_jerk_deadzone = 0.0 # m/s^3 in [0, 8] in 0.05 increments
       # Finally, lateral jerk error is downscaled so it doesn't dominate the friction error
       # term.
       self.lat_jerk_friction_factor = 0.4 # in [0, 1] in 0.01 increments

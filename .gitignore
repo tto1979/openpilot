@@ -1,4 +1,5 @@
 venv/
+.venv/
 .env
 .clang-format
 .DS_Store
@@ -55,7 +56,6 @@ selfdrive/modeld/_dmonitoringmodeld
 /src/
 
 one
-openpilot
 notebooks
 xx
 yy
@@ -84,6 +84,7 @@ build/
 !**/.gitkeep
 
 poetry.toml
+Pipfile
 
 # rick - these are generated during compilation.
 selfdrive/camerad/camerad
@@ -94,3 +95,8 @@ selfdrive/hybrid_modeld/models/supercombo.thneed
 selfdrive/hybrid_modeld/models/supercombo_badweights.thneed
 selfdrive/hybrid_modeld/thneed/compile
 selfdrive/loggerd/bootlog
+
+selfdrive/legacy_modeld/_modeld
+selfdrive/legacy_modeld/models/supercombo.thneed
+selfdrive/legacy_modeld/models/supercombo_badweights.thneed
+selfdrive/legacy_modeld/thneed/compile

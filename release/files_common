@@ -16,12 +16,14 @@ docs/INTEGRATION.md
 docs/LIMITATIONS.md
 site_scons/site_tools/cython.py
 
+openpilot/__init__.py
+openpilot/**
+
 common/.gitignore
 common/__init__.py
 common/conversions.py
 common/gpio.py
 common/realtime.py
-common/clock.pyx
 common/timeout.py
 common/ffi_wrapper.py
 common/file_helpers.py
@@ -61,6 +63,7 @@ release/*
 
 tools/__init__.py
 tools/lib/*
+tools/bodyteleop/*
 tools/joystick/*
 tools/replay/*.cc
 tools/replay/*.h
@@ -113,9 +116,9 @@ selfdrive/car/ecu_addrs.py
 selfdrive/car/isotp_parallel_query.py
 selfdrive/car/tests/__init__.py
 selfdrive/car/tests/test_car_interfaces.py
-selfdrive/car/torque_data/params.yaml
-selfdrive/car/torque_data/substitute.yaml
-selfdrive/car/torque_data/override.yaml
+selfdrive/car/torque_data/params.toml
+selfdrive/car/torque_data/substitute.toml
+selfdrive/car/torque_data/override.toml
 selfdrive/car/top_tmp/*
 
 selfdrive/car/body/*.py
@@ -146,9 +149,6 @@ selfdrive/debug/uiview.py
 selfdrive/debug/hyundai_enable_radar_points.py
 selfdrive/debug/vw_mqb_config.py
 
-selfdrive/gpxd/gpx_uploader.py
-selfdrive/gpxd/gpxd.py
-
 common/SConscript
 common/version.h
 
@@ -164,6 +164,8 @@ common/clutil.cc
 common/clutil.h
 common/params.h
 common/params.cc
+common/ratekeeper.cc
+common/ratekeeper.h
 common/watchdog.cc
 common/watchdog.h
 
@@ -175,25 +177,6 @@ common/gpio.cc
 common/gpio.h
 common/i2c.cc
 common/i2c.h
-
-selfdrive/camerad/SConscript
-selfdrive/camerad/main.cc
-selfdrive/camerad/snapshot/*
-selfdrive/camerad/cameras/camera_common.cc
-selfdrive/camerad/cameras/camera_common.h
-selfdrive/camerad/cameras/camera_qcom.cc
-selfdrive/camerad/cameras/camera_qcom.h
-selfdrive/camerad/cameras/camera_util.cc
-selfdrive/camerad/cameras/camera_util.h
-selfdrive/camerad/cameras/debayer.cl
-selfdrive/camerad/cameras/sensor_i2c.h
-selfdrive/camerad/imgproc/conv.cl
-selfdrive/camerad/imgproc/pool.cl
-selfdrive/camerad/imgproc/utils.cc
-selfdrive/camerad/imgproc/utils.h
-selfdrive/camerad/transforms/rgb_to_yuv.cc
-selfdrive/camerad/transforms/rgb_to_yuv.cl
-selfdrive/camerad/transforms/rgb_to_yuv.h
 
 selfdrive/controls/__init__.py
 selfdrive/controls/controlsd.py
@@ -211,12 +194,13 @@ selfdrive/controls/lib/lane_planner.py
 selfdrive/controls/lib/latcontrol_angle.py
 selfdrive/controls/lib/latcontrol_torque.py
 selfdrive/controls/lib/latcontrol_pid.py
+selfdrive/controls/lib/latcontrol_indi.py
+selfdrive/controls/lib/latcontrol_lqr.py
 selfdrive/controls/lib/latcontrol.py
 selfdrive/controls/lib/lateral_planner.py
 selfdrive/controls/lib/longcontrol.py
 selfdrive/controls/lib/longitudinal_planner.py
 selfdrive/controls/lib/pid.py
-selfdrive/controls/lib/radar_helpers.py
 selfdrive/controls/lib/vehicle_model.py
 
 selfdrive/controls/lib/lateral_mpc_lib/.gitignore
@@ -232,17 +216,6 @@ system/hardware/__init__.py
 system/hardware/base.h
 system/hardware/base.py
 system/hardware/hw.h
-system/hardware/eon/__init__.py
-system/hardware/eon/androidd.py
-system/hardware/eon/hardware.h
-system/hardware/eon/hardware.py
-system/hardware/eon/neos.json
-system/hardware/eon/neos.py
-system/hardware/eon/oneplus.json
-system/hardware/eon/shutdownd.py
-system/hardware/eon/test_neos_updater.py
-system/hardware/eon/update_neos.sh
-
 system/hardware/tici/__init__.py
 system/hardware/tici/hardware.h
 system/hardware/tici/hardware.py
@@ -282,6 +255,7 @@ selfdrive/locationd/models/gnss_helpers.py
 
 selfdrive/locationd/torqued.py
 selfdrive/locationd/calibrationd.py
+selfdrive/locationd/helpers.py
 
 system/logcatd/.gitignore
 system/logcatd/SConscript
@@ -364,7 +338,7 @@ selfdrive/ui/qt/setup/*.h
 
 selfdrive/ui/installer/*.cc
 selfdrive/ui/installer/*.h
-selfdrive/ui/installer/*.sh
+selfdrive/ui/installer/*.cc
 
 system/camerad/SConscript
 system/camerad/main.cc
@@ -378,80 +352,6 @@ system/camerad/imgproc/conv.cl
 system/camerad/imgproc/pool.cl
 system/camerad/imgproc/utils.cc
 system/camerad/imgproc/utils.h
-
-selfdrive/hybrid_modeld/__init__.py
-selfdrive/hybrid_modeld/SConscript
-selfdrive/hybrid_modeld/constants.py
-selfdrive/hybrid_modeld/dmonitoringmodeld
-selfdrive/hybrid_modeld/dmonitoringmodeld.cc
-selfdrive/hybrid_modeld/modeld
-selfdrive/hybrid_modeld/modeld.cc
-
-
-selfdrive/modeld/models/commonmodel.cc
-selfdrive/modeld/models/commonmodel.h
-
-selfdrive/modeld/models/driving.cc
-selfdrive/modeld/models/driving.h
-selfdrive/modeld/models/supercombo.onnx
-
-selfdrive/modeld/models/dmonitoring.cc
-selfdrive/modeld/models/dmonitoring.h
-selfdrive/modeld/models/dmonitoring_model_q.dlc
-
-selfdrive/modeld/models/nav.h
-
-selfdrive/modeld/transforms/loadyuv.cc
-selfdrive/modeld/transforms/loadyuv.h
-selfdrive/modeld/transforms/loadyuv.cl
-selfdrive/modeld/transforms/transform.cc
-selfdrive/modeld/transforms/transform.h
-selfdrive/modeld/transforms/transform.cl
-
-selfdrive/modeld/thneed/*.py
-selfdrive/modeld/thneed/thneed.h
-selfdrive/modeld/thneed/thneed_common.cc
-selfdrive/modeld/thneed/thneed_qcom2.cc
-selfdrive/modeld/thneed/serialize.cc
-
-selfdrive/modeld/runners/snpemodel.cc
-selfdrive/modeld/runners/snpemodel.h
-selfdrive/modeld/runners/thneedmodel.cc
-selfdrive/modeld/runners/thneedmodel.h
-selfdrive/modeld/runners/runmodel.h
-selfdrive/modeld/runners/run.h
-
-
-selfdrive/loggerd/SConscript
-selfdrive/loggerd/__init__.py
-selfdrive/loggerd/bootlog.cc
-selfdrive/loggerd/config.py
-selfdrive/loggerd/deleter.py
-selfdrive/loggerd/encoder.h
-selfdrive/loggerd/logger.cc
-selfdrive/loggerd/logger.h
-selfdrive/loggerd/loggerd.cc
-selfdrive/loggerd/loggerd.h
-selfdrive/loggerd/main.cc
-selfdrive/loggerd/omx_encoder.cc
-selfdrive/loggerd/omx_encoder.h
-selfdrive/loggerd/raw_logger.cc
-selfdrive/loggerd/raw_logger.h
-selfdrive/loggerd/uploader.py
-selfdrive/loggerd/xattr_cache.py
-
-selfdrive/mapd/__init__.py
-selfdrive/mapd/config.py
-selfdrive/mapd/default_speeds_generator.py
-selfdrive/mapd/mapd.py
-selfdrive/mapd/mapd_helpers.py
-selfdrive/mapd/lib/geo.py
-selfdrive/mapd/lib/NodesData.py
-selfdrive/mapd/lib/osm.py
-selfdrive/mapd/lib/Route.py
-selfdrive/mapd/lib/WayCollection.py
-selfdrive/mapd/lib/WayRelation.py
-selfdrive/mapd/lib/WayRelationIndex.py
 
 selfdrive/manager/__init__.py
 selfdrive/manager/build.py
@@ -519,7 +419,7 @@ selfdrive/assets/assets.qrc
 selfdrive/assets/*.png
 selfdrive/assets/*.svg
 selfdrive/assets/body/*
-selfdrive/assets/fonts/*
+selfdrive/assets/fonts/*.ttf
 selfdrive/assets/icons/*
 selfdrive/assets/images/*
 selfdrive/assets/offroad/*
@@ -529,8 +429,6 @@ selfdrive/assets/navigation/*
 
 third_party/.gitignore
 third_party/SConscript
-
-third_party/cluster/*
 
 third_party/linux/**
 third_party/opencl/**
@@ -545,15 +443,11 @@ third_party/kaitai/*.h
 third_party/kaitai/*.cpp
 
 third_party/libyuv/include/**
-third_party/libyuv/lib/**
-third_party/libyuv/larch64/**
 
 third_party/snpe/include/**
 third_party/snpe/dsp**
 
 third_party/acados/.gitignore
-third_party/acados/x86_64/**
-third_party/acados/larch64/**
 third_party/acados/include/**
 third_party/acados/acados_template/**
 
@@ -683,6 +577,7 @@ opendbc/nissan_x_trail_2017_generated.dbc
 opendbc/nissan_leaf_2018_generated.dbc
 
 opendbc/subaru_global_2017_generated.dbc
+opendbc/subaru_global_2020_hybrid_generated.dbc
 opendbc/subaru_outback_2015_generated.dbc
 opendbc/subaru_outback_2019_generated.dbc
 opendbc/subaru_forester_2017_generated.dbc

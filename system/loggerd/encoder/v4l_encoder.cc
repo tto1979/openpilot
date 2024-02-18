@@ -1,4 +1,5 @@
 #include <cassert>
+#include <string>
 #include <sys/ioctl.h>
 #include <poll.h>
 
@@ -251,8 +252,6 @@ V4LEncoder::V4LEncoder(const EncoderInfo &encoder_info, int in_width, int in_hei
   for (unsigned int i = 0; i < BUF_IN_COUNT; i++) {
     free_buf_in.push(i);
   }
-
-  publisher_init();
 }
 
 void V4LEncoder::encoder_open(const char* path) {

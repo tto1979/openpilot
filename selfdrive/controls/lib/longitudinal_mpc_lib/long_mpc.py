@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 import os
+import time
 import numpy as np
-from common.params import put_nonblocking
 from cereal import log
-from common.conversions import Conversions as CV
-from common.realtime import sec_since_boot
-from common.numpy_fast import clip, interp
-from selfdrive.car.toyota.values import ToyotaFlags
-from system.swaglog import cloudlog
+from openpilot.common.conversions import Conversions as CV
+from openpilot.common.numpy_fast import clip
+from openpilot.selfdrive.car.toyota.values import ToyotaFlags
+from openpilot.system.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
-from selfdrive.hybrid_modeld.constants import index_function
-from selfdrive.controls.lib.radar_helpers import _LEAD_ACCEL_TAU
-from selfdrive.controls.distance_based_curvature import dbc
+from openpilot.selfdrive.hybrid_modeld.constants import index_function
+from openpilot.selfdrive.car.interfaces import ACCEL_MIN
+from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
+from openpilot.selfdrive.controls.distance_based_curvature import dbc
 
 if __name__ == '__main__':  # generating code
-  from third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+  from openpilot.third_party.acados.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
 else:
-  from selfdrive.controls.lib.longitudinal_mpc_lib.c_generated_code.acados_ocp_solver_pyx import AcadosOcpSolverCython  # pylint: disable=no-name-in-module, import-error
+  from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.c_generated_code.acados_ocp_solver_pyx import AcadosOcpSolverCython
 
 from casadi import SX, vertcat
 
@@ -56,9 +56,6 @@ T_IDXS_LST = [index_function(idx, max_val=MAX_T, max_idx=N) for idx in range(N+1
 T_IDXS = np.array(T_IDXS_LST)
 FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
-MIN_ACCEL = -3.5
-MAX_ACCEL = 2.0
-T_FOLLOW = 1.45
 COMFORT_BRAKE = 2.3
 # STOP_DISTANCE = 6.0
 
@@ -353,7 +350,7 @@ class LongitudinalMpc:
     self.x0[1] = v
     self.x0[2] = a
     if abs(v_prev - v) > 2.:  # probably only helps if v < v_prev
-      for i in range(0, N+1):
+      for i in range(N+1):
         self.solver.set(i, 'x', self.x0)
 
   @staticmethod
@@ -380,7 +377,7 @@ class LongitudinalMpc:
 
     # MPC will not converge if immediate crash is expected
     # Clip lead distance to what is still possible to brake for
-    min_x_lead = ((v_ego + v_lead)/2) * (v_ego - v_lead) / (-MIN_ACCEL * 2)
+    min_x_lead = ((v_ego + v_lead)/2) * (v_ego - v_lead) / (-ACCEL_MIN * 2)
     x_lead = clip(x_lead, min_x_lead, 1e8)
     v_lead = clip(v_lead, 0.0, 1e8)
     a_lead = clip(a_lead, -10., 5.)
@@ -420,7 +417,7 @@ class LongitudinalMpc:
     lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1], v_ego)
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1], v_ego)
 
-    self.params[:,0] = MIN_ACCEL
+    self.params[:,0] = ACCEL_MIN
     self.params[:,1] = self.max_a
 
     # Update in ACC mode or ACC/e2e blend
@@ -473,7 +470,7 @@ class LongitudinalMpc:
 
     self.run()
     if (np.any(lead_xv_0[FCW_IDXS,0] - self.x_sol[FCW_IDXS,0] < CRASH_DISTANCE) and
-            radarstate.leadOne.modelProb > 0.9):
+      radarstate.leadOne.modelProb > 0.9):
       self.crash_cnt += 1
     else:
       self.crash_cnt = 0
@@ -488,7 +485,7 @@ class LongitudinalMpc:
         self.source = 'lead1'
 
   def run(self):
-    # t0 = sec_since_boot()
+    # t0 = time.monotonic()
     # reset = 0
     for i in range(N+1):
       self.solver.set(i, 'p', self.params[i])
@@ -502,7 +499,8 @@ class LongitudinalMpc:
     self.time_integrator = float(self.solver.get_stats('time_sim')[0])
 
     # qp_iter = self.solver.get_stats('statistics')[-1][-1] # SQP_RTI specific
-    # print(f"long_mpc timings: tot {self.solve_time:.2e}, qp {self.time_qp_solution:.2e}, lin {self.time_linearization:.2e}, integrator {self.time_integrator:.2e}, qp_iter {qp_iter}")
+    # print(f"long_mpc timings: tot {self.solve_time:.2e}, qp {self.time_qp_solution:.2e}, lin {self.time_linearization:.2e}, \
+    # integrator {self.time_integrator:.2e}, qp_iter {qp_iter}")
     # res = self.solver.get_residuals()
     # print(f"long_mpc residuals: {res[0]:.2e}, {res[1]:.2e}, {res[2]:.2e}, {res[3]:.2e}")
     # self.solver.print_statistics()
@@ -519,14 +517,15 @@ class LongitudinalMpc:
 
     self.prev_a = np.interp(T_IDXS + 0.05, T_IDXS, self.a_solution)
 
-    t = sec_since_boot()
+    t = time.monotonic()
     if self.solution_status != 0:
       if t > self.last_cloudlog_t + 5.0:
         self.last_cloudlog_t = t
         cloudlog.warning(f"Long mpc reset, solution_status: {self.solution_status}")
       self.reset()
       # reset = 1
-    # print(f"long_mpc timings: total internal {self.solve_time:.2e}, external: {(sec_since_boot() - t0):.2e} qp {self.time_qp_solution:.2e}, lin {self.time_linearization:.2e} qp_iter {qp_iter}, reset {reset}")
+    # print(f"long_mpc timings: total internal {self.solve_time:.2e}, external: {(time.monotonic() - t0):.2e} qp {self.time_qp_solution:.2e}, \
+    # lin {self.time_linearization:.2e} qp_iter {qp_iter}, reset {reset}")
 
 
 if __name__ == "__main__":

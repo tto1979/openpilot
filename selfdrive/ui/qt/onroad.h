@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QPushButton>
 #include <QStackedLayout>
 #include <QWidget>
@@ -21,7 +23,7 @@ class OnroadAlerts : public QWidget {
   Q_OBJECT
 
 public:
-  OnroadAlerts(QWidget *parent = 0) : QWidget(parent) {};
+  OnroadAlerts(QWidget *parent = 0) : QWidget(parent) {}
   void updateAlert(const Alert &a);
 
 protected:
@@ -50,6 +52,19 @@ private:
   bool engageable;
 };
 
+
+class MapSettingsButton : public QPushButton {
+  Q_OBJECT
+
+public:
+  explicit MapSettingsButton(QWidget *parent = 0);
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+
+  QPixmap settings_img;
+};
+
 // container window for the NVG UI
 class AnnotatedCameraWidget : public CameraWidget {
   Q_OBJECT
@@ -63,7 +78,7 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool is_metric MEMBER is_metric);
 
   Q_PROPERTY(bool dmActive MEMBER dmActive);
-  Q_PROPERTY(bool hideDM MEMBER hideDM);
+  Q_PROPERTY(bool hideBottomIcons MEMBER hideBottomIcons);
   Q_PROPERTY(bool rightHandDM MEMBER rightHandDM);
   Q_PROPERTY(int status MEMBER status);
 
@@ -83,13 +98,15 @@ public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
 
+  MapSettingsButton *map_settings_btn;
+
 private:
-  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void drawDrivingPersonalities(QPainter &p);
   void drawTimSignals(QPainter &p);
   void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
 
+  QVBoxLayout *main_layout;
   ExperimentalButton *experimental_btn;
   QPixmap dm_img;
   QPixmap map_img;
@@ -101,7 +118,7 @@ private:
   bool is_cruise_set = false;
   bool is_metric = false;
   bool dmActive = false;
-  bool hideDM = false;
+  bool hideBottomIcons = false;
   bool rightHandDM = false;
   float dm_fade_state = 1.0;
   bool has_us_speed_limit = false;

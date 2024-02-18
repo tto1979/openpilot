@@ -1,7 +1,10 @@
 #include "selfdrive/ui/qt/onroad.h"
 
 #include <chrono>
+#include <algorithm>
 #include <cmath>
+#include <map>
+#include <memory>
 
 #include <QDebug>
 #include <QElapsedTimer>
@@ -16,6 +19,17 @@
 #endif
 
 #define FONT_OPEN_SANS "Inter" //"Open Sans"
+static void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, const QBrush &bg, float opacity) {
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setOpacity(1.0);  // bg dictates opacity of ellipse
+  p.setPen(Qt::NoPen);
+  p.setBrush(bg);
+  p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  p.setOpacity(opacity);
+  p.drawPixmap(center - QPoint(img.width() / 2, img.height() / 2), img);
+  p.setOpacity(1.0);
+}
+
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setMargin(UI_BORDER_SIZE);
@@ -56,6 +70,10 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
 }
 
 void OnroadWindow::updateState(const UIState &s) {
+  if (!s.scene.started) {
+    return;
+  }
+
   QColor bgColor = bg_colors[s.status];
   // dpatl {{
   if(s.status == STATUS_DISENGAGED && Params().getBool("LateralAllowed")){
@@ -136,6 +154,8 @@ void OnroadWindow::offroadTransition(bool offroad) {
       map = m;
 
       QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
+      QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
+      nvg->map_settings_btn->setEnabled(true);
 
       m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
       split->insertWidget(0, m);
@@ -232,7 +252,9 @@ ExperimentalButton::ExperimentalButton(QWidget *parent) : experimental_mode(fals
 }
 
 void ExperimentalButton::changeMode() {
-  if (params.getBool("ExperimentalModeConfirmed")) {
+  const auto cp = (*uiState()->sm)["carParams"].getCarParams();
+  bool can_change = hasLongitudinalControl(cp) && params.getBool("ExperimentalModeConfirmed");
+  if (can_change) {
     params.putBool("ExperimentalMode", !experimental_mode);
   }
 }
@@ -249,10 +271,9 @@ void ExperimentalButton::updateState(const UIState &s) {
 
 void ExperimentalButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
-  p.setRenderHint(QPainter::Antialiasing);
-
-  QPoint center(btn_size / 2, btn_size / 2);
   QPixmap img = experimental_mode ? experimental_img : engage_img;
+  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(0, 0, 0, 166), (isDown() || !engageable) ? 0.6 : 1.0);
+}
 
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
@@ -260,6 +281,20 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   p.drawEllipse(center, btn_size / 2, btn_size / 2);
   p.setOpacity((isDown() || !engageable) ? 0.6 : 1.0);
   p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, img);
+
+// MapSettingsButton
+MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
+  setFixedSize(btn_size, btn_size);
+  settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size, img_size});
+
+  // hidden by default, made visible if map is created (has prime or mapbox token)
+  setVisible(false);
+  setEnabled(false);
+}
+
+void MapSettingsButton::paintEvent(QPaintEvent *event) {
+  QPainter p(this);
+  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), settings_img, QColor(0, 0, 0, 166), isDown() ? 0.6 : 1.0);
 }
 
 
@@ -267,7 +302,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
 
-  QVBoxLayout *main_layout  = new QVBoxLayout(this);
+  main_layout = new QVBoxLayout(this);
   main_layout->setMargin(UI_BORDER_SIZE);
   main_layout->setSpacing(0);
 
@@ -275,6 +310,10 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
   main_layout->setContentsMargins(0, 60, 0, 0);
   map_img = loadPixmap("../assets/img_world_icon.png", {subsign_img_size, subsign_img_size});
+
+  map_settings_btn = new MapSettingsButton(this);
+  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
+
   #ifdef QCOM
   dm_img = loadPixmap("../assets/img_driver_face_qcom.png", {img_size + 5, img_size + 5});
   #else
@@ -291,9 +330,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   // Turn signal images
   const QStringList imagePaths = {
     "../assets/images/tim_turn_signal_1.png",
-    "../assets/images/tim_turn_signal_2.png",
-    "../assets/images/tim_turn_signal_3.png",
-    "../assets/images/tim_turn_signal_4.png"
+    "../assets/images/tim_turn_signal_2.png"
   };
   signalImgVector.reserve(2 * imagePaths.size() + 1);
   for (int i = 0; i < 2; ++i) {
@@ -310,7 +347,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
     animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
     update();
   });
-  animationTimer->start(totalFrames * 11); // 11 * totalFrames (88) milliseconds per frame
+  animationTimer->start(totalFrames * 100);
 }
 
 static float vc_speed;
@@ -322,6 +359,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
 
   const auto cs = sm["controlsState"].getControlsState();
+  const auto car_state = sm["carState"].getCarState();
+  const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise =  cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
@@ -333,18 +372,18 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // Handle older routes where vEgoCluster is not set
   float v_ego;
-  if (sm["carState"].getCarState().getVEgoCluster() == 0.0 && !v_ego_cluster_seen) {
-    v_ego = sm["carState"].getCarState().getVEgo();
+  if (car_state.getVEgoCluster() == 0.0 && !v_ego_cluster_seen) {
+    v_ego = car_state.getVEgo();
   } else {
-    v_ego = sm["carState"].getCarState().getVEgoCluster();
+    v_ego = car_state.getVEgoCluster();
     v_ego_cluster_seen = true;
   }
   float cur_speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
   vc_speed = v_ego;
   cur_speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  auto speed_limit_sign = sm["navInstruction"].getNavInstruction().getSpeedLimitSign();
-  float speed_limit = nav_alive ? sm["navInstruction"].getNavInstruction().getSpeedLimit() : 0.0;
+  auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
+  float speed_limit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
   speed_limit *= (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
 
   setProperty("speedLimit", speed_limit);
@@ -356,7 +395,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("speed", cur_speed);
   setProperty("setSpeed", set_speed);
   setProperty("speedUnit", s.scene.is_metric ? tr("km/h") : tr("mph"));
-  setProperty("hideDM", (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE));
+  setProperty("hideBottomIcons", (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE));
   setProperty("status", s.status);
 
   // update engageability/experimental mode button
@@ -369,6 +408,12 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("rightHandDM", dm_state.getIsRHD());
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
+
+  // hide map settings button for alerts and flip for right hand DM
+  if (map_settings_btn->isEnabled()) {
+    map_settings_btn->setVisible(!hideBottomIcons);
+    main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
+  }
   #else
   // update DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
@@ -496,17 +541,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   // dm icon
-  if (!hideDM) {
+  if (!hideBottomIcons) {
     int offset = UI_BORDER_SIZE + btn_size / 2;
     int x = rightHandDM ? width() - offset : offset;
     int y = height() - offset;
-    drawIcon(p, x, y, dm_img, blackColor(70), dmActive ? 1.0 : 0.2);
+    drawIcon(p, QPoint(x, y), dm_img, blackColor(70), dmActive ? 1.0 : 0.2);
   }
 
   p.restore();
 
-  // Driving personalities button - Hide the button when the turn signal animation is on
-  if (drivingPersonalitiesUIWheel && (!timSignals || (timSignals && !turnSignalLeft && !turnSignalRight))) {
+  // Driving personalities button
+  if (drivingPersonalitiesUIWheel && !hideBottomIcons) {
     drawDrivingPersonalities(p);
   }
 
@@ -602,10 +647,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   }
 
   // paint path
-  const bool show_e2e_path = (sm["controlsState"].getControlsState().getExperimentalMode() &&
-                              scene.longitudinal_control);
   QLinearGradient bg(0, height(), 0, 0);
-  if (show_e2e_path) {
+  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
     // The first half of track_vertices are the points for the right side of the path
     // and the indices match the positions of accel from uiPlan
     const auto &acceleration = sm["uiPlan"].getUiPlan().getAccel();
@@ -655,7 +698,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   int x = rightHandDM ? width() - offset : offset;
   int y = height() - offset;
   float opacity = dmActive ? 0.65 : 0.2;
-  drawIcon(painter, x, y, dm_img, blackColor(70), opacity);
+  drawIcon(painter, QPoint(x, y), dm_img, blackColor(70), opacity);
 
   // face
   QPointF face_kpts_draw[std::size(default_face_kpts_3d)];
@@ -842,7 +885,7 @@ void AnnotatedCameraWidget::paintGL() {
   }
 
   // DMoji
-  if (!hideDM && (sm.rcv_frame("driverStateV2") > s->scene.started_frame) && !muteDM && (!timSignals || (timSignals && !turnSignalLeft && !turnSignalRight))) {
+  if (!hideBottomIcons && (sm.rcv_frame("driverStateV2") > s->scene.started_frame) && !muteDM) {
     update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
     drawDriverState(painter, s);
   }
@@ -980,14 +1023,14 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
 void AnnotatedCameraWidget::drawTimSignals(QPainter &p) {
   // Declare the turn signal size
-  constexpr int signalHeight = 480;
-  constexpr int signalWidth = 360;
+  constexpr int signalHeight = 142;
+  constexpr int signalWidth = 142;
 
   // Calculate the vertical position for the turn signals
-  const int baseYPosition = (height() - signalHeight) / 2 + 300;
+  const int baseYPosition = (blindSpotLeft || blindSpotRight ? (height() - signalHeight) / 2 : 350);
   // Calculate the x-coordinates for the turn signals
-  int leftSignalXPosition = 75 + width() - signalWidth - 300 * (blindSpotLeft ? 0 : animationFrameIndex);
-  int rightSignalXPosition = -75 + 300 * (blindSpotRight ? 0 : animationFrameIndex);
+  int leftSignalXPosition = width() / 2 - 50 - 360 * (blindSpotLeft ? 2 : 0);
+  int rightSignalXPosition = width() / 2 - 50 + 360 * (blindSpotRight ? 2 : 0);
 
   // Enable Antialiasing
   p.setRenderHint(QPainter::Antialiasing);

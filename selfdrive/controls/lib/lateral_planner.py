@@ -1,27 +1,35 @@
+import time
 import numpy as np
-from common.conversions import Conversions as CV
-from common.realtime import sec_since_boot, DT_MDL
-from common.numpy_fast import interp
-from common.params import Params
-from system.swaglog import cloudlog
-from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
-from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
-from selfdrive.controls.lib.lane_planner import LanePlanner, TRAJECTORY_SIZE
-from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
-from selfdrive.controls.lib.desire_helper import DesireHelper
+from openpilot.common.conversions import Conversions as CV
+from openpilot.common.realtime import sec_since_boot, DT_MDL
+from openpilot.common.numpy_fast import interp
+from openpilot.common.params import Params
+from openpilot.system.swaglog import cloudlog
+from openpilot.selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
+from openpilot.selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
+from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner, TRAJECTORY_SIZE
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
+from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
+from openpilot.selfdrive.hardware import EON
+
+TRAJECTORY_SIZE = 33
+if EON:
+  CAMERA_OFFSET = -0.06
+else:
+  CAMERA_OFFSET = 0.04
 
 
 PATH_COST = 1.0
 LATERAL_MOTION_COST = 0.11
-LATERAL_ACCEL_COST = 0.5
+LATERAL_ACCEL_COST = 0.0
 LATERAL_JERK_COST = 0.04
 # Extreme steering rate is unpleasant, even
 # when it does not cause bad jerk.
 # TODO this cost should be lowered when low
 # speed lateral control is stable on all cars
-STEERING_RATE_COST = 5.0
+STEERING_RATE_COST = 700.0
 
 
 class LateralPlanner:
@@ -41,12 +49,12 @@ class LateralPlanner:
     self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
     self.plan_yaw_rate = np.zeros((TRAJECTORY_SIZE,))
     self.t_idxs = np.arange(TRAJECTORY_SIZE)
-    self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.y_pts = np.zeros((TRAJECTORY_SIZE,))
     self.v_plan = np.zeros((TRAJECTORY_SIZE,))
     self.v_ego = 0.0
     self.l_lane_change_prob = 0.0
     self.r_lane_change_prob = 0.0
+    self.d_path_w_lines_xyz = np.zeros((TRAJECTORY_SIZE, 3))
 
     self.debug_mode = debug
 
@@ -60,7 +68,9 @@ class LateralPlanner:
     self.standstill_elapsed = 0.0
     self.standstill = False
 
-  def reset_mpc(self, x0=np.zeros(4)):
+  def reset_mpc(self, x0=None):
+    if x0 is None:
+      x0 = np.zeros(4)
     self.x0 = x0
     self.lat_mpc.reset(x0=self.x0)
 
@@ -130,7 +140,7 @@ class LateralPlanner:
 
     #  Check for infeasible MPC solution
     mpc_nans = np.isnan(self.lat_mpc.x_sol[:, 3]).any()
-    t = sec_since_boot()
+    t = time.monotonic()
     if mpc_nans or self.lat_mpc.solution_status != 0:
       self.reset_mpc()
       self.x0[3] = measured_curvature * self.v_ego
@@ -170,7 +180,7 @@ class LateralPlanner:
     lateralPlan.psis = self.lat_mpc.x_sol[0:CONTROL_N, 2].tolist()
 
     lateralPlan.curvatures = (self.lat_mpc.x_sol[0:CONTROL_N, 3]/self.v_ego).tolist()
-    lateralPlan.curvatureRates = [float(x/self.v_ego) for x in self.lat_mpc.u_sol[0:CONTROL_N - 1]] + [0.0]
+    lateralPlan.curvatureRates = [float(x.item() / self.v_ego) for x in self.lat_mpc.u_sol[0:CONTROL_N - 1]] + [0.0]
     lateralPlan.lProb = float(self.LP.lll_prob)
     lateralPlan.rProb = float(self.LP.rll_prob)
     lateralPlan.dProb = float(self.LP.d_prob)

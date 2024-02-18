@@ -22,37 +22,49 @@ I recommend using the openpilot [commatwo_master](https://github.com/commaai/ope
 
 I have decided to make this side project open source for users who wish to:
 
-* Port unsupported vehicles
-* Evaluate end-to-end lateral and longitudinal control on previously unsupported vehicles
-* Understand the limitations of legacy devices
+* Port unsupported vehicles using cheaper devices.
+* Evaluate end-to-end lateral and longitudinal control on previously unsupported vehicles.
+* Understand the limitations of legacy devices.
 * Experience pure openpilot (without the modifications of dragonpilot)
 * Make their own EON/C2 fork without spending hundreds of hours reverting and testing code.
 
 By making this project open source, I hope to alleviate some of the frustration and complaints about not being able to access the dragonpilot source code.
 
-I encourage users to consider purchasing a [comma 3](https://shop.comma.ai) for the best and up-to-date openpilot experience.
+I encourage users to consider purchasing a [comma 3x](https://shop.comma.ai) for the best and up-to-date openpilot experience.
 
 
 ## Limitations
 
-* CAN-FD and BODY features are not supported due to outdated libraries in EON/C2 firmware.
+* On-road tests are conducted exclusively in a 2021 Toyota C-HR; other models may not perform properly.
+* ~~CAN-FD and BODY features are not supported due to outdated libraries in EON/C2 firmware.~~
 * The driving AI model remains in version 0.8.16, as porting TinyGrad/PyOpenCL requires significant effort.
 * The driver monitoring AI model remains in version 0.8.13.
 * Navigation On Openpilot (NOO) is not supported, as it requires a newer driving model that is not currently available in legacypilot.
 * Services are not optimized for resource usage, and using all services may result in overheating issues.
 * Language files can only be generated in a PC due to missing Qt5 tools.
+* webjoystick is disabled as it requires additional python modules. (aiohttp and others)
+* Starting from August 7th, 2023, comma has removed ESP/GPS support from Panda. You can find more details about this change in this [link](https://github.com/commaai/panda/commit/c66b98b2a67441faa4cfcd36c3c9d9f90474cd08).
+  * Going forward, I will focus solely on maintaining the safety aspects of the code, ensuring that vehicle support and safety declarations remain up to date.
+* For safety concern, End-to-End / vision only longitudinal control only available in 0.8.16 driving model.
+
 
 ## Configuration
 
-* Considering performance issues, I have turned off all logging-related services. If anyone needs to use them, they can use `dp_logging` parameter to enable them.
+* For research purposes, the INDI and LQR lateral controllers have been restored. Please use the `dp_lat_controller` parameter to override the default controller (0 = DEFAULT, 1 = INDI, 2 = LQR).
 * If you are not a Comma Two device, you can use the `dp_no_fan_ctrl` parameter to disable fan-related detection and control.
+* The BODY has been tested and is working; however, I personally haven't tried it, so I'm not sure what steps are needed to get it to work.
+
+
+## Red Panda (a.k.a. CAN-FD support)
+The EON + Red Panda configuration has been tested and worked on [my Toyota](https://youtu.be/KgrI2Ley_Nk) (CAN), so technically it should work on CAN-FD vehicles. However, there are a couple of considerations:
+* C2 will not function without hardware modification. You cannot connect the Red Panda directly to the C2 USB port.
+* If any changes are made to the Red Panda firmware, the firmware needs to be pre-compiled on a PC and then uploaded to `/data/openpilot/panda/board/obj/`.
+* Please be aware that you may encounter **CANBUS disconnection errors**. If this occurs, simply **power cycle BOTH your device and Red Panda**.
+
+
 =======================
 
-
-
-
-
-![](https://i.imgur.com/b0ZyIx5.jpg)
+![openpilot on the comma 3X](https://github.com/commaai/openpilot/assets/4038174/f1081737-8718-4241-a22a-3ceba526361a)
 
 Table of Contents
 =======================
@@ -93,9 +105,9 @@ Running on a dedicated device in a car
 ------
 
 To use openpilot in a car, you need four things
-* A supported device to run this software: a [comma three](https://comma.ai/shop/products/three).
-* This software. The setup procedure of the comma three allows the user to enter a URL for custom software.
-  The URL, openpilot.comma.ai will install the release version of openpilot. To install openpilot master, you can use installer.comma.ai/commaai/master, and replacing commaai with another GitHub username can install a fork.
+* A supported device to run this software: a [comma 3X](https://comma.ai/shop/comma-3x) or comma three.
+* This software. The setup procedure of the comma 3/3X allows the user to enter a URL for custom software.
+The URL, openpilot.comma.ai will install the release version of openpilot. To install openpilot master, you can use installer.comma.ai/commaai/master, and replacing commaai with another GitHub username can install a fork.
 * One of [the 250+ supported cars](docs/CARS.md). We support Honda, Toyota, Hyundai, Nissan, Kia, Chrysler, Lexus, Acura, Audi, VW, Ford and more. If your car is not supported but has adaptive cruise control and lane-keeping assist, it's likely able to run openpilot.
 * A [car harness](https://comma.ai/shop/products/car-harness) to connect to your car.
 

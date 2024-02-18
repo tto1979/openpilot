@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
 import math
 import numpy as np
-from common.numpy_fast import clip, interp
-from common.params import Params
+from openpilot.common.numpy_fast import clip, interp
+from openpilot.common.params import Params
 from cereal import log
 
 import cereal.messaging as messaging
-from common.conversions import Conversions as CV
-from common.filter_simple import FirstOrderFilter
-# from common.params import Params
-from common.realtime import DT_MDL
-from selfdrive.hybrid_modeld.constants import T_IDXS
-from selfdrive.car.toyota.values import TSS2_CAR
-from selfdrive.controls.lib.longcontrol import LongCtrlState
-from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, MIN_ACCEL, MAX_ACCEL
-from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
-from system.swaglog import cloudlog
-
-from selfdrive.controls.vtsc import vtsc
+from openpilot.common.conversions import Conversions as CV
+from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.realtime import DT_MDL
+from openpilot.selfdrive.hybrid_modeld.constants import ModelConstants
+from openpilot.selfdrive.car.interfaces import ACCEL_MIN, ACCEL_MAX
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR
+from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
+from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+from openpilot.system.swaglog import cloudlog
+from openpilot.selfdrive.controls.vtsc import vtsc
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
@@ -29,8 +28,8 @@ A_CRUISE_MIN_VALS_DF = [-0.01,  -0.0002,  -0.0002,  -0.18,  -0.18,  -0.28,  -0.4
 A_CRUISE_MIN_BP_DF =   [0.,    0.01,      0.05,     0.12,    0.30,   5.,     16.,   28.,  42.]
 A_CRUISE_MAX_VALS_DF =     [1.4, 2.4, 2.4, 2.2, 1.53, 1.23, .88, .65, .44, .29, .09]  # Sets the limits of the planner accel, PID may exceed
 A_CRUISE_MAX_BP_DF =       [0.,  0.1,  3.,  6.,  8.,    11.,   15.,   20.,  25.,  30.,  55.]
-A_CRUISE_MAX_VALS_TOYOTA = [2.2, 1.8, 1.4, 0.97, 0.89, 0.81, 0.63, 0.4,  0.31, 0.11]  # Sets the limits of the planner accel, PID may exceed
-A_CRUISE_MAX_BP_TOYOTA =   [0.,  3.,  6.,  8.,   11.,  15.,  20.,  25.,  30.,  55.]
+A_CRUISE_MAX_VALS_TOYOTA =   [1.8, 1.49, 1.38, 1.08, 0.92, 0.78, 0.62, 0.44, 0.28, 0.08]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_BP_TOYOTA =     [0.,  3,    6.,   8.,   11.,  15.,  20.,  25.,  30.,  55.]
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
@@ -68,13 +67,14 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
 
 
 class LongitudinalPlanner:
-  def __init__(self, CP, init_v=0.0, init_a=0.0):
+  def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
     self.mpc = LongitudinalMpc(CP)
     self.fcw = False
+    self.dt = dt
 
     self.a_desired = init_a
-    self.v_desired_filter = FirstOrderFilter(init_v, 2.0, DT_MDL)
+    self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
     self.v_model_error = 0.0
 
     self.v_desired_trajectory = np.zeros(CONTROL_N)
@@ -99,9 +99,9 @@ class LongitudinalPlanner:
     if (len(model_msg.position.x) == 33 and
        len(model_msg.velocity.x) == 33 and
        len(model_msg.acceleration.x) == 33):
-      x = np.interp(T_IDXS_MPC, T_IDXS, model_msg.position.x) - model_error * T_IDXS_MPC
-      v = np.interp(T_IDXS_MPC, T_IDXS, model_msg.velocity.x) - model_error
-      a = np.interp(T_IDXS_MPC, T_IDXS, model_msg.acceleration.x)
+      x = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.position.x) - model_error * T_IDXS_MPC
+      v = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.velocity.x) - model_error
+      a = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.acceleration.x)
       j = np.zeros(len(T_IDXS_MPC))
     else:
       x = np.zeros(len(T_IDXS_MPC))
@@ -117,8 +117,7 @@ class LongitudinalPlanner:
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
-    v_cruise_kph = sm['controlsState'].vCruise
-    v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
+    v_cruise_kph = min(sm['controlsState'].vCruise, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
@@ -139,8 +138,8 @@ class LongitudinalPlanner:
         accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     else:
-      accel_limits = [MIN_ACCEL, MAX_ACCEL]
-      accel_limits_turns = [MIN_ACCEL, MAX_ACCEL]
+      accel_limits = [ACCEL_MIN, ACCEL_MAX]
+      accel_limits_turns = [ACCEL_MIN, ACCEL_MAX]
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -174,11 +173,11 @@ class LongitudinalPlanner:
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality, dynamic_follow=self.dynamic_follow)
 
-    self.v_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
-    self.a_desired_trajectory_full = np.interp(T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
+    self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
+    self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
     self.v_desired_trajectory = self.v_desired_trajectory_full[:CONTROL_N]
     self.a_desired_trajectory = self.a_desired_trajectory_full[:CONTROL_N]
-    self.j_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
+    self.j_desired_trajectory = np.interp(ModelConstants.T_IDXS[:CONTROL_N], T_IDXS_MPC[:-1], self.mpc.j_solution)
 
     # TODO counter is only needed because radar is glitchy, remove once radar is gone
     self.fcw = self.mpc.crash_cnt > 2 and not sm['carState'].standstill
@@ -187,8 +186,8 @@ class LongitudinalPlanner:
 
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
-    self.a_desired = float(interp(DT_MDL, T_IDXS[:CONTROL_N], self.a_desired_trajectory))
-    self.v_desired_filter.x = self.v_desired_filter.x + DT_MDL * (self.a_desired + a_prev) / 2.0
+    self.a_desired = float(interp(self.dt, ModelConstants.T_IDXS[:CONTROL_N], self.a_desired_trajectory))
+    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <QFrame>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -25,7 +27,7 @@ class NavigationRequest : public QObject {
 
 public:
   static NavigationRequest *instance();
-  QJsonArray currentLocations() const { return locations; };
+  QJsonArray currentLocations() const { return locations; }
 
 signals:
   void locationsUpdated(const QJsonArray &locations);
@@ -50,7 +52,6 @@ public:
   void updateCurrentRoute();
 
 private:
-  void mousePressEvent(QMouseEvent *ev) override;
   void showEvent(QShowEvent *event) override;
   void refresh();
 
@@ -59,7 +60,9 @@ private:
   QJsonObject current_destination;
   QVBoxLayout *destinations_layout;
   DestinationWidget *current_widget;
-  QPixmap close_icon;
+  DestinationWidget *home_widget;
+  DestinationWidget *work_widget;
+  std::vector<DestinationWidget *> widgets;
 
 signals:
   void closeSettings();
@@ -74,6 +77,7 @@ public:
 
 signals:
   void actionClicked();
+  void navigateTo(const QJsonObject &destination);
 
 private:
   struct NavIcons {
@@ -94,4 +98,5 @@ private:
 private:
   QLabel *icon, *title, *subtitle;
   QPushButton *action;
+  QJsonObject dest;
 };

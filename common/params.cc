@@ -98,6 +98,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CarParams", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"CarParamsCache", CLEAR_ON_MANAGER_START},
     {"CarParamsPersistent", PERSISTENT},
+    {"CarParamsPrevRoute", PERSISTENT},
     {"CarVin", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"CompletedTrainingVersion", PERSISTENT},
     {"ControlsReady", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
@@ -107,6 +108,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"DisablePowerDown", PERSISTENT},
     {"DisableUpdates", PERSISTENT},
     {"DisengageOnAccelerator", PERSISTENT},
+    {"DmModelInitialized", CLEAR_ON_ONROAD_TRANSITION},
     {"DongleId", PERSISTENT},
     {"DoReboot", CLEAR_ON_MANAGER_START},
     {"DoShutdown", CLEAR_ON_MANAGER_START},
@@ -177,6 +179,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"Offroad_UpdateFailed", CLEAR_ON_MANAGER_START},
     {"OpenpilotEnabledToggle", PERSISTENT},
     {"PandaHeartbeatLost", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
+    {"PandaLogState", PERSISTENT},
     {"PandaSignatures", CLEAR_ON_MANAGER_START},
     {"Passive", PERSISTENT},
     {"PrimeType", PERSISTENT},
@@ -203,6 +206,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"UpdaterTargetBranch", CLEAR_ON_MANAGER_START},
     {"Version", PERSISTENT},
     {"VisionRadarToggle", PERSISTENT},
+    {"WheeledBody", PERSISTENT},
 
     // TOP
     {"Marc_Dynamic_Follow", PERSISTENT},
@@ -229,12 +233,12 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"toyota_bsm", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
     {"QuietDrive", PERSISTENT},
+    {"dp_mapd", PERSISTENT},
+    {"dp_0813", PERSISTENT},
     {"dp_no_gps_ctrl", PERSISTENT},
     {"dp_no_fan_ctrl", PERSISTENT},
-    {"dp_mapd", PERSISTENT},
     {"dp_logging", PERSISTENT},
-    {"dp_fileserv", PERSISTENT},
-    {"dp_otisserv", PERSISTENT},
+    {"dp_lat_controller", PERSISTENT},
 };
 
 } // namespace

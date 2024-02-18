@@ -9,6 +9,7 @@ import SCons.Errors
 
 SCons.Warnings.warningAsException(True)
 
+EON = os.path.isfile('/EON')
 TICI = os.path.isfile('/TICI')
 AGNOS = TICI
 
@@ -61,21 +62,29 @@ AddOption('--pc-thneed',
 AddOption('--no-test',
           action='store_false',
           dest='test',
-          default=(not os.path.isfile("/EON") and os.path.islink(Dir('#laika/').abspath)),
+          default=(not EON and os.path.islink(Dir('#laika/').abspath)),
           help='skip building test files')
 
+## Architecture name breakdown (arch)
+## - larch64: linux tici aarch64
+## - aarch64: linux pc aarch64
+## - x86_64:  linux pc x64
+## - Darwin:  mac x64 or arm64
+## - earch64: eon aarch64
 real_arch = arch = subprocess.check_output(["uname", "-m"], encoding='utf8').rstrip()
-if platform.system() == "Darwin":
+if arch == "aarch64" and EON:
+  arch = "earch64"
+elif platform.system() == "Darwin":
   arch = "Darwin"
   brew_prefix = subprocess.check_output(['brew', '--prefix'], encoding='utf8').strip()
-
-if arch == "aarch64" and AGNOS:
+elif arch == "aarch64" and AGNOS:
   arch = "larch64"
+assert arch in ["larch64", "aarch64", "x86_64", "Darwin", "earch64"]
 
 lenv = {
   "PATH": os.environ['PATH'],
   "LD_LIBRARY_PATH": [Dir(f"#third_party/acados/{arch}/lib").abspath],
-  "PYTHONPATH": Dir("#").abspath,
+  "PYTHONPATH": Dir("#").abspath + ':' + Dir(f"#third_party/acados").abspath,
 
   "ACADOS_SOURCE_DIR": Dir("#third_party/acados").abspath,
   "ACADOS_PYTHON_INTERFACE_PATH": Dir("#third_party/acados/acados_template").abspath,
@@ -107,7 +116,7 @@ if arch == "larch64":
   cxxflags = ["-DQCOM2", "-mcpu=cortex-a57"]
   rpath += ["/usr/local/lib"]
 
-elif arch == "aarch64":
+elif arch == "earch64":
   lenv["LD_LIBRARY_PATH"] += ['/data/data/com.termux/files/usr/lib']
 
   # android
@@ -127,8 +136,8 @@ elif arch == "aarch64":
 
   rpath = []
   libpath += [
-    "#third_party/snpe/aarch64",
-    "#third_party/libyuv/lib",
+    f"#third_party/snpe/{arch}",
+    f"#third_party/libyuv/{arch}/lib",
     "/system/vendor/lib64"
   ]
   cflags = ["-DQCOM", "-D_USING_LIBCXX", "-mcpu=cortex-a57"]
@@ -145,9 +154,8 @@ else:
 
   # MacOS
   if arch == "Darwin":
-    yuv_dir = "mac" if real_arch != "arm64" else "mac_arm64"
     libpath = [
-      f"#third_party/libyuv/{yuv_dir}/lib",
+      f"#third_party/libyuv/{arch}/lib",
       f"#third_party/acados/{arch}/lib",
       f"{brew_prefix}/lib",
       f"{brew_prefix}/opt/openssl@3.0/lib",
@@ -161,21 +169,25 @@ else:
       f"{brew_prefix}/opt/openssl@3.0/include",
     ]
     lenv["DYLD_LIBRARY_PATH"] = lenv["LD_LIBRARY_PATH"]
-  # Linux 86_64
+  # Linux
   else:
     libpath = [
-      "#third_party/acados/x86_64/lib",
-      "#third_party/snpe/x86_64-linux-clang",
-      "#third_party/libyuv/x64/lib",
-      "#third_party/mapbox-gl-native-qt/x86_64",
+      f"#third_party/acados/{arch}/lib",
+      f"#third_party/libyuv/{arch}/lib",
+      f"#third_party/mapbox-gl-native-qt/{arch}",
       "#cereal",
       "#common",
       "/usr/lib",
       "/usr/local/lib",
     ]
-    rpath += [
-      Dir("#third_party/snpe/x86_64-linux-clang").abspath,
-    ]
+
+    if arch == "x86_64":
+      libpath += [
+        f"#third_party/snpe/{arch}"
+      ]
+      rpath += [
+        Dir(f"#third_party/snpe/{arch}").abspath,
+      ]
 
 if GetOption('asan'):
   ccflags = ["-fsanitize=address", "-fno-omit-frame-pointer"]
@@ -223,7 +235,6 @@ env = Environment(
     "#third_party/libyuv/include",
     "#third_party/openmax/include",
     "#third_party/json11",
-    "#third_party/curl/include",
     "#third_party/libgralloc/include",
     "#third_party/android_frameworks_native/include",
     "#third_party/android_hardware_libhardware/include",
@@ -284,7 +295,7 @@ SHARED = False
 
 # TODO: this can probably be removed
 def abspath(x):
-  if arch == 'aarch64':
+  if arch == 'earch64':
     pth = os.path.join("/data/pythonpath", x[0].path)
     env.Depends(pth, x)
     return File(pth)
@@ -301,7 +312,7 @@ envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-shadow", "-Wno-deprecated-decla
 envCython["LIBS"] = []
 if arch == "Darwin":
   envCython["LINKFLAGS"] = ["-bundle", "-undefined", "dynamic_lookup"] + darwin_rpath_link_flags
-elif arch == "aarch64":
+elif arch == "earch64":
   envCython["LINKFLAGS"] = ["-shared"]
   envCython["LIBS"] = [os.path.basename(py_include)]
 else:
@@ -312,7 +323,7 @@ Export('envCython')
 # Qt build environment
 qt_env = env.Clone()
 qt_modules = ["Widgets", "Gui", "Core", "Network", "Concurrent", "Multimedia", "Quick", "Qml", "QuickWidgets", "Location", "Positioning"]
-if arch != "aarch64":
+if arch != "earch64":
   qt_modules += ["DBus", "Xml"]
 
 qt_libs = []
@@ -325,7 +336,7 @@ if arch == "Darwin":
   qt_env["LINKFLAGS"] += ["-F" + os.path.join(qt_env['QTDIR'], "lib")]
   qt_env["FRAMEWORKS"] += [f"Qt{m}" for m in qt_modules] + ["OpenGL"]
   qt_env.AppendENVPath('PATH', os.path.join(qt_env['QTDIR'], "bin"))
-elif arch == "aarch64":
+elif arch == "earch64":
   qt_env['QTDIR'] = "/usr"
   qt_dirs = [
     f"/usr/include/qt",
@@ -349,8 +360,6 @@ else:
   if arch == "larch64":
     qt_libs += ["GLESv2", "wayland-client"]
     qt_env.PrependENVPath('PATH', Dir("#third_party/qt5/larch64/bin/").abspath)
-  elif arch == "aarch64":
-    qt_libs = ['gui', 'adreno_utils']
   elif arch != "Darwin":
     qt_libs += ["GL"]
 qt_env['QT3DIR'] = qt_env['QTDIR']
@@ -376,7 +385,6 @@ qt_flags = [
 qt_env['CXXFLAGS'] += qt_flags
 qt_env['LIBPATH'] += ['#selfdrive/ui']
 qt_env['LIBS'] = qt_libs
-qt_env['QT_MOCHPREFIX'] = cache_dir + '/moc_files/moc_'
 
 if GetOption("clazy"):
   checks = [
@@ -393,7 +401,7 @@ Export('env', 'qt_env', 'arch', 'real_arch', 'SHARED')
 
 SConscript(['common/SConscript'])
 
-if arch == "aarch64":
+if arch == "earch64":
   Import('_common', '_gpucommon', '_gpu_libs')
 else:
   Import('_common', '_gpucommon')
@@ -403,7 +411,7 @@ if SHARED:
 else:
   common = [_common, 'json11']
   gpucommon = [_gpucommon]
-  if arch == "aarch64":
+  if arch == "earch64":
     gpucommon += _gpu_libs
 
 Export('common', 'gpucommon')
@@ -436,7 +444,7 @@ rednose_config = {
   },
 }
 
-if arch not in ["aarch64", "larch64"]:
+if arch not in ["earch64", "larch64"]:
   rednose_config['to_build'].update({
     'loc_4': ('#selfdrive/locationd/models/loc_kf.py', True, [], rednose_deps),
     'lane': ('#selfdrive/locationd/models/lane_kf.py', True, [], rednose_deps),
@@ -467,7 +475,7 @@ if arch != "Darwin":
 # Build openpilot
 
 # build submodules
-if arch != "aarch64":
+if arch != "earch64":
   SConscript(['body/board/SConscript'])
 
 SConscript([
@@ -484,14 +492,16 @@ SConscript(['common/transformations/SConscript'])
 
 SConscript(['selfdrive/boardd/SConscript'])
 SConscript(['selfdrive/controls/lib/lateral_mpc_lib/SConscript'])
+SConscript(['selfdrive/controls/lib/legacy_lateral_mpc_lib/SConscript'])
 SConscript(['selfdrive/controls/lib/longitudinal_mpc_lib/SConscript'])
+SConscript(['selfdrive/controls/lib/legacy_longitudinal_mpc_lib/SConscript'])
 SConscript(['selfdrive/locationd/SConscript'])
 # SConscript(['selfdrive/navd/SConscript'])
 SConscript(['selfdrive/hybrid_modeld/SConscript'])
+SConscript(['selfdrive/legacy_modeld/SConscript'])
 SConscript(['selfdrive/ui/SConscript'])
 
-
-if (arch in ['x86_64', 'Darwin'] and Dir('#tools/cabana/').exists()) or GetOption('extras'):
+if (arch in ['x86_64', 'aarch64', 'Darwin'] and Dir('#tools/cabana/').exists()) or GetOption('extras'):
   SConscript(['tools/replay/SConscript'])
   SConscript(['tools/cabana/SConscript'])
 

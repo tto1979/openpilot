@@ -1,18 +1,13 @@
 import os
 from pathlib import Path
-from system.hardware import PC
-from common.params import Params
+from openpilot.system.hardware import PC
 
 if os.environ.get('LOG_ROOT', False):
   ROOT = os.environ['LOG_ROOT']
 elif PC:
   ROOT = str(Path.home() / ".comma" / "media" / "0" / "realdata")
 else:
-  params = Params()
-  if params.get_bool('dp_jetson'):
-    ROOT = '/data/media/0/fakedata/'
-  else:
-    ROOT = '/data/media/0/realdata/'
+  ROOT = '/data/media/0/realdata/'
 
 
 CAMERA_FPS = 20

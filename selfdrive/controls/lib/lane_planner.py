@@ -10,21 +10,22 @@ Note 1: This may not work in newer version.
 
 import numpy as np
 from cereal import log
-from common.filter_simple import FirstOrderFilter
-from common.numpy_fast import interp
-from common.realtime import DT_MDL
-from system.swaglog import cloudlog
-from system.hardware import EON
+from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.numpy_fast import interp
+from openpilot.common.realtime import DT_MDL
+from openpilot.system.swaglog import cloudlog
+from openpilot.selfdrive.hardware import EON
 
 
 TRAJECTORY_SIZE = 33
 # camera offset is meters from center car to camera
 # model path is in the frame of the camera
-PATH_OFFSET = 0.00
 if EON:
   CAMERA_OFFSET = -0.06
+  PATH_OFFSET = 0.0
 else:
   CAMERA_OFFSET = 0.04
+  PATH_OFFSET = 0.04
 
 
 class LanePlanner:

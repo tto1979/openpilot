@@ -22,7 +22,7 @@ ExitHandler do_exit;
 mat3 update_calibration(Eigen::Vector3d device_from_calib_euler, bool wide_camera, bool bigmodel_frame) {
   /*
      import numpy as np
-     from common.transformations.model import medmodel_frame_from_calib_frame
+     from openpilot.common.transformations.model import medmodel_frame_from_calib_frame
      medmodel_frame_from_calib_frame = medmodel_frame_from_calib_frame[:, :3]
      calib_from_smedmodel_frame = np.linalg.inv(medmodel_frame_from_calib_frame)
   */
@@ -208,11 +208,11 @@ int main(int argc, char **argv) {
   // vipc_client.connected is false only when do_exit is true
   if (!do_exit) {
     const VisionBuf *b = &vipc_client_main.buffers[0];
-    LOGW("connected main cam with buffer size: %d (%d x %d)", b->len, b->width, b->height);
+    LOGW("connected main cam with buffer size: %zu (%zu x %zu)", b->len, b->width, b->height);
 
     if (use_extra_client) {
       const VisionBuf *wb = &vipc_client_extra.buffers[0];
-      LOGW("connected extra cam with buffer size: %d (%d x %d)", wb->len, wb->width, wb->height);
+      LOGW("connected extra cam with buffer size: %zu (%zu x %zu)", wb->len, wb->width, wb->height);
     }
 
     run_model(model, vipc_client_main, vipc_client_extra, main_wide_camera, use_extra_client);

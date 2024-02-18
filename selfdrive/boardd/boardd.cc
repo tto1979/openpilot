@@ -18,11 +18,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <future>
+#include <memory>
 #include <thread>
 
 #include "cereal/gen/cpp/car.capnp.h"
 #include "cereal/messaging/messaging.h"
 #include "common/params.h"
+#include "common/ratekeeper.h"
 #include "common/swaglog.h"
 #include "common/timing.h"
 #include "common/util.h"
@@ -168,7 +170,7 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
     }
     util::sleep_for(100);
   }
-  LOGW("got %d bytes CarParams", params.size());
+  LOGW("got %lu bytes CarParams", params.size());
 
   AlignedBuffer aligned_buf;
   capnp::FlatArrayMessageReader cmsg(aligned_buf.align(params.data(), params.size()));
@@ -217,7 +219,7 @@ Panda *connect(std::string serial="", uint32_t index=0) {
   static std::once_flag connected_once;
   std::call_once(connected_once, &Panda::set_usb_power_mode, panda, cereal::PeripheralState::UsbPowerMode::CDP);
   #endif
-  if (!panda->up_to_date()) {
+  if (!panda->up_to_date() && !getenv("BOARDD_SKIP_FW_CHECK")) {
     throw std::runtime_error("Panda firmware out of date. Run pandad.py to update.");
   }
 
@@ -255,7 +257,7 @@ void can_send_thread(std::vector<Panda *> pandas, bool fake_send) {
         LOGT("sendcan sent to panda: %s", (panda->hw_serial()).c_str());
       }
     } else {
-      LOGE("sendcan too old to send: %llu, %llu", nanos_since_boot(), event.getLogMonoTime());
+      LOGE("sendcan too old to send: %" PRIu64 ", %" PRIu64, nanos_since_boot(), event.getLogMonoTime());
     }
   }
 }
@@ -266,8 +268,7 @@ void can_recv_thread(std::vector<Panda *> pandas) {
   PubMaster pm({"can"});
 
   // run at 100Hz
-  const uint64_t dt = 10000000ULL;
-  uint64_t next_frame_time = nanos_since_boot() + dt;
+  RateKeeper rk("boardd_can_recv", 100);
   std::vector<can_frame> raw_can_data;
 
   while (!do_exit && check_all_connected(pandas)) {
@@ -289,18 +290,7 @@ void can_recv_thread(std::vector<Panda *> pandas) {
     }
     pm.send("can", msg);
 
-    uint64_t cur_time = nanos_since_boot();
-    int64_t remaining = next_frame_time - cur_time;
-    if (remaining > 0) {
-      std::this_thread::sleep_for(std::chrono::nanoseconds(remaining));
-    } else {
-      if (ignition) {
-        LOGW("missed cycles (%d) %lld", (int)-1*remaining/dt, remaining);
-      }
-      next_frame_time = cur_time;
-    }
-
-    next_frame_time += dt;
+    rk.keepTime();
   }
 }
 
@@ -320,6 +310,10 @@ std::optional<bool> send_panda_states(PubMaster *pm, const std::vector<Panda *> 
   std::vector<std::array<can_health_t, PANDA_CAN_CNT>> pandaCanStates;
   pandaCanStates.reserve(pandas_cnt);
   #endif
+
+  const bool red_panda_comma_three = (pandas.size() == 2) &&
+                                     (pandas[0]->hw_type == cereal::PandaState::PandaType::DOS) &&
+                                     (pandas[1]->hw_type == cereal::PandaState::PandaType::RED_PANDA);
 
   for (const auto& panda : pandas){
     auto health_opt = panda->get_state();
@@ -343,6 +337,13 @@ std::optional<bool> send_panda_states(PubMaster *pm, const std::vector<Panda *> 
 
     if (spoofing_started) {
       health.ignition_line_pkt = 1;
+    }
+
+    // on comma three setups with a red panda, the dos can
+    // get false positive ignitions due to the harness box
+    // without a harness connector, so ignore it
+    if (red_panda_comma_three && (panda->hw_type == cereal::PandaState::PandaType::DOS)) {
+      health.ignition_line_pkt = 0;
     }
 
     ignition_local |= ((health.ignition_line_pkt != 0) || (health.ignition_can_pkt != 0));
@@ -387,7 +388,8 @@ std::optional<bool> send_panda_states(PubMaster *pm, const std::vector<Panda *> 
     ps.setIgnitionLine(health.ignition_line_pkt);
     ps.setIgnitionCan(health.ignition_can_pkt);
     ps.setControlsAllowed(health.controls_allowed_pkt);
-    ps.setGasInterceptorDetected(health.gas_interceptor_detected_pkt);
+    // rick - deprecated in panda
+//    ps.setGasInterceptorDetected(health.gas_interceptor_detected_pkt);
     ps.setTxBufferOverflow(health.tx_buffer_overflow_pkt);
     ps.setRxBufferOverflow(health.rx_buffer_overflow_pkt);
     ps.setGmlanSendErrs(health.gmlan_send_errs_pkt);
@@ -519,14 +521,16 @@ void panda_state_thread(std::vector<Panda *> pandas, bool spoofing_started) {
   LOGD("start panda state thread");
 
   // run at 2hz
-  while (!do_exit && check_all_connected(pandas)) {
-    uint64_t start_time = nanos_since_boot();
+  RateKeeper rk("panda_state_thread", 2);
 
+  while (!do_exit && check_all_connected(pandas)) {
     // send out peripheralState
     send_peripheral_state(&pm, peripheral_panda);
     auto ignition_opt = send_panda_states(&pm, pandas, spoofing_started);
 
     if (!ignition_opt) {
+      LOGE("Failed to get ignition_opt");
+      rk.keepTime();
       continue;
     }
 
@@ -579,17 +583,18 @@ void panda_state_thread(std::vector<Panda *> pandas, bool spoofing_started) {
       panda->send_heartbeat(engaged);
     }
 
-    uint64_t dt = nanos_since_boot() - start_time;
-    util::sleep_for(500 - dt / 1000000ULL);
+    rk.keepTime();
   }
 }
 
 
 void peripheral_control_thread(Panda *panda, bool no_fan_control) {
   util::set_thread_name("boardd_peripheral_control");
-  // rick - a device with black panda = EON / LEON / clone 1.5
+  // rick - a device with black/red panda = EON / LEON / clone 1.5
   if (!Params().getBool("dp_no_fan_ctrl")) {
-    no_fan_control = panda->hw_type == cereal::PandaState::PandaType::BLACK_PANDA;
+    no_fan_control = panda->hw_type == cereal::PandaState::PandaType::BLACK_PANDA ||
+        panda->hw_type == cereal::PandaState::PandaType::RED_PANDA ||
+        panda->hw_type == cereal::PandaState::PandaType::RED_PANDA_V2;
     Params().putBool("dp_no_fan_ctrl", no_fan_control);
   }
 
