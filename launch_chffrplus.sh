@@ -125,14 +125,6 @@ function two_init {
   LIB_PATH="/data/openpilot/system/hardware/eon/libs"
   PY_LIB_DEST="/system/comma/usr/lib/python3.8/site-packages"
   mount -o remount,rw /system
-  # mapd
-  MODULE="opspline"
-
-  MODULE="overpy"
-  if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
-    echo "Installing $MODULE..."
-    tar -zxvf "$LIB_PATH/$MODULE.tar.gz" -C "$PY_LIB_DEST/"
-
   # tomli
   MODULE="tomli"
   if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
@@ -143,6 +135,17 @@ function two_init {
   if [ ! -f "/system/comma/usr/lib/libgfortran.so.5.0.0" ]; then
     echo "Installing libgfortran..."
     tar -zxvf "$LIB_PATH/libgfortran.tar.gz" -C /system/comma/usr/lib/
+  fi
+  # mapd
+  MODULE="opspline"
+  if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
+    echo "Installing $MODULE..."
+    tar -zxvf "$LIB_PATH/$MODULE.tar.gz" -C "$PY_LIB_DEST/"
+  fi
+  MODULE="overpy"
+  if [ ! -d "$PY_LIB_DEST/$MODULE" ]; then
+    echo "Installing $MODULE..."
+    tar -zxvf "$LIB_PATH/$MODULE.tar.gz" -C "$PY_LIB_DEST/"
   fi
   # laika
   MODULE="hatanaka"
