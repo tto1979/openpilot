@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include <QPushButton>
 #include <QStackedLayout>
 #include <QWidget>
+#include <utility>
+#include <vector>
 
 #include "common/util.h"
 #include "selfdrive/ui/ui.h"
@@ -15,6 +19,7 @@
 const int btn_size = 192;
 const int img_size = (btn_size / 4) * 3;
 
+static int personalityProfile;
 
 // ***** onroad widgets *****
 class OnroadAlerts : public QWidget {
@@ -84,7 +89,6 @@ public:
   void updateState(const UIState &s);
 
 private:
-  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void drawDrivingPersonalities(QPainter &p);
   void drawTimSignals(QPainter &p);
