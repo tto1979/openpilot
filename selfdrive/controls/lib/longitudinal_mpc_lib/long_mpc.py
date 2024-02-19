@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import numpy as np
-from common.params import put_nonblocking
 from cereal import log
 from common.conversions import Conversions as CV
 from common.realtime import sec_since_boot
