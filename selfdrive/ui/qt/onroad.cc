@@ -93,28 +93,29 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   const auto &scene = uiState()->scene;
   // const SubMaster &sm = *uiState()->sm;
   static auto params = Params();
-  const bool isDrivingPersonalitiesViaUI = scene.driving_personalities_ui_wheel;
+  // const bool isDrivingPersonalitiesViaUI = scene.driving_personalities_ui_wheel;
   const bool isExperimentalModeViaUI = scene.experimental_mode_via_wheel && !scene.steering_wheel_car;
   static bool propagateEvent = false;
   static bool recentlyTapped = false;
-  // const int x_offset = scene.mute_dm ? 50 : 250;
+  const bool isToyotaCar = scene.steering_wheel_car;
+  const int y_offset = scene.mute_dm ? 70 : 300;
   // bool rightHandDM = sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD();
 
   // Driving personalities button
   int x = rect().right() - (btn_size - 24) / 2 - (UI_BORDER_SIZE * 2);
   const int y = rect().bottom() - 140;
   // Give the button a 25% offset so it doesn't need to be clicked on perfectly
-  bool isDrivingPersonalitiesClicked = (e->pos() - QPoint(x, y)).manhattanLength() <= btn_size * 1.25 && isDrivingPersonalitiesViaUI;
+  bool isDrivingPersonalitiesClicked = (e->pos() - QPoint(x, y)).manhattanLength() <= btn_size * 2 && !isToyotaCar;
 
   // Check if the button was clicked
   if (isDrivingPersonalitiesClicked) {
-    params.putInt("LongitudinalPersonality", (scene.personality_profile + 2) % 3);
+    personalityProfile = (params.getInt("LongitudinalPersonality") + 2) % 3;
+    params.putInt("LongitudinalPersonality", personalityProfile);
     propagateEvent = false;
   // If the click wasn't on the button for drivingPersonalities, change the value of "ExperimentalMode"
   } else if (recentlyTapped && isExperimentalModeViaUI) {
     bool experimentalMode = params.getBool("ExperimentalMode");
     params.putBool("ExperimentalMode", !experimentalMode);
-    params.putBool("TogglesUpdated", "True");
     recentlyTapped = false;
     propagateEvent = true;
   } else {
@@ -122,6 +123,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
     propagateEvent = true;
   }
 
+  const bool clickedOnWidget = isDrivingPersonalitiesClicked;
   // propagation event to parent(HomeWindow)
   if (propagateEvent) {
     QWidget::mousePressEvent(e);
@@ -935,7 +937,8 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   const int y = rect().bottom() - 110;
 
   // Enable Antialiasing
-  p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setRenderHint(QPainter::TextAntialiasing);
 
   // Select the appropriate profile image/text
   int index = qBound(0, personalityProfile, 2);
@@ -973,7 +976,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
   // Draw the profile image with the calculated opacity
   if (imageOpacity > 0.0) {
-    drawIcon(p, x, y, profile_image, blackColor(0), imageOpacity);
+    drawIcon(p, QPoint(x, y), profile_image, blackColor(0), imageOpacity);
   }
 }
 
