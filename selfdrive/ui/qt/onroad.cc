@@ -974,7 +974,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
   // Draw the profile image with the calculated opacity
   if (imageOpacity > 0.0) {
-    drawIcon(p, QPoint(x, y), profile_image, blackColor(0), imageOpacity);
+    drawIcon(p, x, y, profile_image, blackColor(0), imageOpacity);
   }
 }
 
