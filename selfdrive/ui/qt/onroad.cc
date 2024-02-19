@@ -841,7 +841,7 @@ void AnnotatedCameraWidget::paintGL() {
   }
 
   // DMoji
-  if (!hideDM && (sm.rcv_frame("driverStateV2") > s->scene.started_frame) && !muteDM && (!timSignals || (timSignals && !turnSignalLeft && !turnSignalRight))) {
+  if (!hideDM && (sm.rcv_frame("driverStateV2") > s->scene.started_frame) && !muteDM) {
     update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
     drawDriverState(painter, s);
   }
@@ -935,8 +935,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   const int y = rect().bottom() - 110;
 
   // Enable Antialiasing
-  p.setRenderHint(QPainter::Antialiasing);
-  p.setRenderHint(QPainter::TextAntialiasing);
+  p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
   // Select the appropriate profile image/text
   int index = qBound(0, personalityProfile, 2);
