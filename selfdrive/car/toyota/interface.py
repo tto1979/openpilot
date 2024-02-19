@@ -268,36 +268,39 @@ class CarInterface(CarInterfaceBase):
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if (stop_and_go or ret.enableGasInterceptor) else MIN_ACC_SPEED
 
+    # on stock Toyota this is -2.5
+    ret.stopAccel = -2.5
+
     tune = ret.longitudinalTuning
-    tune.deadzoneBP = [0., 9.]
-    tune.deadzoneV = [.0, .15]
-    tune.kpBP = [0., 5., 20.]
-    tune.kpV = [1.3, 1.0, 0.7]
-    tune.kiBP = [0., 3., 4., 5., 12., 20., 24., 40.]
-    tune.kiV = [.16, .205, .22, .22, .20, .168, .103, .006]
+    tune.deadzoneBP = [0., 16., 20., 30.]
+    tune.deadzoneV = [.04, .05, .08, .15]
+    ret.stoppingDecelRate = 0.3  # This is okay for TSS-P
     if candidate in TSS2_CAR:
-      ret.vEgoStarting = 0.1 # needs to be > or == vEgoStopping
-      ret.stoppingDecelRate = 0.05  # reach stopping target smoothly - seems to take 0.5 seconds to go from 0 to -0.4
+      ret.vEgoStopping = 0.25
+      ret.vEgoStarting = 0.25
+      ret.stoppingDecelRate = 0.1  # reach stopping target smoothly
+    tune.kpBP = [0., 5.]
+    tune.kpV = [0.8, 1.]
+    tune.kiBP = [0., 5.]
+    tune.kiV = [0.3, 1.]
 
     return ret
 
   # returns a car.CarState
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
-    self.dp_atl = Params().get_bool('dp_atl')
+    self.dp_atl = Params().get_bool("dp_atl")
 
     # low speed re-write (dp)
-    self.cruise_speed_override = True # change this to False if you want to disable cruise speed override
-    if ret.cruiseState.enabled and ret.cruiseState.speed < 45 * CV.KPH_TO_MS and self.CP.openpilotLongitudinalControl:
-      if self.cruise_speed_override:
+    self.cruise_speed_override = True if (self.CP.flags & ToyotaFlags.SMART_DSU) else False # change this to False if you want to disable cruise speed override
+    if self.cruise_speed_override:
+      if ret.cruiseState.enabled and ret.cruiseState.speed < 45 * CV.KPH_TO_MS and self.CP.openpilotLongitudinalControl:
         if self.low_cruise_speed == 0.:
-          ret.cruiseState.speed = ret.cruiseState.speedCluster = self.low_cruise_speed = max(24 * CV.KPH_TO_MS, ret.vEgo)
+          self.low_cruise_speed = self.low_cruise_speed = max(24 * CV.KPH_TO_MS, ret.vEgo)
         else:
           ret.cruiseState.speed = ret.cruiseState.speedCluster = self.low_cruise_speed
       else:
-        ret.cruiseState.speed = ret.cruiseState.speedCluster = 24 * CV.KPH_TO_MS
-    else:
-      self.low_cruise_speed = 0.
+        self.low_cruise_speed = 0.
 
     # events
     events = self.create_common_events(ret, extra_gears=[GearShifter.sport])
