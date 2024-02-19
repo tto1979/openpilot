@@ -249,7 +249,7 @@ class CarState(CarStateBase):
     self.distance_lines = max(cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1, 0)
 
     if self.distance_lines != self.previous_distance_lines:
-      put_int_nonblocking('LongitudinalPersonality', self.distance_lines)
+      self.params.put_int_nonblocking('LongitudinalPersonality', self.distance_lines)
       self.previous_distance_lines = self.distance_lines
 
     if self.e2e_link:
