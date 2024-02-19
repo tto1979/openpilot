@@ -1,7 +1,11 @@
 #include "selfdrive/ui/qt/onroad.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <map>
+#include <memory>
+#include <sstream>
 
 #include <QDebug>
 #include <QElapsedTimer>
@@ -98,7 +102,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   static bool propagateEvent = false;
   static bool recentlyTapped = false;
   const bool isToyotaCar = scene.steering_wheel_car;
-  const int y_offset = scene.mute_dm ? 70 : 300;
+  // const int y_offset = scene.mute_dm ? 70 : 300;
   // bool rightHandDM = sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD();
 
   // Driving personalities button
@@ -123,7 +127,6 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
     propagateEvent = true;
   }
 
-  const bool clickedOnWidget = isDrivingPersonalitiesClicked;
   // propagation event to parent(HomeWindow)
   if (propagateEvent) {
     QWidget::mousePressEvent(e);
@@ -976,7 +979,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
   // Draw the profile image with the calculated opacity
   if (imageOpacity > 0.0) {
-    drawIcon(p, QPoint(x, y), profile_image, blackColor(0), imageOpacity);
+    drawIcon(p, x, y, profile_image, blackColor(0), imageOpacity);
   }
 }
 

@@ -89,6 +89,7 @@ public:
   void updateState(const UIState &s);
 
 private:
+  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void drawDrivingPersonalities(QPainter &p);
   void drawTimSignals(QPainter &p);
