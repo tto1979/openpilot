@@ -260,7 +260,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(0, 0, 0, 0));
   p.drawEllipse(center, btn_size / 2, btn_size / 2);
   p.setOpacity((isDown() || !engageable) ? 0.6 : 1.0);
-  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, img);
+  p.drawPixmap((btn_size - img_size) / 2 - 30, (btn_size - img_size) / 2, img);  // 將圖像向左移動30個像素
 }
 
 
