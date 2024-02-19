@@ -723,9 +723,10 @@ void Localizer::configure_gnss_source(LocalizerGnssSource source) {
 }
 
 int Localizer::locationd_thread() {
+  Params params;
   LocalizerGnssSource source;
   const char* gps_location_socket;
-  if (Params().getBool("UbloxAvailable")) {
+  if (params.getBool("UbloxAvailable")) {
     source = LocalizerGnssSource::UBLOX;
     gps_location_socket = "gpsLocationExternal";
   } else {
@@ -798,10 +799,7 @@ int Localizer::locationd_thread() {
         VectorXd posGeo = this->get_position_geodetic();
         std::string lastGPSPosJSON = util::string_format(
           "{\"latitude\": %.15f, \"longitude\": %.15f, \"altitude\": %.15f}", posGeo(0), posGeo(1), posGeo(2));
-
-        std::thread([] (const std::string gpsjson) {
-          Params().put("LastGPSPosition", gpsjson);
-        }, lastGPSPosJSON).detach();
+        params.putNonBlocking("LastGPSPosition", lastGPSPosJSON);
       }
       cnt++;
     }

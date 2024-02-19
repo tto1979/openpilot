@@ -7,13 +7,13 @@ from cereal import car, log
 from common.numpy_fast import clip
 from common.realtime import sec_since_boot, config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from common.profiler import Profiler
-from common.params import Params, put_nonblocking
+from common.params import Params
 import cereal.messaging as messaging
 from cereal.visionipc import VisionIpcClient, VisionStreamType
 from common.conversions import Conversions as CV
 from panda import ALTERNATIVE_EXPERIENCE
 from system.swaglog import cloudlog
-from system.version import is_release_branch, get_short_branch
+from system.version import get_short_branch
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
 from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
@@ -98,7 +98,7 @@ class Controls:
       self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
                                      'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters', 'testJoystick'] + self.camera_packets,
-                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'testJoystick'])
+                                    ignore_alive=ignore, ignore_avg_freq=['radarState', 'testJoystick'],  ignore_valid=['testJoystick', ])
 
     if CI is None:
       # wait for one pandaState and one CAN packet
@@ -144,8 +144,8 @@ class Controls:
     # Write CarParams for radard
     cp_bytes = self.CP.to_bytes()
     self.params.put("CarParams", cp_bytes)
-    put_nonblocking("CarParamsCache", cp_bytes)
-    put_nonblocking("CarParamsPersistent", cp_bytes)
+    self.params.put_nonblocking("CarParamsCache", cp_bytes)
+    self.params.put_nonblocking("CarParamsPersistent", cp_bytes)
 
     # cleanup old params
     if not self.CP.experimentalLongitudinalAvailable:# or is_release_branch():
@@ -481,7 +481,7 @@ class Controls:
 
         self.initialized = True
         self.set_initial_state()
-        Params().put_bool("ControlsReady", True)
+        self.params.put_bool_nonblocking("ControlsReady", True)
 
     # Check for CAN timeout
     if not can_strs:
@@ -865,6 +865,7 @@ class Controls:
     # carEvents - logged every second or on change
     if (self.sm.frame % int(1. / DT_CTRL) == 0) or (self.events.names != self.events_prev):
       ce_send = messaging.new_message('carEvents', len(self.events))
+      ce_send.valid = True
       ce_send.carEvents = car_events
       self.pm.send('carEvents', ce_send)
     self.events_prev = self.events.names.copy()
@@ -872,6 +873,7 @@ class Controls:
     # carParams - logged every 50 seconds (> 1 per segment)
     if (self.sm.frame % int(50. / DT_CTRL) == 0):
       cp_send = messaging.new_message('carParams')
+      cp_send.valid = True
       cp_send.carParams = self.CP
       self.pm.send('carParams', cp_send)
 

@@ -4,7 +4,7 @@ import gc
 import cereal.messaging as messaging
 from cereal import car
 from cereal import log
-from common.params import Params, put_bool_nonblocking
+from common.params import Params
 from common.realtime import set_realtime_priority
 from selfdrive.controls.lib.events import Events
 from selfdrive.monitoring.driver_monitor import DriverStatus
@@ -14,13 +14,14 @@ def dmonitoringd_thread(sm=None, pm=None):
   gc.disable()
   set_realtime_priority(2)
 
+  params = Params()
   if pm is None:
     pm = messaging.PubMaster(['driverMonitoringState'])
 
   if sm is None:
     sm = messaging.SubMaster(['driverStateV2', 'liveCalibration', 'carState', 'controlsState', 'modelV2'], poll=['driverStateV2'])
 
-  driver_status = DriverStatus(rhd_saved=Params().get_bool("IsRhdDetected"))
+  driver_status = DriverStatus(rhd_saved=params.get_bool("IsRhdDetected"))
 
   sm['liveCalibration'].calStatus = log.LiveCalibrationData.Status.invalid
   sm['liveCalibration'].rpyCalib = [0, 0, 0]
@@ -62,7 +63,7 @@ def dmonitoringd_thread(sm=None, pm=None):
     driver_status.update_events(events, driver_engaged, sm['controlsState'].enabled, sm['carState'].standstill)
 
     # build driverMonitoringState packet
-    dat = messaging.new_message('driverMonitoringState')
+    dat = messaging.new_message('driverMonitoringState', valid=sm.all_checks())
     dat.driverMonitoringState = {
       "events": events.to_msg(),
       "faceDetected": driver_status.face_detected,
@@ -87,7 +88,7 @@ def dmonitoringd_thread(sm=None, pm=None):
     if (sm['driverStateV2'].frameId % 6000 == 0 and
      driver_status.wheelpos_learner.filtered_stat.n > driver_status.settings._WHEELPOS_FILTER_MIN_COUNT and
      driver_status.wheel_on_right == (driver_status.wheelpos_learner.filtered_stat.M > driver_status.settings._WHEELPOS_THRESHOLD)):
-      put_bool_nonblocking("IsRhdDetected", driver_status.wheel_on_right)
+      params.put_bool_nonblocking("IsRhdDetected", driver_status.wheel_on_right)
 
 def main(sm=None, pm=None):
   dmonitoringd_thread(sm, pm)

@@ -5,7 +5,7 @@ from statistics import mean
 from typing import Optional
 
 from cereal import log
-from common.params import Params, put_nonblocking
+from common.params import Params
 from common.realtime import sec_since_boot
 from system.hardware import HARDWARE, TICI
 from system.swaglog import cloudlog
@@ -73,7 +73,7 @@ class PowerMonitoring:
       self.car_battery_capacity_uWh = max(self.car_battery_capacity_uWh, 0)
       self.car_battery_capacity_uWh = min(self.car_battery_capacity_uWh, CAR_BATTERY_CAPACITY_uWh)
       if now - self.last_save_time >= 10:
-        put_nonblocking("CarBatteryCapacity", str(int(self.car_battery_capacity_uWh)))
+        self.params.put_nonblocking("CarBatteryCapacity", str(int(self.car_battery_capacity_uWh)))
         self.last_save_time = now
 
       # First measurement, set integration time

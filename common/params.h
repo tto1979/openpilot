@@ -1,8 +1,13 @@
 #pragma once
 
+#include <future>
 #include <map>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
+
+#include "common/queue.h"
 
 enum ParamKeyType {
   PERSISTENT = 0x02,
@@ -10,17 +15,19 @@ enum ParamKeyType {
   CLEAR_ON_ONROAD_TRANSITION = 0x08,
   CLEAR_ON_OFFROAD_TRANSITION = 0x10,
   DONT_LOG = 0x20,
+  DEVELOPMENT_ONLY = 0x40,
   ALL = 0xFFFFFFFF
 };
 
 class Params {
 public:
-  Params(const std::string &path = {});
+  explicit Params(const std::string &path = {});
+  ~Params();
   std::vector<std::string> allKeys() const;
   bool checkKey(const std::string &key);
   ParamKeyType getKeyType(const std::string &key);
   inline std::string getParamPath(const std::string &key = {}) {
-    return params_path + prefix + (key.empty() ? "" : "/" + key);
+    return params_path + params_prefix + (key.empty() ? "" : "/" + key);
   }
 
   // Delete a value
@@ -49,8 +56,22 @@ public:
   inline int putInt(const std::string &key, int val) {
     return put(key.c_str(), std::to_string(val).c_str(), std::to_string(val).size());
   }
+  void putNonBlocking(const std::string &key, const std::string &val);
+  inline void putBoolNonBlocking(const std::string &key, bool val) {
+    putNonBlocking(key, val ? "1" : "0");
+  }
+  void putIntNonBlocking(const std::string &key, const std::string &val);
+  inline void putIntNonBlocking(const std::string &key, int val) {
+    putNonBlocking(key, std::to_string(val));
+  }
 
 private:
+  void asyncWriteThread();
+
   std::string params_path;
-  std::string prefix;
+  std::string params_prefix;
+
+  // for nonblocking write
+  std::future<void> future;
+  SafeQueue<std::pair<std::string, std::string>> queue;
 };
