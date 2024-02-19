@@ -303,6 +303,7 @@ class CarState(CarStateBase):
       ("AUTO_HIGH_BEAM", "LIGHT_STALK"),
       ("ECON_ON", "GEAR_PACKET"),
       ("DISTANCE_LINES", "PCM_CRUISE_SM"),
+      ("NEUTRAL_FORCE","PCM_CRUISE"),
     ]
 
     # Check LTA state if using LTA angle control
