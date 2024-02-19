@@ -34,11 +34,13 @@ def main() -> NoReturn:
         continue
 
       # then we publish them
-      msg = messaging.new_message(None, valid=True, logMessage=record)
+      msg = messaging.new_message()
+      msg.logMessage = record
       log_message_sock.send(msg.to_bytes())
 
       if level >= 40:  # logging.ERROR
-        msg = messaging.new_message(None, valid=True, errorLogMessage=record)
+        msg = messaging.new_message()
+        msg.errorLogMessage = record
         error_log_message_sock.send(msg.to_bytes())
   finally:
     sock.close()

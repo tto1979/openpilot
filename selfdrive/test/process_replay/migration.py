@@ -57,7 +57,6 @@ def migrate_carParams(lr, old_logtime=False):
   for msg in lr:
     if msg.which() == 'carParams':
       CP = messaging.new_message('carParams')
-      CP.valid = True
       CP.carParams = msg.carParams.as_builder()
       for car_fw in CP.carParams.carFw:
         car_fw.brand = CP.carParams.carName

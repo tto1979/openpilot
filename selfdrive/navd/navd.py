@@ -206,7 +206,7 @@ class RouteEngine:
     self.send_route()
 
   def send_instruction(self):
-    msg = messaging.new_message('navInstruction', valid=True)
+    msg = messaging.new_message('navInstruction')
 
     if self.step_idx is None:
       msg.valid = False
@@ -283,7 +283,7 @@ class RouteEngine:
       for path in self.route_geometry:
         coords += [c.as_dict() for c in path]
 
-    msg = messaging.new_message('navRoute', valid=True)
+    msg = messaging.new_message('navRoute')
     msg.navRoute.coordinates = coords
     self.pm.send('navRoute', msg)
 

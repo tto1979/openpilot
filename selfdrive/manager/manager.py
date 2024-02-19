@@ -205,7 +205,7 @@ def manager_thread() -> None:
     cloudlog.debug(running)
 
     # send managerState
-    msg = messaging.new_message('managerState', valid=True)
+    msg = messaging.new_message('managerState')
     msg.managerState.processes = [p.get_process_state_msg() for p in managed_processes.values()]
     pm.send('managerState', msg)
 
