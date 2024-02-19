@@ -24,14 +24,14 @@ LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
-A_CRUISE_MIN_VALS =    [-0.50, -0.65, -0.65, -0.68, -0.58,  -0.40]
-A_CRUISE_MIN_BP =      [0.,    8.3,   14,    20.,   30.,    55.]
+A_CRUISE_MIN_VALS =    [-0.5, -0.5, -0.2, -0.3, -0.4, -1.2] # mimick stock, slightly release brakes when stopping
+A_CRUISE_MIN_BP =      [0.,    0.3,  0.35, 3.,   6.,   20.]
 A_CRUISE_MIN_VALS_DF = [-0.01,  -0.0002,  -0.0002,  -0.18,  -0.18,  -0.28,  -0.45, -0.8, -0.8]
 A_CRUISE_MIN_BP_DF =   [0.,    0.01,      0.05,     0.12,    0.30,   5.,     16.,   28.,  42.]
 A_CRUISE_MAX_VALS_DF =     [1.4, 2.4, 2.4, 2.2, 1.53, 1.23, .88, .65, .44, .29, .09]  # Sets the limits of the planner accel, PID may exceed
 A_CRUISE_MAX_BP_DF =       [0.,  0.1,  3.,  6.,  8.,    11.,   15.,   20.,  25.,  30.,  55.]
-A_CRUISE_MAX_VALS_TOYOTA = [2.2, 1.8, 1.4, 0.97, 0.89, 0.81, 0.63, 0.4,  0.31, 0.11]  # Sets the limits of the planner accel, PID may exceed
-A_CRUISE_MAX_BP_TOYOTA =   [0.,  3.,  6.,  8.,   11.,  15.,  20.,  25.,  30.,  55.]
+A_CRUISE_MAX_VALS_TOYOTA =   [1.8, 1.49, 1.38, 1.08, 0.92, 0.78, 0.62, 0.44, 0.28, 0.08]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_BP_TOYOTA =     [0.,  3,    6.,   8.,   11.,  15.,  20.,  25.,  30.,  55.]
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
