@@ -227,6 +227,7 @@ ExperimentalButton::ExperimentalButton(QWidget *parent) : experimental_mode(fals
 
   params = Params();
   engage_img = loadPixmap("../assets/images/button_home.png", {img_size, img_size});
+  engage_img = engage_img.scaled(engage_img.width() * 1.2, engage_img.height() * 1.2, Qt::KeepAspectRatio); // 增加20%
   experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size, img_size});
   QObject::connect(this, &QPushButton::clicked, this, &ExperimentalButton::changeMode);
 }
@@ -291,9 +292,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   // Turn signal images
   const QStringList imagePaths = {
     "../assets/images/tim_turn_signal_1.png",
-    "../assets/images/tim_turn_signal_2.png",
-    "../assets/images/tim_turn_signal_3.png",
-    "../assets/images/tim_turn_signal_4.png"
+    "../assets/images/tim_turn_signal_2.png"
   };
   signalImgVector.reserve(2 * imagePaths.size() + 1);
   for (int i = 0; i < 2; ++i) {
@@ -310,7 +309,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
     animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
     update();
   });
-  animationTimer->start(totalFrames * 11); // 11 * totalFrames (88) milliseconds per frame
+  animationTimer->start(totalFrames * 100);
 }
 
 static float vc_speed;
@@ -936,7 +935,8 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   const int y = rect().bottom() - 110;
 
   // Enable Antialiasing
-  p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setRenderHint(QPainter::TextAntialiasing);
 
   // Select the appropriate profile image/text
   int index = qBound(0, personalityProfile, 2);
@@ -962,7 +962,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
   // Draw the profile text with the calculated opacity
   if (textOpacity > 0.0) {
-    p.setFont(InterFont(50, QFont::Bold));
+    p.setFont(InterFont(40, QFont::Bold));
     p.setPen(QColor(255, 255, 255));
     // Calculate the center position for text
     QFontMetrics fontMetrics(p.font());
@@ -974,20 +974,20 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
 
   // Draw the profile image with the calculated opacity
   if (imageOpacity > 0.0) {
-    drawIcon(p, x, y, profile_image, blackColor(0), imageOpacity);
+    drawIcon(p, QPoint(x, y), profile_image, blackColor(0), imageOpacity);
   }
 }
 
 void AnnotatedCameraWidget::drawTimSignals(QPainter &p) {
   // Declare the turn signal size
-  constexpr int signalHeight = 480;
-  constexpr int signalWidth = 360;
+  constexpr int signalHeight = 142;
+  constexpr int signalWidth = 142;
 
   // Calculate the vertical position for the turn signals
-  const int baseYPosition = (height() - signalHeight) / 2 + 300;
+  const int baseYPosition = (blindSpotLeft || blindSpotRight ? (height() - signalHeight) / 2 : 350);
   // Calculate the x-coordinates for the turn signals
-  int leftSignalXPosition = 75 + width() - signalWidth - 300 * (blindSpotLeft ? 0 : animationFrameIndex);
-  int rightSignalXPosition = -75 + 300 * (blindSpotRight ? 0 : animationFrameIndex);
+  int leftSignalXPosition = width() / 2 - 50 - 360 * (blindSpotLeft ? 2 : 0);
+  int rightSignalXPosition = width() / 2 - 50 + 360 * (blindSpotRight ? 2 : 0);
 
   // Enable Antialiasing
   p.setRenderHint(QPainter::Antialiasing);
