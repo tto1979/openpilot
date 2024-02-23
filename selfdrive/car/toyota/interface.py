@@ -15,10 +15,9 @@ GearShifter = car.CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):
-  prev_atl = False
-
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
+    self.prev_atl = False
 
     # init for low speed re-write (dp)
     self.low_cruise_speed = 0.
@@ -73,7 +72,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.PRIUS_V:
       stop_and_go = True
       ret.wheelbase = 2.78
-      ret.steerRatio = 16.8
+      ret.steerRatio = 18.1
       ret.tireStiffnessFactor = 0.5533
       ret.mass = 3340. * CV.LB_TO_KG
       ret.wheelSpeedFactor = 1.09
