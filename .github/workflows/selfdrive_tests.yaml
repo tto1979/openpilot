@@ -131,7 +131,7 @@ jobs:
     - uses: ./.github/workflows/setup-pre-commit
     - uses: ./.github/workflows/setup-with-retry
     - name: pre-commit
-      timeout-minutes: 4
+      timeout-minutes: 10
       run: ${{ env.RUN }} "unset PYTHONWARNINGS && pre-commit run --all && chmod -R 777 /tmp/pre-commit"
 
   valgrind:
