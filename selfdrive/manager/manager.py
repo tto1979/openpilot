@@ -26,6 +26,10 @@ from openpilot.system.version import is_dirty, get_commit, get_version, get_orig
 def manager_init() -> None:
   save_bootlog()
 
+  # Clear the error log on boot to prevent old errors from hanging around
+  if os.path.isfile(os.path.join(sentry.CRASHES_DIR, 'error.txt')):
+    os.remove(os.path.join(sentry.CRASHES_DIR, 'error.txt'))
+
   params = Params()
   params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
   params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
@@ -50,8 +54,8 @@ def manager_init() -> None:
     ("CarModel", ""),
     ("dp_atl", "0"),
     ("dp_jetson", "0"),
-    ("dp_nav_gmap_enable", "0"),
-    ("dp_otisserv", "1"),
+    ("SearchInput", "0"),
+    ("fleetmanager", "1"),
     ("DrivingPersonalitiesUIWheel", "1"),
     ("e2e_link", "1"),
     ("SpeedLimitControl", "0"),
@@ -60,7 +64,6 @@ def manager_init() -> None:
     ("Marc_Dynamic_Follow", "0"),
     ("NudgelessLaneChange", "0"),
     ("NNFF", "0"),
-    ("opwebd", "1"),
     ("PrimeAd", "1"),
     ("ReverseAccChange", "1"),
     ("TimSignals", "1"),
@@ -123,10 +126,6 @@ def manager_init() -> None:
                        dirty=is_dirty(),
                        device=HARDWARE.get_device_type())
 
-  # Remove the error log on boot to prevent old errors from hanging around
-  if os.path.isfile(os.path.join(sentry.CRASHES_DIR, 'error.txt')):
-    os.remove(os.path.join(sentry.CRASHES_DIR, 'error.txt'))
-
   # preimport all processes
   for p in managed_processes.values():
     p.prepare()
@@ -161,11 +160,8 @@ def manager_thread() -> None:
   if params.get_bool("dp_jetson"):
     ignore += ["dmonitoringmodeld", "dmonitoringd", "logcatd", "logmessaged", "loggerd", "tombstoned", "uploader"]
 
-  if not params.get_bool("dp_otisserv"):
-    ignore += ["otisserv"]
-
-  if not params.get_bool("opwebd"):
-    ignore += ["opwebd"]
+  if not params.get_bool("fleetmanager"):
+    ignore += ["fleetmanager"]
 
   sm = messaging.SubMaster(['deviceState', 'carParams'], poll=['deviceState'])
   pm = messaging.PubMaster(['managerState'])
@@ -184,6 +180,10 @@ def manager_thread() -> None:
       params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
     elif not started and started_prev:
       params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
+
+      # Clear the error log on boot to prevent old errors from hanging around
+      if os.path.isfile(os.path.join(sentry.CRASHES_DIR, 'error.txt')):
+        os.remove(os.path.join(sentry.CRASHES_DIR, 'error.txt'))
 
     # update onroad params, which drives boardd's safety setter thread
     if started != started_prev:

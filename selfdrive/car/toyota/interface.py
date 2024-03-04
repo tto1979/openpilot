@@ -15,17 +15,16 @@ GearShifter = car.CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):
-  prev_atl = False
-
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
+    self.prev_atl = False
 
     # init for low speed re-write (dp)
     self.low_cruise_speed = 0.
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
-    if CP.carFingerprint in TSS2_CAR:
+    if CP.carFingerprint in TSS2_CAR and Params().get_bool("Marc_Dynamic_Follow"):
       # Allow for higher accel from PID controller at low speeds
       return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX_PLUS
     else:
@@ -286,7 +285,7 @@ class CarInterface(CarInterfaceBase):
     if candidate in TSS2_CAR:
       ret.vEgoStopping = 0.25
       ret.vEgoStarting = 0.25
-      ret.stoppingDecelRate = 0.1  # reach stopping target smoothly
+      ret.stoppingDecelRate = 0.05  # reach stopping target smoothly
     tune.kpBP = [0., 5.]
     tune.kpV = [0.8, 1.]
     tune.kiBP = [0., 5.]

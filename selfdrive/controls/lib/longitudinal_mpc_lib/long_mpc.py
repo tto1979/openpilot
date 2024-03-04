@@ -84,13 +84,13 @@ def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
   # The Dynamic follow function is adjusted by Marc(cgw1968-5779)
   if personality==log.LongitudinalPersonality.relaxed:
     x_vel =  [0.0,  5.0,   13.90,  20,    25,    40]
-    y_dist = [1.2,  1.2,   1.45,   1.8,   2.0,  2.0]
+    y_dist = [1.2,  1.2,   1.5,   1.8,   2.2,  2.2]
   elif personality==log.LongitudinalPersonality.standard:
     x_vel =  [0.0,  5.0,   13.90,  20,    25,    40]
     y_dist = [1.1,  1.1,   1.3,    1.45,  1.6,  1.6]
   elif personality==log.LongitudinalPersonality.aggressive:
-    x_vel =  [0.0,  5.0,   13.89,  16.,   20,    25,    40]
-    y_dist = [1.00, 1.05,  1.12,   1.12,  1.17,  1.2,   1.3]
+    x_vel =  [0.0,  5.0,   12.00,  15.,   20,    25,    40]
+    y_dist = [1.05, 1.10,  1.20,   1.20,  1.25,  1.25,   1.3]
   else:
     raise NotImplementedError("Dynamic Follow personality not supported")
   return np.interp(v_ego, x_vel, y_dist)
@@ -330,8 +330,8 @@ class LongitudinalMpc:
     j_ego_v_ego = 1
     a_change_v_ego = 1
     if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
-      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.01, 1.])
-      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.01, 1.])
+      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.05, 1.])
+      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.05, 1.])
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
       cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego]
@@ -401,8 +401,9 @@ class LongitudinalMpc:
 
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
+    lead = radarstate.leadOne
 
-    self.smoother_braking = True
+    self.smoother_braking = True if self.mode == 'acc' and not np.any(lead.dRel < (v_ego - 1) * t_follow) else False
     if self.smoother_braking:
       distance_factor = np.maximum(1, lead_xv_0[:,0] - (lead_xv_0[:,1] * t_follow))
       self.braking_offset = np.clip((v_ego - lead_xv_0[:,1]) - COMFORT_BRAKE, 1, distance_factor)

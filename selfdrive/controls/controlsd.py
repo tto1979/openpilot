@@ -111,9 +111,13 @@ class Controls:
     if not self.disengage_on_accelerator:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
 
-    self.dp_atl = self.params.get_bool('dp_atl')
+    self.dp_atl = self.params.get_bool("dp_atl")
     if self.dp_atl:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALKA
+
+    self.auto_brakehold = self.params.get_bool("AleSato_AutomaticBrakeHold")
+    if self.auto_brakehold:
+      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALLOW_AEB
 
     # read params
     self.is_metric = self.params.get_bool("IsMetric")
