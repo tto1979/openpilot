@@ -3,7 +3,6 @@ import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.params import Params
-from cereal import log
 
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
@@ -28,8 +27,8 @@ LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
-A_CRUISE_MIN_VALS =    [-0.16, -0.15, -0.25, -0.3, -0.35, -0.55, -0.8, -0.8]
-A_CRUISE_MIN_BP =      [0.,     .01,   .3,    5.,   8.,    16.,   28.,  42.]
+A_CRUISE_MIN_VALS =    [-0.16, -0.15, -0.14, -0.25, -0.35, -0.45, -0.55, -0.8, -0.8]
+A_CRUISE_MIN_BP =      [0.,     .01,   .3,    5.,    8.,    11.,   16.,   28.,  42.]
 A_CRUISE_MIN_VALS_DF = [-0.01,  -0.0002,  -0.0002,  -0.19,  -0.19,  -0.30,  -0.40,  -0.45, -0.8, -0.8]
 A_CRUISE_MIN_BP_DF =   [0.,    0.01,      0.05,     0.12,    0.30,   5.,    11.,    16.,   28.,  42.]
 A_CRUISE_MAX_VALS_DF =     [1.4, 2.4, 2.4, 2.4, 1.53, 1.23, .88, .65, .44, .29, .084]  # Sets the limits of the planner accel, PID may exceed
@@ -90,21 +89,12 @@ class LongitudinalPlanner:
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
     self.params = Params()
-    self.param_read_counter = 0
-    self.read_param()
-    self.personality = log.LongitudinalPersonality.standard
     self.override_slc = False
     self.overridden_speed = 0
     self.slc_target = 0
     self.dynamic_follow = False
-
-  def read_param(self):
-    try:
-      self.personality = int(self.params.get('LongitudinalPersonality'))
-    except (ValueError, TypeError):
-      self.personality = log.LongitudinalPersonality.standard
-
     self.dynamic_follow = self.params.get_bool("Marc_Dynamic_Follow")
+
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == 33 and
@@ -122,9 +112,6 @@ class LongitudinalPlanner:
     return x, v, a, j
 
   def update(self, sm):
-    if self.param_read_counter % 50 == 0:
-      self.read_param()
-    self.param_read_counter += 1
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
@@ -176,7 +163,7 @@ class LongitudinalPlanner:
     enabled = sm['controlsState'].enabled
 
     if self.params.get_bool("SpeedLimitControl"):
-      slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego)
+      slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego, sm['carState'].aEgo)
       desired_speed_limit = slc.speed_limit + 1.5 + v_ego_diff
 
       # Override SLC upon gas pedal press and reset upon brake/cancel button
@@ -207,11 +194,11 @@ class LongitudinalPlanner:
     lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
     v_lead0 = lead_xv_0[0,1]
     v_lead1 = lead_xv_1[0,1]
-    self.mpc.set_weights(prev_accel_constraint, personality=self.personality, v_lead0=v_lead0, v_lead1=v_lead1)
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality, v_lead0=v_lead0, v_lead1=v_lead1)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality, dynamic_follow=self.dynamic_follow)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality, dynamic_follow=self.dynamic_follow)
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
@@ -247,6 +234,5 @@ class LongitudinalPlanner:
     longitudinalPlan.fcw = self.fcw
 
     longitudinalPlan.solverExecutionTime = self.mpc.solve_time
-    longitudinalPlan.personality = self.personality
 
     pm.send('longitudinalPlan', plan_send)

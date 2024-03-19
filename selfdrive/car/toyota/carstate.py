@@ -41,20 +41,23 @@ class CarState(CarStateBase):
     self.accurate_steer_angle_seen = False
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
+    self.prev_distance_button = 0
+    self.distance_button = 0
+
+    self.pcm_follow_distance = 0
+
     self.low_speed_lockout = False
     self.acc_type = 1
     self.lkas_hud = {}
     self.params = Params()
 
-    # KRKeegan - Add support for toyota distance button
-    self.distance_lines = 0
-    self.previous_distance_lines = 0
-    self.distance_btn = 0
-    self.e2e_link = Params().get_bool("e2e_link")
     self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
-    self.ispressed_prev = 2
-    self.ispressed_init = 0
-    self.e2e_init = 0
+    # Change between chill/experimental mode using steering wheel
+    self.ispressed_prev = False
+    self.distance_button_hold = 0
+    self.gap_button_counter = 0
+    self.short_press_button_counter = 0
+
     self.topsng = Params().get_bool("topsng")
 
     # bsm
@@ -92,12 +95,8 @@ class CarState(CarStateBase):
 
     ret.brakePressed = cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0
     ret.brakeHoldActive = cp.vl["ESP_CONTROL"]["BRAKE_HOLD_ACTIVE"] == 1
-    if self.CP.enableGasInterceptor:
-      ret.gas = (cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS"] + cp.vl["GAS_SENSOR"]["INTERCEPTOR_GAS2"]) // 2
-      ret.gasPressed = ret.gas > 805
-    else:
-      # TODO: find a common gas pedal percentage signal
-      ret.gasPressed = cp.vl["PCM_CRUISE"]["GAS_RELEASED"] == 0
+
+    ret.gasPressed = cp.vl["PCM_CRUISE"]["GAS_RELEASED"] == 0
 
     ret.wheelSpeeds = self.get_wheel_speeds(
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_FL"],
@@ -107,7 +106,10 @@ class CarState(CarStateBase):
     )
     ret.vEgoRaw = mean([ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr])
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
-    ret.vEgoCluster = ret.vEgo * 1.015  # minimum of all the cars
+    if self.CP.carFingerprint == CAR.PRIUS_V:
+      ret.vEgoCluster = ret.vEgo * 1.08987654321
+    else:
+      ret.vEgoCluster = ret.vEgo * 1.015  # minimum of all the cars
 
     ret.standstill = abs(ret.vEgoRaw) < 1e-3
 
@@ -160,7 +162,7 @@ class CarState(CarStateBase):
     else:
       ret.accFaulted = cp.vl["PCM_CRUISE_2"]["ACC_FAULTED"] != 0
       ret.cruiseState.available = cp.vl["PCM_CRUISE_2"]["MAIN_ON"] != 0
-      ret.cruiseState.speed = cp.vl["PCM_CRUISE_2"]["SET_SPEED"] * CV.KPH_TO_MS * self.CP.wheelSpeedFactor
+      ret.cruiseState.speed = cp.vl["PCM_CRUISE_2"]["SET_SPEED"] * CV.KPH_TO_MS
       cluster_set_speed = cp.vl["PCM_CRUISE_SM"]["UI_SET_SPEED"]
 
     # UI_SET_SPEED is always non-zero when main is on, hide until first enable
@@ -209,28 +211,35 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
 
-    # Driving personalities function
-    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
-      self.distance_btn = 1 if cp_acc.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
-    elif self.CP.flags & ToyotaFlags.SMART_DSU.value:
-      self.distance_btn = 1 if cp_acc.vl["SDSU"]["FD_BUTTON"] == 1 else 0
-    self.distance_lines = max(cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] - 1, 0)
+    if self.CP.carFingerprint not in UNSUPPORTED_DSU_CAR:
+      self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"]
 
-    if self.distance_lines != self.previous_distance_lines:
-      self.params.put_int_nonblocking('LongitudinalPersonality', self.distance_lines)
-      self.previous_distance_lines = self.distance_lines
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
+      # distance button is wired to the ACC module (camera or radar)
+      # self.prev_distance_button = self.distance_button
+      self.prev_distance_button = self.distance_button_hold
+      if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+        self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
+      else:
+        self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
 
-    if self.e2e_link:
-      self.ispressed = cp.vl["GEAR_PACKET"]["ECON_ON"]
-      self.ispressed_init += int(self.ispressed)
-      self.e2e_init += int(self.params.get_bool("ExperimentalMode"))
-      self.status_check = int(self.ispressed_init + self.e2e_init)
-      if (self.status_check == 1 or self.status_check >= 4) and self.ispressed != self.ispressed_prev:
-        self.e2eLongButton = not self.params.get_bool("ExperimentalMode")
-        self.params.put_bool("ExperimentalMode", self.e2eLongButton)
-      self.ispressed_prev = self.ispressed
-      self.ispressed_init = 2
-      self.e2e_init = 2
+    # change experimental/chill mode on fly with long press
+    if self.distance_button:
+      self.short_press_button_counter += 1
+      if not self.distance_button_hold:
+        self.gap_button_counter += 1
+        if self.gap_button_counter > 100:  # 50 miliseconds
+          self.params.put_bool_nonblocking('ExperimentalMode', not self.params.get_bool("ExperimentalMode"))  # change experimental/chill mode on fly with long press
+          self.gap_button_counter = 0
+
+    if not self.distance_button and self.ispressed_prev and self.short_press_button_counter < 50:
+      # Switch to follow distances on short press
+      self.distance_button_hold = True
+
+    if not self.ispressed_prev and not self.distance_button:
+      self.distance_button_hold = False
+      self.short_press_button_counter = 0
+    self.ispressed_prev = self.distance_button
 
     ret.steeringWheelCar = True if self.CP.carName == "toyota" else False
 
@@ -328,10 +337,6 @@ class CarState(CarStateBase):
     else:
       messages.append(("PCM_CRUISE_2", 33))
 
-    # add gas interceptor reading if we are using it
-    if CP.enableGasInterceptor:
-      messages.append(("GAS_SENSOR", 50))
-
     if CP.enableBsm:
       messages.append(("BSM", 1))
 
@@ -349,9 +354,10 @@ class CarState(CarStateBase):
         ("PRE_COLLISION", 33),
       ]
 
-    # KRKeegan - Add support for toyota distance button
-    if CP.flags & ToyotaFlags.SMART_DSU.value:
-      messages.append(("SDSU", 0))
+    if CP.flags & ToyotaFlags.SMART_DSU and not CP.flags & ToyotaFlags.RADAR_CAN_FILTER:
+      messages += [
+        ("SDSU", 100),
+      ]
 
     if Params().get_bool("toyota_bsm"):
       messages.append(("DEBUG", 65))
