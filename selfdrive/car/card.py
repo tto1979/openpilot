@@ -14,6 +14,7 @@ from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.boardd.boardd import can_list_to_can_capnp
 from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR
 
 
 REPLAY = "REPLAY" in os.environ
@@ -53,6 +54,18 @@ class CarD:
     self.CP.alternativeExperience = 0
     if not disengage_on_accelerator:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.DISABLE_DISENGAGE_ON_GAS
+
+    dp_atl = self.params.get_bool("dp_atl")
+    if dp_atl:
+      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALKA
+
+    auto_brakehold = self.params.get_bool("AleSato_AutomaticBrakeHold")
+    if auto_brakehold:
+      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALLOW_AEB
+
+    sport_mode = self.params.get_bool("Marc_Dynamic_Follow") and self.CP.carFingerprint in TSS2_CAR
+    if sport_mode:
+      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
 
     car_recognized = self.CP.carName != 'mock'
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
