@@ -31,8 +31,8 @@ MAX_STEER_ANGLE = 94.9461  # deg
 # PCM compensatory force calculation threshold
 # a variation in accel command is more pronounced at higher speeds, let compensatory forces ramp to zero before
 # applying when speed is high
-COMPENSATORY_CALCULATION_THRESHOLD_V = [-0.3, -0.25, 0.]  # m/s^2
-COMPENSATORY_CALCULATION_THRESHOLD_BP = [0., 11., 23.]  # m/s
+COMPENSATORY_CALCULATION_THRESHOLD_V = [-0.2, 0.]  # m/s^2
+COMPENSATORY_CALCULATION_THRESHOLD_BP = [0., 23.]  # m/s
 
 GearShifter = car.CarState.GearShifter
 UNLOCK_CMD = b'\x40\x05\x30\x11\x00\x40\x00\x00'
