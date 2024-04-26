@@ -81,7 +81,6 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool muteDM MEMBER muteDM);
   Q_PROPERTY(bool turnSignalLeft MEMBER turnSignalLeft);
   Q_PROPERTY(bool turnSignalRight MEMBER turnSignalRight);
-  Q_PROPERTY(QString roadName MEMBER roadName);
   Q_PROPERTY(int personalityProfile MEMBER personalityProfile);
 
 public:
@@ -97,7 +96,6 @@ private:
 
   ExperimentalButton *experimental_btn;
   QPixmap dm_img;
-  QPixmap map_img;
   float speed;
   const int subsign_img_size = 35;
   QString speedUnit;
@@ -132,9 +130,6 @@ private:
 
   int skip_frame_count = 0;
   bool wide_cam_requested = false;
-
-  QString roadName;
-
 
 protected:
   void paintGL() override;

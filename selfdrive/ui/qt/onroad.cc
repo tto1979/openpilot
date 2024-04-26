@@ -380,8 +380,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   }
   #endif
 
-  const auto lmd = sm["liveMapData"].getLiveMapData();
-  setProperty("roadName", QString::fromStdString(lmd.getCurrentRoadName()));
   setProperty("blindSpotLeft", s.scene.blind_spot_left);
   setProperty("blindSpotRight", s.scene.blind_spot_right);
   setProperty("drivingPersonalitiesUIWheel", s.scene.driving_personalities_ui_wheel);
@@ -422,6 +420,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int top_radius = 32;
   int bottom_radius = has_eu_speed_limit ? 100 : 32;
 
+  const QString roadName =  QString::fromStdString(Params("/dev/shm/params").get("RoadName"));
   QRect set_speed_rect(QPoint(60 + (default_size.width() - set_speed_size.width()) / 2, roadName.isEmpty() ? 45 : 70), set_speed_size);
   p.setPen(QPen(whiteColor(75), 6));
   p.setBrush(blackColor(166));
@@ -494,7 +493,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     QRect bar_rc(rect().left(), rect().top(), rect().width(), h);
     p.setBrush(QColor(0, 0, 0, 100));
     p.drawRect(bar_rc);
-    p.setFont(InterFont(50, QFont::Bold));
+    p.setFont(InterFont(50, QFont::DemiBold));
     drawCenteredText(p, bar_rc.center().x(), bar_rc.center().y(), roadName, QColor(255, 255, 255, 200));
   }
 

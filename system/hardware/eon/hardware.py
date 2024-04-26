@@ -408,8 +408,7 @@ class Android(HardwareBase):
 
   def get_gpu_usage_percent(self):
     try:
-      with open('/sys/devices/soc/b00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/gpubusy', 'r') as file:
-        used, total = file.read().strip().split()
+      used, total = open('/sys/devices/soc/b00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/gpubusy').read().strip().split()
       perc = 100.0 * int(used) / int(total)
       return min(max(perc, 0), 100)
     except Exception:

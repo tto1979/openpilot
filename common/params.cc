@@ -218,7 +218,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"DrivingPersonalitiesUIWheel", PERSISTENT},
     {"dynamic_lane", PERSISTENT},
     {"e2e_link", PERSISTENT},
-    {"LastGPSPosition", PERSISTENT},
     {"LateralAllowed", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"NNFF", PERSISTENT},
     {"NudgelessLaneChange", PERSISTENT},
@@ -233,12 +232,11 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"toyota_bsm", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
     {"QuietDrive", PERSISTENT},
+    {"RoadName", PERSISTENT},
     {"dp_no_gps_ctrl", PERSISTENT},
     {"dp_no_fan_ctrl", PERSISTENT},
     {"dp_mapd", PERSISTENT},
     {"dp_logging", PERSISTENT},
-    {"dp_fileserv", PERSISTENT},
-    {"dp_otisserv", PERSISTENT},
 };
 
 } // namespace

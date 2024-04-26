@@ -21,7 +21,7 @@ def dmonitoringd_thread(sm=None, pm=None):
   if sm is None:
     sm = messaging.SubMaster(['driverStateV2', 'liveCalibration', 'carState', 'controlsState', 'modelV2'], poll=['driverStateV2'])
 
-  driver_status = DriverStatus(rhd_saved=params.get_bool("IsRhdDetected"))
+  driver_status = DriverStatus(rhd_saved=Params().get_bool("IsRhdDetected"))
 
   sm['liveCalibration'].calStatus = log.LiveCalibrationData.Status.invalid
   sm['liveCalibration'].rpyCalib = [0, 0, 0]

@@ -2,9 +2,6 @@
 
 #include <cstdlib>
 #include <fstream>
-#include <map>
-#include <string>
-
 #include "cereal/messaging/messaging.h"
 
 // no-op base hw class
@@ -14,10 +11,10 @@ public:
   static constexpr float MIN_VOLUME = 0.2;
 
   static std::string get_os_version() { return ""; }
-  static std::string get_name() { return ""; }
-  static cereal::InitData::DeviceType get_device_type() { return cereal::InitData::DeviceType::UNKNOWN; }
-  static int get_voltage() { return 0; }
-  static int get_current() { return 0; }
+  static std::string get_name() { return ""; };
+  static cereal::InitData::DeviceType get_device_type() { return cereal::InitData::DeviceType::UNKNOWN; };
+  static int get_voltage() { return 0; };
+  static int get_current() { return 0; };
 
   static std::string get_serial() { return "cccccc"; }
 

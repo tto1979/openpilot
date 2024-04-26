@@ -63,8 +63,6 @@ class Maneuver:
         print("Crashed!!!!")
         valid = False
 
-      # TODO: log['speeds'][-1] <= 0.1 raise the planner not starting error
-      # lower speed threshold to ignore error
       if self.ensure_start and log['v_rel'] > 0 and log['speeds'][-1] <= 0.1:
         print('LongitudinalPlanner not starting!')
         valid = False
