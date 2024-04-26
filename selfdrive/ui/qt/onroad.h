@@ -96,6 +96,7 @@ private:
 
   ExperimentalButton *experimental_btn;
   QPixmap dm_img;
+  QPixmap map_img;
   float speed;
   const int subsign_img_size = 35;
   QString speedUnit;
