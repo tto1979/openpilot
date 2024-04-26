@@ -5,7 +5,7 @@ import time
 from abc import abstractmethod, ABC
 from difflib import SequenceMatcher
 from json import load
-from typing import Any, Dict, Optional, Tuple, List, Callable, NamedTuple, Union
+from typing import Any, Dict, Optional, Tuple, List, Callable, Union
 
 from cereal import car
 from common.basedir import BASEDIR

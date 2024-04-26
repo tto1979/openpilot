@@ -4,7 +4,7 @@ import numpy as np
 from cereal import log
 from common.conversions import Conversions as CV
 from common.realtime import sec_since_boot
-from common.numpy_fast import clip, interp
+from common.numpy_fast import clip
 from selfdrive.car.toyota.values import ToyotaFlags
 from system.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild

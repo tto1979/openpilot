@@ -66,6 +66,7 @@ tools/replay/*.cc
 tools/replay/*.h
 
 selfdrive/__init__.py
+selfdrive/mapd.py
 selfdrive/sentry.py
 selfdrive/tombstoned.py
 selfdrive/updated.py
@@ -113,9 +114,8 @@ selfdrive/car/ecu_addrs.py
 selfdrive/car/isotp_parallel_query.py
 selfdrive/car/tests/__init__.py
 selfdrive/car/tests/test_car_interfaces.py
-selfdrive/car/torque_data/params.yaml
-selfdrive/car/torque_data/substitute.yaml
-selfdrive/car/torque_data/override.yaml
+selfdrive/car/torque_data/*
+selfdrive/car/torque_data/lat_models/*
 selfdrive/car/top_tmp/*
 
 selfdrive/car/body/*.py
@@ -436,19 +436,6 @@ selfdrive/loggerd/raw_logger.cc
 selfdrive/loggerd/raw_logger.h
 selfdrive/loggerd/uploader.py
 selfdrive/loggerd/xattr_cache.py
-
-selfdrive/mapd/__init__.py
-selfdrive/mapd/config.py
-selfdrive/mapd/default_speeds_generator.py
-selfdrive/mapd/mapd.py
-selfdrive/mapd/mapd_helpers.py
-selfdrive/mapd/lib/geo.py
-selfdrive/mapd/lib/NodesData.py
-selfdrive/mapd/lib/osm.py
-selfdrive/mapd/lib/Route.py
-selfdrive/mapd/lib/WayCollection.py
-selfdrive/mapd/lib/WayRelation.py
-selfdrive/mapd/lib/WayRelationIndex.py
 
 selfdrive/manager/__init__.py
 selfdrive/manager/build.py

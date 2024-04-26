@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # import datetime
 import os
-import json
 import queue
 import threading
 import time
@@ -13,8 +12,6 @@ import psutil
 
 import cereal.messaging as messaging
 from cereal import log
-from common.dict_helpers import strip_deprecated_keys
-from common.time import MIN_DATE
 from common.filter_simple import FirstOrderFilter
 from common.params import Params
 from common.realtime import DT_TRML, sec_since_boot
