@@ -2,7 +2,7 @@
 import os
 import subprocess
 import urllib.request
-from openpilot.common.realtime import Ratekeeper
+from common.realtime import Ratekeeper
 import stat
 
 VERSION = 'v1.9.0'
