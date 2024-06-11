@@ -86,7 +86,7 @@ function launch {
   python ./force_car_recognition.py
 
   # start manager
-  cd selfdrive/manager
+  cd system/manager
   if [ ! -f $DIR/prebuilt ]; then
     ./build.py
   fi

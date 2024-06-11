@@ -67,7 +67,7 @@ AddOption('--pc-thneed',
 AddOption('--minimal',
           action='store_false',
           dest='extras',
-          default=os.path.islink(Dir('#rednose/').abspath), # minimal by default on release branch (where rednose is not a link)
+          default=os.path.exists(File('#.lfsconfig').abspath), # minimal by default on release branch (where there's no LFS)
           help='the minimum build to run openpilot. no tests, tools, etc.')
 
 ## Architecture name breakdown (arch)
@@ -193,6 +193,7 @@ env = Environment(
     "-Wno-c99-designator",
     "-Wno-reorder-init-list",
     "-Wno-error=unused-but-set-variable",
+    "-Wno-vla-cxx-extension",
   ] + cflags + ccflags,
 
   CPPPATH=cpppath + [
@@ -208,6 +209,7 @@ env = Environment(
     "#third_party/qrcode",
     "#third_party",
     "#cereal",
+    "#msgq",
     "#opendbc/can",
     "#third_party/maplibre-native-qt/include",
     f"#third_party/maplibre-native-qt/{arch}/include"
@@ -223,9 +225,10 @@ env = Environment(
   CXXFLAGS=["-std=c++1z"] + cxxflags,
   LIBPATH=libpath + [
     "#cereal",
+    "#msgq",
     "#third_party",
     "#opendbc/can",
-    "#selfdrive/boardd",
+    "#selfdrive/pandad",
     "#common",
     "#rednose/helpers",
   ],
@@ -356,6 +359,7 @@ gpucommon = [_gpucommon]
 Export('common', 'gpucommon')
 
 # Build cereal and messaging
+SConscript(['msgq/SConscript'])
 SConscript(['cereal/SConscript'])
 
 # Build other submodules
@@ -376,10 +380,12 @@ SConscript([
 ])
 if arch != "Darwin":
   SConscript([
-    'system/camerad/SConscript',
     'system/sensord/SConscript',
     'system/logcatd/SConscript',
   ])
+
+if arch == "larch64":
+  SConscript(['system/camerad/SConscript'])
 
 # Build openpilot
 SConscript(['third_party/SConscript'])
