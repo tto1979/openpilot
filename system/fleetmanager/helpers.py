@@ -1,4 +1,29 @@
+# otisserv - Copyright (c) 2019-, Rick Lan, dragonpilot community, and a number of other of contributors.
+# Fleet Manager - [actuallylemoncurd](https://github.com/actuallylemoncurd), [AlexandreSato](https://github.com/alexandreSato), [ntegan1](https://github.com/ntegan1), [royjr](https://github.com/royjr), and [sunnyhaibin] (https://github.com/sunnypilot)
+# Almost everything else - ChatGPT
+# dirty PR pusher - mike8643
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+import json
+import math
 import os
+import requests
 import subprocess
 from pathlib import Path
 from openpilot.system.hardware import PC
@@ -9,9 +34,6 @@ from openpilot.tools.lib.route import SegmentName
 # otisserv conversion
 from openpilot.common.params import Params
 from urllib.parse import quote
-import json
-import requests
-import math
 
 pi = 3.1415926535897932384626
 x_pi = 3.14159265358979324 * 3000.0 / 180.0
@@ -31,8 +53,11 @@ def list_files(path): # still used for footage
 
 
 def list_file(path): # new function for screenrecords/error-logs
-  files = os.listdir(path)
-  sorted_files = sorted(files, reverse=True)
+  if os.path.exists(path):
+    files = os.listdir(path)
+    sorted_files = sorted(files, reverse=True)
+  else:
+    return []  # Return an empty list if there are no files or directory
   return sorted_files
 
 
@@ -66,6 +91,23 @@ def all_routes():
   unique_routes = list(dict.fromkeys(route_times))
   return sorted(unique_routes, reverse=True)
 
+def video_to_gif(input_path, output_path, fps=1, duration=6): # not used right now but can if want longer animated gif
+  if os.path.exists(output_path):
+    return
+  command = [
+    'ffmpeg', '-y', '-i', input_path,
+    '-filter_complex',
+    f'fps={fps},scale=240:-1:flags=lanczos,setpts=0.1*PTS,split[s0][s1];[s0]palettegen=max_colors=32[p];[s1][p]paletteuse=dither=bayer',
+    '-t', str(duration), output_path
+  ]
+  subprocess.run(command)
+  print(f"GIF file created: {output_path}")
+
+def video_to_img(input_path, output_path, fps=1, duration=6):
+  if os.path.exists(output_path):
+    return
+  subprocess.run(['ffmpeg', '-y', '-i', input_path, '-ss', '5', '-vframes', '1', output_path])
+  print(f"GIF file created: {output_path}")
 
 def segments_in_route(route):
   segment_names = [segment_name for segment_name in all_segment_names() if segment_name.time_str == route]
@@ -215,7 +257,7 @@ def search_addr(postvars, lon, lat, valid_addr, token):
       query = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{addr_encoded}.json?access_token={token}&limit=1"
       # focus on place around last gps position
       lngi, lati = get_last_lon_lat()
-      query += "&proximity=%s,%s" % (lngi, lati)
+      query += f"&proximity={lngi},{lati}"
       r = requests.get(query)
       if r.status_code != 200:
         return (addr, lon, lat, valid_addr, token)
@@ -254,7 +296,7 @@ def nav_confirmed(postvars):
     name = postvars.get("name") if postvars.get("name") is not None else ""
     if params.get_int("SearchInput") == 1:
       lng, lat = gcj02towgs84(lng, lat)
-    params.put("NavDestination", "{\"latitude\": %f, \"longitude\": %f, \"place_name\": \"%s\"}" % (lat, lng, name))
+    params.put("NavDestination", f"{{\"latitude\": {lat}, \"longitude\": {lng}, \"place_name\": \"{name}\"}}")
     if name == "":
       name =  str(lat) + "," + str(lng)
     new_dest = {"latitude": float(lat), "longitude": float(lng), "place_name": name}

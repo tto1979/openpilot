@@ -267,7 +267,7 @@ def gen_long_ocp():
 
 
 class LongitudinalMpc:
-  def __init__(self, CP, mode='acc'):
+  def __init__(self, CP, mode='acc', dt=DT_MDL):
     self.CP = CP
     self.braking_offset = 1
     self.mode = mode
