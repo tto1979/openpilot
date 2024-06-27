@@ -640,10 +640,6 @@
         <translation>1 año de almacenamiento en disco</translation>
     </message>
     <message>
-        <source>Remote snapshots</source>
-        <translation>Istantánea remota</translation>
-    </message>
-    <message>
         <source>Turn-by-turn navigation</source>
         <translation type="unfinished"></translation>
     </message>
