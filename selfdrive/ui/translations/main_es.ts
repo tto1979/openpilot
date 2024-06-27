@@ -741,8 +741,8 @@
         <translation>Salir</translation>
     </message>
     <message>
-        <source>openpilot</source>
-        <translation type="vanished">openpilot</translation>
+        <source>T.O.P</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>now</source>
@@ -783,10 +783,6 @@
     </message>
     <message>
         <source>ft</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>T.O.P</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
