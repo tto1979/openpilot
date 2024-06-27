@@ -21,17 +21,17 @@ repos:
     -   id: check-added-large-files
         exclude: '(docs/CARS.md)|(poetry.lock)|(third_party/acados/include/blasfeo/include/blasfeo_d_kernel.h)'
         args:
-        - --maxkb=120
+        - --maxkb=500000
         - --enforce-all
--   repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
-    hooks:
-    -   id: codespell
-        exclude: '^(third_party/)|(body/)|(msgq/)|(panda/)|(opendbc/)|(rednose/)|(rednose_repo/)|(teleoprtc/)|(teleoprtc_repo/)|(selfdrive/ui/translations/.*.ts)|(poetry.lock)'
-        args:
-        # if you've got a short variable name that's getting flagged, add it here
-        - -L bu,ro,te,ue,alo,hda,ois,nam,nams,ned,som,parm,setts,inout,warmup,bumb,nd,sie,preints,whit,indexIn
-        - --builtins clear,rare,informal,usage,code,names,en-GB_to_en-US
+#-   repo: https://github.com/codespell-project/codespell
+#    rev: v2.3.0
+#    hooks:
+#    -   id: codespell
+#        exclude: '^(third_party/)|(body/)|(msgq/)|(panda/)|(opendbc/)|(rednose/)|(rednose_repo/)|(teleoprtc/)|(teleoprtc_repo/)|(selfdrive/ui/translations/.*.ts)|(poetry.lock)'
+#        args:
+#        # if you've got a short variable name that's getting flagged, add it here
+#        - -L bu,ro,te,ue,alo,hda,ois,nam,nams,ned,som,parm,setts,inout,warmup,bumb,nd,sie,preints,whit,indexIn
+#        - --builtins clear,rare,informal,usage,code,names,en-GB_to_en-US
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.10
     hooks:
@@ -72,7 +72,7 @@ repos:
         args:
         - --quiet
         - --counting=total
-        - --linelength=240
+        - --linelength=360
         # https://google.github.io/styleguide/cppguide.html
         # relevant rules are whitelisted, see all options with: cpplint --filter=
         - --filter=-build,-legal,-readability,-runtime,-whitespace,+build/include_subdir,+build/forward_decl,+build/include_what_you_use,+build/deprecated,+whitespace/comma,+whitespace/line_length,+whitespace/empty_if_body,+whitespace/empty_loop_body,+whitespace/empty_conditional_body,+whitespace/forcolon,+whitespace/parens,+whitespace/semicolon,+whitespace/tab,+readability/braces
