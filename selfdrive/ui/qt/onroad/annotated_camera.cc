@@ -889,6 +889,7 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   // Declare the variables
   static QElapsedTimer timer;
+  static bool displayText = false;
   static int lastProfile = 0;
   constexpr int fadeDuration = 1000; // 1 second
   constexpr int textDuration = 3000; // 3 seconds
