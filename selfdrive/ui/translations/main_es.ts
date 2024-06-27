@@ -641,7 +641,7 @@
     </message>
     <message>
         <source>Remote snapshots</source>
-        <translation type="vanished">Istantánea remota</translation>
+        <translation>Istantánea remota</translation>
     </message>
     <message>
         <source>Turn-by-turn navigation</source>
