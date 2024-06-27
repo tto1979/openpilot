@@ -999,18 +999,6 @@ Esto puede tardar hasta un minuto.</translation>
         <translation>TEMP</translation>
     </message>
     <message>
-        <source>HIGH</source>
-        <translation type="vanished">ALTA</translation>
-    </message>
-    <message>
-        <source>GOOD</source>
-        <translation type="vanished">BUENO</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="vanished">OK</translation>
-    </message>
-    <message>
         <source>VEHICLE</source>
         <translation>VEHÍCULO</translation>
     </message>

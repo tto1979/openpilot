@@ -645,7 +645,7 @@
     </message>
     <message>
         <source>Remote snapshots</source>
-        <translation type="vanished">Captura remota</translation>
+        <translation>Captura remota</translation>
     </message>
 </context>
 <context>
