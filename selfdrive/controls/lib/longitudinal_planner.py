@@ -2,6 +2,7 @@
 import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
+from openpilot.common.params import Params
 
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
@@ -9,16 +10,38 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.car.interfaces import ACCEL_MIN, ACCEL_MAX
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
 from openpilot.common.swaglog import cloudlog
+# PFEIFER - SLC {{
+from openpilot.selfdrive.controls.speed_limit_controller import slc
+# }} PFEIFER - SLC
+# PFEIFER - VTSC {{
+from openpilot.selfdrive.controls.vtsc import vtsc
+# }} PFEIFER - VTSC
+# PFEIFER - MTSC {{
+from openpilot.selfdrive.controls.mtsc import mtsc
+# }} PFEIFER - MTSC
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
+A_CRUISE_MIN_VALS =  [-0.25, -0.001, -0.01, -0.15, -0.22, -0.28, -0.35, -0.65, -0.65]
+#A_CRUISE_MIN_VALS =    [-0.99,  -1.00,  -1.00,  -0.98,  -0.98,  -0.92,  -0.86,  -0.80]
+A_CRUISE_MIN_BP =     [ 0.,    .01,    .3,    5.,    8.,    11.,   16.,   28.,   42.]
+#A_CRUISE_MIN_BP =      [ 0.,     0.05,   0.4,    0.5,    8.33,   16.,    30.,    40.]
+A_CRUISE_MIN_VALS_DF = [-0.99,  -1.00,  -1.00,  -0.98,  -0.98,  -0.92,  -0.86,  -0.80]
+A_CRUISE_MIN_BP_DF =   [ 0.,     0.05,   0.4,    0.5,    8.33,   16.,    30.,    40.]
+A_CRUISE_MAX_VALS_DF =     [2.4, 2.4, 2.2, 1.65, .970, .788, .576, .377, .323, .083]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_BP_DF =       [0.,  1.,  6.,  8.,    11.,  15.,  20.,  25.,  30.,  55.]
+# A_CRUISE_MAX_VALS_TOYOTA = [1.7,       1.35, 1.22, 1.08, 0.92, 0.78, 0.62, 0.44, 0.28, 0.08]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_VALS_TOYOTA =   [2.0, 2.0,  1.35, 1.22, 1.08, 0.92, 0.72, 0.57, 0.37, 0.32, 0.08]  # Sets the limits of the planner accel, PID may exceed
+# CRUISE_MAX_BP in kmh =     [0.,  10,   20,   30,   40,   53,   72,   90,   107,  150]
+A_CRUISE_MAX_BP_TOYOTA =     [0.,  1,    3.,   6.,   8.,   11.,  15.,  20.,  25.,  30.,  55.]
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 # Lookup table for turns
@@ -29,6 +52,17 @@ _A_TOTAL_MAX_BP = [20., 40.]
 def get_max_accel(v_ego):
   return interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
 
+def get_min_accel(v_ego):
+  return interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
+
+def get_min_accel_df(v_ego):
+  return interp(v_ego, A_CRUISE_MIN_BP_DF, A_CRUISE_MIN_VALS_DF)
+
+def get_max_accel_df(v_ego):
+  return interp(v_ego, A_CRUISE_MAX_BP_DF, A_CRUISE_MAX_VALS_DF)
+
+def get_max_accel_toyota(v_ego):
+  return interp(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
 
 def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
   """
@@ -66,7 +100,7 @@ def get_accel_from_plan(CP, speeds, accels):
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
-    self.mpc = LongitudinalMpc(dt=dt)
+    self.mpc = LongitudinalMpc(CP, dt=dt)
     self.fcw = False
     self.dt = dt
 
@@ -78,6 +112,12 @@ class LongitudinalPlanner:
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
+    self.params = Params()
+    self.override_slc = False
+    self.overridden_speed = 0
+    self.slc_target = 0
+    self.dynamic_follow = False
+    self.dynamic_follow = self.params.get_bool("Marc_Dynamic_Follow")
 
   @staticmethod
   def parse_model(model_msg, model_error):
@@ -99,6 +139,9 @@ class LongitudinalPlanner:
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
+    v_ego_raw = sm['carState'].vEgoRaw
+    v_ego_cluster = sm['carState'].vEgoCluster
+    v_ego_diff = v_ego_raw - v_ego_cluster if v_ego_cluster > 0 else 0
     v_cruise_kph = min(sm['controlsState'].vCruise, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
 
@@ -112,7 +155,12 @@ class LongitudinalPlanner:
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
     if self.mpc.mode == 'acc':
-      accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+      if self.CP.carName == "toyota":
+        accel_limits = [get_min_accel(v_ego), get_max_accel_toyota(v_ego)]
+      elif self.dynamic_follow and self.CP.carFingerprint in TSS2_CAR:
+        accel_limits = [get_min_accel_df(v_ego), get_max_accel_df(v_ego)]
+      else:
+        accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
       accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
     else:
       accel_limits = [ACCEL_MIN, ACCEL_MAX]
@@ -134,11 +182,53 @@ class LongitudinalPlanner:
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
+    # PFEIFER - SLC {{
+    carState = sm['carState']
+    enabled = sm['controlsState'].enabled
+
+    if self.params.get_bool("SpeedLimitControl"):
+      slc.update_current_max_velocity(v_cruise_kph * CV.KPH_TO_MS, v_ego, sm['carState'].aEgo)
+      desired_speed_limit = slc.speed_limit + 1.5 + v_ego_diff
+
+      # Override SLC upon gas pedal press and reset upon brake/cancel button
+      self.override_slc |= carState.gasPressed
+      self.override_slc &= enabled
+      self.override_slc &= v_ego > desired_speed_limit
+
+      # Set the max speed to the manual set speed
+      if carState.gasPressed:
+        self.overridden_speed = np.clip(v_ego, desired_speed_limit, v_cruise)
+      self.overridden_speed *= enabled
+
+      # Use the speed limit if its not being overridden
+      if not self.override_slc:
+        if slc.speed_limit > 0 and desired_speed_limit < v_cruise:
+          self.slc_target = desired_speed_limit
+          v_cruise = self.slc_target
+      else:
+        self.slc_target = self.overridden_speed
+    # }} PFEIFER - SLC
+    # PFEIFER - VTSC {{
+    vtsc.update(prev_accel_constraint, v_ego, sm)
+    if vtsc.active and v_cruise > vtsc.v_target:
+      v_cruise = vtsc.v_target
+    # }} PFEIFER - VTSC
+
+    # PFEIFER - MTSC {{
+    mtsc_v = mtsc.target_speed(v_cruise, v_ego, sm['carState'].aEgo, self.j_desired_trajectory.tolist()[0])
+    if v_cruise > mtsc_v and mtsc_v != 0:
+      v_cruise = mtsc_v
+    # }} PFEIFER - MTSC
+
+    lead_xv_0 = self.mpc.process_lead(sm['radarState'].leadOne)
+    lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
+    v_lead0 = lead_xv_0[0,1]
+    v_lead1 = lead_xv_1[0,1]
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality, v_lead0=v_lead0, v_lead1=v_lead1)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality, dynamic_follow=self.dynamic_follow)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)

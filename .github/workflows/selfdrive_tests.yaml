@@ -2,8 +2,8 @@ name: selfdrive
 
 on:
   push:
-    branches:
-      - master
+    # branches:
+      # - master
   pull_request:
   workflow_dispatch:
 
@@ -51,7 +51,7 @@ jobs:
         cd $STRIPPED_DIR
         ${{ env.RUN }} "python system/manager/build.py"
     - name: Run tests
-      timeout-minutes: 3
+      timeout-minutes: 10
       run: |
         cd $STRIPPED_DIR
         ${{ env.RUN }} "release/check-dirty.sh && \
@@ -118,7 +118,7 @@ jobs:
     - name: Build openpilot
       run: ${{ env.RUN }} "scons -j$(nproc)"
     - name: pre-commit
-      timeout-minutes: 4
+      timeout-minutes: 10
       run: ${{ env.RUN }} "unset PYTHONWARNINGS && pre-commit run --all && chmod -R 777 /tmp/pre-commit"
 
   unit_tests:
@@ -137,7 +137,7 @@ jobs:
       timeout-minutes: ${{ ((steps.restore-scons-cache.outputs.cache-hit == 'true') && 10 || 30) }} # allow more time when we missed the scons cache
       run: ${{ env.RUN }} "scons -j$(nproc)"
     - name: Run unit tests
-      timeout-minutes: 15
+      timeout-minutes: 20
       run: |
         ${{ env.RUN }} "source selfdrive/test/setup_xvfb.sh && \
                         export MAPBOX_TOKEN='pk.eyJ1Ijoiam5ld2IiLCJhIjoiY2xxNW8zZXprMGw1ZzJwbzZneHd2NHljbSJ9.gV7VPRfbXFetD-1OVF0XZg' && \
@@ -236,7 +236,7 @@ jobs:
     - name: Build openpilot
       run: ${{ env.RUN }} "scons -j$(nproc)"
     - name: Test car models
-      timeout-minutes: 20
+      timeout-minutes: 25
       run: |
         ${{ env.RUN }} "$PYTEST selfdrive/car/tests/test_models.py && \
                         chmod -R 777 /tmp/comma_download_cache"

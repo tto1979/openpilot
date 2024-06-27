@@ -18,6 +18,7 @@ blacklist = [
 
   "opendbc/.*.dbc$",
   "opendbc/generator/",
+  "selfdrive/car/torque_data/lat_models/*",
 
   "cereal/.*test.*",
   "^common/tests/",
