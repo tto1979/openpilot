@@ -156,6 +156,7 @@ if (!m_map->layerExists("modelPathLayer")) {
   }
 }
 
+bool now_navigation = false;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -270,7 +271,14 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
         map_instructions->updateInstructions(i);
       }
+      if (now_navigation == false) {
+        m_map->setStyleUrl("mapbox://styles/kawombop0/clxpnfmk000ke01pu7kk4ehrt");
+      }
+      now_navigation = true;
     } else {
+      if (routing_problem == false && now_navigation == true) {
+        now_navigation = false;
+      }
       clearRoute();
     }
   }
@@ -315,7 +323,8 @@ void MapWindow::initializeGL() {
 
   m_map->setMargins({0, 350, 0, 50});
   m_map->setPitch(MIN_PITCH);
-  m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj");
+  //m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj");
+  m_map->setStyleUrl("mapbox://styles/kawombop0/clxpnfmk000ke01pu7kk4ehrt");
 
   QObject::connect(m_map.data(), &QMapLibre::Map::mapChanged, [=](QMapLibre::Map::MapChange change) {
     // set global animation duration to 0 ms so visibility changes are instant
