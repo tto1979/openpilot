@@ -1125,6 +1125,26 @@ This may take up to a minute.</source>
         <source>VIEW</source>
         <translation>觀看</translation>
     </message>
+    <message>
+        <source>Onroad/Offroad Mode</source>
+        <translation>連線/離線模式</translation>
+    </message>
+    <message>
+        <source>Go Offroad</source>
+        <translation>進入離線模式</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to switch driving mode?</source>
+        <translation>確認您要切換連線模式？</translation>
+    </message>
+    <message>
+        <source>CONFIRM</source>
+        <translation>確認</translation>
+    </message>
+    <message>
+        <source>Go Onroad</source>
+        <translation>進入連線模式</translation>
+    </message>
 </context>
 <context>
     <name>SshControl</name>
