@@ -1127,15 +1127,15 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Onroad/Offroad Mode</source>
-        <translation>連線/離線模式</translation>
+        <translation>切換 連線/離線 模式</translation>
     </message>
     <message>
         <source>Go Offroad</source>
-        <translation>進入離線模式</translation>
+        <translation>離線模式</translation>
     </message>
     <message>
         <source>Are you sure you want to switch driving mode?</source>
-        <translation>確認您要切換連線模式？</translation>
+        <translation>確認您要切換裝置與車輛的連接模式？</translation>
     </message>
     <message>
         <source>CONFIRM</source>
@@ -1143,7 +1143,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Go Onroad</source>
-        <translation>進入連線模式</translation>
+        <translation>連線模式</translation>
     </message>
 </context>
 <context>
