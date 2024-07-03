@@ -116,7 +116,7 @@ class CarController(CarControllerBase):
     # let's keep all the commented out code for easy debug purpose for future.
     if self.toyota_bsm:
       if self.frame > 200:
-        #left bsm
+        # left bsm
         if not self.blindspot_debug_enabled_left:
           if (self.blindspot_always_on or CS.out.vEgo > 6): # eagle eye camera will stop working if right bsm is switched on under 6m/s
             can_sends.append(set_blindspot_debug_mode(LEFT_BLINDSPOT, True))
@@ -133,7 +133,7 @@ class CarController(CarControllerBase):
             self.blindspot_frame = self.frame
             # print(self.blindspot_frame)
             # print("bsm poll left")
-        #right bsm
+        # right bsm
         if not self.blindspot_debug_enabled_right:
           if (self.blindspot_always_on or CS.out.vEgo > 6): # eagle eye camera will stop working if right bsm is switched on under 6m/s
             can_sends.append(set_blindspot_debug_mode(RIGHT_BLINDSPOT, True))
