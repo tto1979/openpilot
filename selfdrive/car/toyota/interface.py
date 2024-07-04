@@ -174,8 +174,8 @@ class CarInterface(CarInterfaceBase):
         ret.vEgoStarting = 0.23
         ret.stoppingDecelRate = 0.09  # reach stopping target smoothly
     else:
-      tune.kiBP = [0.,  12.,  16,   20.,  27.,  36.,  50]
-      tune.kiV = [0.33, 0.22, 0.19, 0.17, 0.10, 0.07, 0.01]
+      tune.kiBP = [0.,   3.,    12.,   16,   20.,  27.,  36.,  50]
+      tune.kiV = [ 0.33, 0.288, 0.225, 0.19, 0.17, 0.10, 0.07, 0.01]
 
       if candidate in TSS2_CAR:
         ret.vEgoStopping = 0.01
