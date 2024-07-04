@@ -59,6 +59,8 @@ dependencies = [
   "psutil",
   "pycryptodome", # used in updated/casync, panda, body, and a test
 
+  "flask",
+
   #logreader
   "zstd",
 ]
