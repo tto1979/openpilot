@@ -224,7 +224,7 @@ class CarState(CarStateBase):
       self.short_press_button_counter += 1
       if not self.distance_button_hold:
         self.gap_button_counter += 1
-        if self.gap_button_counter > 300:  # 300 miliseconds
+        if self.gap_button_counter > 150:
           self.params.put_bool_nonblocking('ExperimentalMode', not self.params.get_bool("ExperimentalMode"))  # change experimental/chill mode on fly with long press
           self.gap_button_counter = 0
 
