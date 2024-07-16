@@ -70,11 +70,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto car_state = sm["carState"].getCarState();
   const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
+  is_metric = s.scene.is_metric;
+
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
   setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
-  if (is_cruise_set && !s.scene.is_metric) {
+  if (is_cruise_set && !is_metric) {
     setSpeed *= KM_TO_MILE;
   }
 
@@ -83,7 +85,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
   vc_speed = v_ego;
-  speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
+  speed *= is_metric ? MS_TO_KPH : MS_TO_MPH;
 
   auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
   speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
@@ -95,6 +97,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE || timSignals && (turnSignalLeft || turnSignalRight));
   brakeLights = car_state.getBrakeLights();
+
+  speedUnit = is_metric ? tr("km/h") : tr("mph");
+  hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
   // PFEIFER - SLC {{
   if (speedLimit == 0) {
