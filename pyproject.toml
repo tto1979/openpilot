@@ -223,7 +223,7 @@ lint.ignore = [
   "UP038",   # (x, y) -> x|y for isinstance
 ]
 line-length = 320
-target-version="py311"
+target-version ="py311"
 exclude = [
   "body",
   "cereal",
