@@ -643,10 +643,6 @@
         <source>Turn-by-turn navigation</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Remote snapshots</source>
-        <translation>Capturas remotas</translation>
-    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>
