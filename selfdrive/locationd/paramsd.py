@@ -207,11 +207,11 @@ def main():
 
     if sm.updated['livePose']:
       # PFEIFER - MAPD {{
-      location = sm['liveLocationKalman']
-      if (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid and location.gpsOK:
-        bearing = math.degrees(location.calibratedOrientationNED.value[2])
-        lat = location.positionGeodetic.value[0]
-        lon = location.positionGeodetic.value[1]
+      location = sm['livePose']
+      if location.valid:
+        bearing = math.degrees(location.rot[2])
+        lat = location.lat
+        lon = location.lon
         mem_params.put("LastGPSPosition", json.dumps({ "latitude": lat, "longitude": lon, "bearing": bearing }))
       # }} PFEIFER - MAPD
       x = learner.kf.x
