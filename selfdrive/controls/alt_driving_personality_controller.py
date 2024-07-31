@@ -10,7 +10,7 @@ class AlternativeDrivingPersonalityController:
         except Exception:
             self._speed = 0
 
-        self._mode = 1
+        self._mode = 0
         self._active = False
 
     def update(self, v_ego):
