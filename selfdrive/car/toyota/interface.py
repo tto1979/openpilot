@@ -168,18 +168,20 @@ class CarInterface(CarInterfaceBase):
       tune.kiV = [.4, .2] # appears to produce minimal oscillation on TSS-P
 
       if candidate in TSS2_CAR:
-        ret.stopAccel = -0.4
-        ret.vEgoStopping = 0.23
-        ret.vEgoStarting = 0.23
-        ret.stoppingDecelRate = 0.09  # reach stopping target smoothly
+        ret.vEgoStopping = 0.10
+        ret.vEgoStarting = 0.10
+        ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
+        tune.kpV = [0.0]
+        tune.kiBP = [0.0]
+        tune.kiV = [0.5]
     else:
-      tune.kiBP = [0.,   3.,    12.,   16,   20.,  27.,  36.,  50]
-      tune.kiV = [ 0.33, 0.288, 0.225, 0.19, 0.17, 0.10, 0.07, 0.01]
+      tune.kiBP = [0.,   5.,   12.,  20.,  27.,  36.,  50]
+      tune.kiV = [0.33, 0.22, 0.20, 0.17, 0.12, 0.08, 0.06]
 
       if candidate in TSS2_CAR:
-        ret.vEgoStopping = 0.01
-        ret.vEgoStarting = 0.01
-        ret.stoppingDecelRate = 0.4  # reach stopping target smoothly
+        ret.vEgoStopping = 0.001
+        ret.vEgoStarting = 0.001
+        ret.stoppingDecelRate = 0.0074  # reach stopping target smoothly
       else:
         ret.stopAccel = -2.5  # on stock Toyota this is -2.5
         ret.stoppingDecelRate = 0.25  # This is okay for TSS-P
