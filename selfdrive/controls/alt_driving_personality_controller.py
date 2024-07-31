@@ -7,7 +7,7 @@ class AlternativeDrivingPersonalityController:
     def __init__(self):
         # try except to avoid issue in longitudinal testing
         try:
-            self._speed = 11 * CV.KPH_TO_MS
+            self._speed = 40 * CV.KPH_TO_MS
         except Exception:
             self._speed = 0
 
