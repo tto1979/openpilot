@@ -21,9 +21,7 @@ class AlternativeDrivingPersonalityController:
 
     def update(self, v_ego):
         was_active = self._active
-        
         openpilot_longitudinal_control = getattr(self.CP, 'openpilotLongitudinalControl', True)
-        
         self._active = self._speed > 0 and v_ego < self._speed and openpilot_longitudinal_control
         current_time = time.time()
 
