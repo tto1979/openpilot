@@ -24,19 +24,18 @@ class AlternativeDrivingPersonalityController:
         self._active = self._speed > 0 and v_ego < self._speed and self.CP.openpilotLongitudinalControl
         current_time = time.time()
 
+        # Record LongitudinalPersonality every 30 seconds when speed is above 40 km/h
+        if not self._active and current_time - self.last_record_time >= 30:
+            self.old_personality = self.params.get('LongitudinalPersonality')
+            self.last_record_time = current_time
+
         if self._active and not was_active:
             # Switching to active state
-            self.old_personality = self.params.get('LongitudinalPersonality')
             self.params.put_nonblocking('LongitudinalPersonality', str(self._mode))
         elif not self._active and was_active:
             # Switching back to inactive state
             if self.old_personality is not None:
-                self.params.put_nonblocking('LongitudinalPersonality', self.old_personality)
-        
-        # Record LongitudinalPersonality every 30 seconds when speed is above 40 km/h
-        if self._active and current_time - self.last_record_time >= 30:
-            self.old_personality = self.params.get('LongitudinalPersonality')
-            self.last_record_time = current_time
+              self.params.put_nonblocking('LongitudinalPersonality', self.old_personality)
 
     def get_personality(self, personality):
         return self._mode if self._active else personality
