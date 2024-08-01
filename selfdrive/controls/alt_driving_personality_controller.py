@@ -5,7 +5,7 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
 
 class AlternativeDrivingPersonalityController:
-    def __init__(self, CP):
+    def __init__(self, CP=None):
         # try except to avoid issue in longitudinal testing
         try:
             self._speed = 40 * CV.KPH_TO_MS
@@ -21,7 +21,10 @@ class AlternativeDrivingPersonalityController:
 
     def update(self, v_ego):
         was_active = self._active
-        self._active = self._speed > 0 and v_ego < self._speed and self.CP.openpilotLongitudinalControl
+        
+        openpilot_longitudinal_control = getattr(self.CP, 'openpilotLongitudinalControl', True)
+        
+        self._active = self._speed > 0 and v_ego < self._speed and openpilot_longitudinal_control
         current_time = time.time()
 
         # Record LongitudinalPersonality every 30 seconds when speed is above 40 km/h
