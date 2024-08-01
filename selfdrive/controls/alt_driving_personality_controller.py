@@ -26,7 +26,7 @@ class AlternativeDrivingPersonalityController:
         current_time = time.time()
 
         # Record LongitudinalPersonality every 30 seconds when speed is above 40 km/h
-        if not self._active and current_time - self.last_record_time >= 30:
+        if v_ego > self._speed and openpilot_longitudinal_control and current_time - self.last_record_time >= 30:
             self.old_personality = self.params.get('LongitudinalPersonality')
             self.last_record_time = current_time
 
