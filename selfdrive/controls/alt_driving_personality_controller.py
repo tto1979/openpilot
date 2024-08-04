@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import threading
 import time
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
@@ -18,17 +18,15 @@ class AlternativeDrivingPersonalityController:
         self.params = Params()
         self.old_personality = None
         self.last_record_time = 0
+        self.v_ego = 0
+        self.update_thread = threading.Thread(target=self.update_loop, daemon=True)
+        self.update_thread.start()
 
     def update(self, v_ego):
+        self.v_ego = v_ego
         was_active = self._active
         openpilot_longitudinal_control = getattr(self.CP, 'openpilotLongitudinalControl', True)
         self._active = self._speed > 0 and v_ego < self._speed and openpilot_longitudinal_control
-        current_time = time.time()
-
-        # Record LongitudinalPersonality every 30 seconds when speed is above 40 km/h
-        if v_ego > self._speed and openpilot_longitudinal_control and current_time - self.last_record_time >= 30:
-            self.old_personality = self.params.get('LongitudinalPersonality')
-            self.last_record_time = current_time
 
         if self._active and not was_active:
             # Switching to active state
@@ -37,6 +35,17 @@ class AlternativeDrivingPersonalityController:
             # Switching back to inactive state
             if self.old_personality is not None:
               self.params.put_nonblocking('LongitudinalPersonality', self.old_personality)
+
+    def update_loop(self):
+        while True:
+          current_time = time.time()
+          openpilot_longitudinal_control = getattr(self.CP, 'openpilotLongitudinalControl', True)
+
+          if self.v_ego > (40 * CV.KPH_TO_MS) and openpilot_longitudinal_control:
+            self.old_personality = self.params.get('LongitudinalPersonality')
+            self.last_record_time = current_time
+
+          time.sleep(5)
 
     def get_personality(self, personality):
         return self._mode if self._active else personality
