@@ -52,28 +52,23 @@ rm -f panda/board/obj/panda.bin.signed
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
 DATETIME=$(date '+%Y-%m-%dT%H:%M:%S')
-TOP_VERSION=$(cat $SOURCE_DIR/common/version.h | awk -F\" '{print $2}')
-
-VERSION=$(date '+%Y.%m.%d')
-echo "#define COMMA_VERSION \"$VERSION\"" > common/version.h
+VERSION=$(cat $SOURCE_DIR/common/version.h | awk -F\" '{print $2}')
 
 echo "[-] committing version $VERSION T=$SECONDS"
-git commit -a -m "T.O.P v$VERSION release"
 git add -f .
 git status
-git commit --amend -m "T.O.P v$VERSION
+git commit -a -m "openpilot v$VERSION release
 
-version: T.O.P v$TOP_VERSION release
 date: $DATETIME
-top-dev(priv) master commit: $GIT_HASH
+master commit: $GIT_HASH
 "
 
 # should be no submodules or LFS files
-# git submodule status
-# if [ ! -z "$(git lfs ls-files)" ]; then
-#   echo "LFS files detected!"
-#   exit 1
-# fi
+git submodule status
+if [ ! -z "$(git lfs ls-files)" ]; then
+  echo "LFS files detected!"
+  exit 1
+fi
 
 # ensure files are within GitHub's limit
 BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M)"
