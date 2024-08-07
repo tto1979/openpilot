@@ -43,6 +43,7 @@ git clean -xdff
 # do the files copy
 echo "[-] copying files T=$SECONDS"
 cd $SOURCE_DIR
+chmod 777 --parents $(./release/release_files.py)
 cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
 
 # in the directory
