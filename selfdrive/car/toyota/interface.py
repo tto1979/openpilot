@@ -1,5 +1,5 @@
 from cereal import car
-from openpilot.common.conversions import Conversions as CV
+from openpilot.selfdrive.car.conversions import Conversions as CV
 from openpilot.common.params import Params
 from panda import Panda
 from panda.python import uds
@@ -178,8 +178,8 @@ class CarInterface(CarInterfaceBase):
         tune.kiBP = [0.0]
         tune.kiV = [0.5]
     else:
-      tune.kiBP = [0.,   5.,   12.,  20.,  27.,  36.,  50]
-      tune.kiV = [0.33, 0.22, 0.20, 0.17, 0.12, 0.08, 0.06]
+      tune.kiBP = [0.,    5.,   12.,  20.,  27.,  36.,  50]
+      tune.kiV = [0.342, 0.23, 0.20, 0.17, 0.12, 0.08, 0.06]
 
       if candidate in TSS2_CAR:
         ret.vEgoStopping = 0.001
