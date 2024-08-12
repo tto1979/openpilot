@@ -1,5 +1,6 @@
 from cereal import car
-from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_can_msg, make_tester_present_msg
+from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_tester_present_msg
+from openpilot.selfdrive.car.can_definitions import CanData
 from openpilot.selfdrive.car.helpers import clip, interp
 from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.car.toyota import toyotacan
@@ -45,12 +46,12 @@ def set_blindspot_debug_mode(lr,enable):
     m = lr + b'\x02\x10\x60\x00\x00\x00\x00'
   else:
     m = lr + b'\x02\x10\x01\x00\x00\x00\x00'
-  return make_can_msg(0x750, m, 0)
+  return CanData(0x750, m, 0)
 
 
 def poll_blindspot_status(lr):
   m = lr + b'\x02\x21\x69\x00\x00\x00\x00'
-  return make_can_msg(0x750, m, 0)
+  return CanData(0x750, m, 0)
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP):
@@ -101,11 +102,11 @@ class CarController(CarControllerBase):
       gear = CS.out.gearShifter
       if self.last_gear != gear and gear == GearShifter.park:
         if self.toyotaautounlock:
-          can_sends.append(make_can_msg(0x750, UNLOCK_CMD, 0))
+          can_sends.append(CanData(0x750, UNLOCK_CMD, 0))
         if self.toyotaautolock:
           self.lock_once = False
       elif self.toyotaautolock and not CS.out.doorOpen and gear == GearShifter.drive and not self.lock_once and CS.out.vEgo >= LOCK_AT_SPEED:
-        can_sends.append(make_can_msg(0x750, LOCK_CMD, 0))
+        can_sends.append(CanData(0x750, LOCK_CMD, 0))
         self.lock_once = True
       self.last_gear = gear
 
@@ -297,7 +298,7 @@ class CarController(CarControllerBase):
     # *** static msgs ***
     for addr, cars, bus, fr_step, vl in STATIC_DSU_MSGS:
       if self.frame % fr_step == 0 and self.CP.enableDsu and self.CP.carFingerprint in cars:
-        can_sends.append(make_can_msg(addr, vl, bus))
+        can_sends.append(CanData(addr, vl, bus))
 
     # keep radar disabled
     if self.frame % 20 == 0 and self.CP.flags & ToyotaFlags.DISABLE_RADAR.value:
