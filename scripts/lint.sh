@@ -31,7 +31,7 @@ function run() {
   CMD="$@"
 
   set +e
-  log="$(eval "$CMD" 2>&1)"
+  log="$($CMD 2>&1)"
 
   if [[ $? -eq 0 ]]; then
     echo -e "[${GREEN}✔${NC}]"
