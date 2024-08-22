@@ -74,7 +74,7 @@ class LatControlTorque(LatControl):
 
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn
-    self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
+    self.use_lateral_jerk = True  # self.param_s.get_bool("TorqueLateralJerk")
 
     # These are only used if use_nn or use_lateral_jerk is True,
     # but they're defined here since use_lateral_jerk can be toggled while onroad
