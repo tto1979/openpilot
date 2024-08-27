@@ -119,6 +119,7 @@ class LongitudinalPlanner:
     self.slc_target = 0
     self.dynamic_follow = False
     self.dynamic_follow = self.params.get_bool("Marc_Dynamic_Follow")
+    self.alt_driving_personality = self.params.get_bool("alt_driving_personality")
     self._adp_controller = AlternativeDrivingPersonalityController()
 
   @staticmethod
@@ -227,7 +228,7 @@ class LongitudinalPlanner:
     v_lead0 = lead_xv_0[0,1]
     v_lead1 = lead_xv_1[0,1]
     self._adp_controller.update(v_ego)
-    personality = self._adp_controller.get_personality(sm['controlsState'].personality)
+    personality = self._adp_controller.get_personality(sm['controlsState'].personality) if self.alt_driving_personality else sm['controlsState'].personality
     self.mpc.set_weights(prev_accel_constraint, personality=personality, v_lead0=v_lead0, v_lead1=v_lead1)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)

@@ -50,6 +50,7 @@ def manager_init() -> None:
     ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),
 
     ("AleSato_AutomaticBrakeHold", "0"),
+    ("alt_driving_personality", "0"),
     ("CarModel", ""),
     ("CydiaTune", "0"),
     ("dp_atl", "0"),
