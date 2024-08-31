@@ -186,7 +186,7 @@ class Controls:
 
     # controlsd is driven by carState, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
-    self.use_old_long = Params().get_bool("CydiaTune")
+    self.use_old_long = Params().get_bool("CydiaTune") and not Params().get_bool("ExperimentalMode")
 
   def set_initial_state(self):
     if REPLAY:
