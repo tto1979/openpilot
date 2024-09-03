@@ -186,7 +186,9 @@ class Controls:
 
     # controlsd is driven by carState, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
-    self.use_old_long = Params().get_bool("CydiaTune") and not Params().get_bool("ExperimentalMode")
+
+  def update_use_old_long(self):
+    self.use_old_long = self.params.get_bool("CydiaTune") and not Params().get_bool("ExperimentalMode")
 
   def set_initial_state(self):
     if REPLAY:
@@ -830,7 +832,7 @@ class Controls:
 
   def step(self):
     start_time = time.monotonic()
-
+    self.update_use_old_long()
     self.reverse_acc_change = self.params.get_bool("ReverseAccChange")
 
     # Sample data from sockets and get a carState
@@ -873,6 +875,7 @@ class Controls:
     try:
       t.start()
       while True:
+        self.update_use_old_long()
         self.step()
         self.rk.monitor_time()
     finally:
