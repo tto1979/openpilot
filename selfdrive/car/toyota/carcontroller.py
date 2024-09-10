@@ -219,7 +219,7 @@ class CarController(CarControllerBase):
       accel_offset = 0.
     # only calculate pcm_accel_cmd when long is active to prevent disengagement from accelerator depression
     if CC.longActive:
-      if self.CP.carFingerprint in TSS2_CAR and Params().get_bool("Marc_Dynamic_Follow"):
+      if Params().get_bool("CydiaTune"):
         pcm_accel_cmd = clip(actuators.accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX_PLUS)
       else:
         pcm_accel_cmd = clip(actuators.accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
