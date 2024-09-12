@@ -18,7 +18,7 @@ from openpilot.selfdrive.car.can_definitions import CanData, CanRecvCallable, Ca
 from openpilot.selfdrive.car.fw_versions import ObdCallback
 from openpilot.selfdrive.car.car_helpers import get_car
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
-from openpilot.selfdrive.car.toyota.values import TSS2_CAR, RADAR_ACC_CAR, ToyotaFlags
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR, ToyotaFlags
 from openpilot.selfdrive.controls.lib.events import Events
 
 REPLAY = "REPLAY" in os.environ
