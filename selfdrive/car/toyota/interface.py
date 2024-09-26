@@ -178,8 +178,8 @@ class CarInterface(CarInterfaceBase):
         tune.kiBP = [0.0]
         tune.kiV = [0.5]
     else:
-      tune.kiBP = [0.,  5.,    12.,   20.,   27., 40.]
-      tune.kiV = [.35, .2286, .2086, .1716, .10, .06]
+      tune.kiBP = [0.,  3.,  8.,  20., 27., 40.]
+      tune.kiV = [.35, .24, .20, .17, .10, .06]
 
       if candidate in TSS2_CAR:
         ret.vEgoStopping = 0.25
