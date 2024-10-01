@@ -67,4 +67,5 @@ ignore_imports =
     openpilot.selfdrive.car.toyota.carcontroller -> openpilot.common.params
     openpilot.selfdrive.car.toyota.carstate -> openpilot.common.params
     openpilot.selfdrive.car.toyota.interface -> openpilot.common.params
+    openpilot.selfdrive.car.toyota.values -> openpilot.common.params
 unmatched_ignore_imports_alerting = warn
