@@ -6,6 +6,7 @@ from enum import Enum, IntFlag
 from cereal import car
 from openpilot.selfdrive.car import CarSpecs, PlatformConfig, Platforms, AngleRateLimit, dbc_dict
 from openpilot.selfdrive.car.conversions import Conversions as CV
+from openpilot.common.params import Params
 from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarDocs, Column, CarParts, CarHarness
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
 
@@ -15,10 +16,6 @@ PEDAL_TRANSITION = 10. * CV.MPH_TO_MS
 
 
 class CarControllerParams:
-  ACCEL_MAX = 2.0  # m/s2, lower than allowed 2.0 m/s2 for tuning reasons
-  ACCEL_MAX_PLUS = 3.0
-  ACCEL_MIN = -3.5  # m/s2
-
   STEER_STEP = 1
   STEER_MAX = 1500
   STEER_ERROR_MAX = 350     # max delta between torque cmd and torque motor
@@ -33,6 +30,12 @@ class CarControllerParams:
   ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[5, 25], angle_v=[0.36, 0.26])
 
   def __init__(self, CP):
+    if Params().get_bool("Dynamic_Follow"):
+      self.ACCEL_MAX = 3.0
+    else:
+      self.ACCEL_MAX = 2.0  # m/s2, lower than allowed 2.0 m/s^2 for tuning reasons
+    self.ACCEL_MIN = -3.5  # m/s2
+
     if CP.lateralTuning.which == 'torque':
       self.STEER_DELTA_UP = 15       # 1.0s time to peak torque
       self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
@@ -46,7 +49,7 @@ class ToyotaFlags(IntFlag):
   HYBRID = 1
   SMART_DSU = 2
   DISABLE_RADAR = 4
-  RADAR_CAN_FILTER = 1024
+  RADAR_CAN_FILTER = 2048
 
   # Static flags
   TSS2 = 8
@@ -58,6 +61,8 @@ class ToyotaFlags(IntFlag):
   NO_STOP_TIMER = 256
   # these cars are speculated to allow stop and go when the DSU is unplugged or disabled with sDSU
   SNG_WITHOUT_DSU = 512
+  # these cars can utilize 3.0 m/s^2
+  RAISED_ACCEL_LIMIT = 1024
 
 
 class Footnote(Enum):

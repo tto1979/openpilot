@@ -1266,7 +1266,7 @@ Esto puede tardar un minuto.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cydia&apos;s Longitudinal Tuning</source>
+        <source>Toyota Longitudinal Tuning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1278,7 +1278,7 @@ Esto puede tardar un minuto.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle. (Fine-tuned by Marc - cgw1968-5779)</source>
+        <source>The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

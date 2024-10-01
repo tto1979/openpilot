@@ -50,7 +50,11 @@ class CarState(CarStateBase):
     self.low_speed_lockout = False
     self.acc_type = 1
     self.lkas_hud = {}
+    self.pcm_accel_net = 0.0
+    self.slope_angle = 0.0
+
     self.params = Params()
+    self.topsng = Params().get_bool("topsng")
 
     self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
     # Change between chill/experimental mode using steering wheel
@@ -59,7 +63,6 @@ class CarState(CarStateBase):
     self.gap_button_counter = 0
     self.short_press_button_counter = 0
 
-    self.topsng = Params().get_bool("topsng")
 
     # bsm
     self.toyota_bsm = Params().get_bool("toyota_bsm")
@@ -88,6 +91,26 @@ class CarState(CarStateBase):
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
+
+    # Describes the acceleration request from the PCM if on flat ground, may be higher or lower if pitched
+    # CLUTCH->ACCEL_NET is only accurate for gas, PCM_CRUISE->ACCEL_NET is only accurate for brake
+    # These signals only have meaning when ACC is active
+    if self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+      self.pcm_accel_net = max(cp.vl["CLUTCH"]["ACCEL_NET"], 0.0)
+
+      # Sometimes ACC_BRAKING can be 1 while showing we're applying gas already
+      if cp.vl["PCM_CRUISE"]["ACC_BRAKING"]:
+        self.pcm_accel_net += min(cp.vl["PCM_CRUISE"]["ACCEL_NET"], 0.0)
+
+      # add creeping force at low speeds only for braking, CLUTCH->ACCEL_NET already shows this
+      neutral_accel = max(cp.vl["PCM_CRUISE"]["NEUTRAL_FORCE"] / self.CP.mass, 0.0)
+      if self.pcm_accel_net + neutral_accel < 0.0:
+        self.pcm_accel_net += neutral_accel
+    else:
+      self.pcm_accel_net = cp.vl["PCM_CRUISE"]["NEUTRAL_FORCE"] / self.CP.mass
+
+    # filtered pitch estimate from the car, negative is a downward slope
+    self.slope_angle = cp.vl["VSC1S07"]["ASLP"] * CV.DEG_TO_RAD
 
     ret.doorOpen = any([cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
                         cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RR"]])
@@ -192,7 +215,11 @@ class CarState(CarStateBase):
       self.low_speed_lockout = cp.vl["PCM_CRUISE_2"]["LOW_SPEED_LOCKOUT"] == 2
 
     self.pcm_acc_status = cp.vl["PCM_CRUISE"]["CRUISE_STATE"]
-    if self.CP.carFingerprint not in (NO_STOP_TIMER_CAR - TSS2_CAR):
+    if self.topsng and (self.CP.flags & ToyotaFlags.HYBRID.value) and (self.CP.flags & ToyotaFlags.SMART_DSU.value):
+      # ignore standstill in hybrid vehicles, since pcm allows to restart without
+      # receiving any special command. Also if interceptor is detected
+      ret.cruiseState.standstill = False
+    elif not self.topsng and self.CP.carFingerprint not in (NO_STOP_TIMER_CAR - TSS2_CAR):
       # ignore standstill state in certain vehicles, since pcm allows to restart with just an acceleration request
       ret.cruiseState.standstill = self.pcm_acc_status == 7
     ret.cruiseState.enabled = bool(cp.vl["PCM_CRUISE"]["CRUISE_ACTIVE"])
@@ -320,6 +347,7 @@ class CarState(CarStateBase):
       ("BODY_CONTROL_STATE", 3),
       ("BODY_CONTROL_STATE_2", 2),
       ("ESP_CONTROL", 3),
+      ("VSC1S07", 20),
       ("EPS_STATUS", 25),
       ("BRAKE_MODULE", 40),
       ("WHEEL_SPEEDS", 80),
@@ -328,6 +356,9 @@ class CarState(CarStateBase):
       ("PCM_CRUISE_SM", 1),
       ("STEER_TORQUE_SENSOR", 50),
     ]
+
+    if CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+      messages.append(("CLUTCH", 15))
 
     if CP.carFingerprint != CAR.TOYOTA_MIRAI:
       messages.append(("ENGINE_RPM", 42))

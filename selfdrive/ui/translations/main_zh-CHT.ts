@@ -1262,20 +1262,20 @@ This may take up to a minute.</source>
         <translation>啟用Stop And Go 功能，讓車輛跟車到停並進入auto hold。</translation>
     </message>
     <message>
-        <source>Cydia&apos;s Longitudinal Tuning</source>
-        <translation>Cydia縱向控制調校</translation>
+        <source>Toyota Longitudinal Tuning</source>
+        <translation>Toyota縱向控制調校</translation>
     </message>
     <message>
         <source>Using the longitudinal Tuning can increase the sensitivity of longitudinal control in Toyota models.</source>
-        <translation>使用Cydia的蹤向調校可增加Toyota車款在蹤向操控的靈敏度。</translation>
+        <translation>使用Toyata蹤向調校可增加蹤向操控的靈敏度。</translation>
     </message>
     <message>
         <source>Dynamic Distance Adjustment</source>
         <translation>動態距離調整</translation>
     </message>
     <message>
-        <source>The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle. (Fine-tuned by Marc - cgw1968-5779)</source>
-        <translation>開啟此功能後，與前車的距離調整將不再是固定的反應時間，而是會依據車速作動態的距離調整。(由 Marc - cgw1968-5779 所微調)</translation>
+        <source>The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle.</source>
+        <translation>開啟此功能後，與前車的距離調整將不再是固定的反應時間，而是會依據車速作動態的距離調整。</translation>
     </message>
     <message>
         <source>Blinker Lane Change</source>

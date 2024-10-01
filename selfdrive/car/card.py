@@ -117,7 +117,7 @@ class Car:
     if auto_brakehold:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALLOW_AEB
 
-    sport_mode = self.params.get_bool("CydiaTune")
+    sport_mode = self.params.get_bool("Dynamic_Follow")
     if sport_mode:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
 

@@ -25,11 +25,7 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
-    if Params().get_bool("CydiaTune"):
-      # Allow for higher accel from PID controller at low speeds
-      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX_PLUS
-    else:
-      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
+    return CarControllerParams(CP).ACCEL_MIN, CarControllerParams(CP).ACCEL_MAX
 
   @staticmethod
   def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
@@ -71,6 +67,9 @@ class CarInterface(CarInterfaceBase):
     found_ecus = [fw.ecu for fw in car_fw]
     ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR) \
                                         and not (ret.flags & ToyotaFlags.SMART_DSU)
+
+    if candidate == CAR.LEXUS_ES_TSS2 and Ecu.hybrid not in found_ecus:
+      ret.flags |= ToyotaFlags.RAISED_ACCEL_LIMIT.value
 
     if candidate == CAR.TOYOTA_PRIUS:
       stop_and_go = True
@@ -159,24 +158,27 @@ class CarInterface(CarInterfaceBase):
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if stop_and_go else MIN_ACC_SPEED
 
-    tune = ret.longitudinalTuning
+    # on stock Toyota this is -2.5
+    ret.stopAccel = -2.5
 
-    if Params().get_bool("CydiaTune"):
-      ret.stopAccel = -2.5  # on stock Toyota this is -2.5
-      ret.stoppingDecelRate = 0.25
+    tune = ret.longitudinalTuning
+    ret.stoppingDecelRate = 0.24
+
+    if Params().get_bool("ToyotaTune"):
       tune.deadzoneBP = [0., 5.,  6.,    7.,    20., 30]
       tune.deadzoneV = [0.,  0.,  0.001, 0.003, .1, .15]
-      tune.kpV = [0.88]
-      tune.kiBP = [0., 32.]
-      tune.kiV = [.4, .2] # appears to produce minimal oscillation on TSS-P
 
       if candidate in TSS2_CAR:
-        ret.vEgoStopping = 0.10
-        ret.vEgoStarting = 0.10
-        ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
-        tune.kpV = [0.0]
-        tune.kiBP = [0.0]
-        tune.kiV = [0.5]
+        ret.vEgoStopping = 0.25
+        ret.vEgoStarting = 0.25
+        # Since we compensate for imprecise acceleration in carcontroller, we can be less aggressive with tuning
+        # This also prevents unnecessary request windup due to internal car jerk limits
+        if ret.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+          tune.kiV = [0.25]
+      else:
+        tune.kpV = [0.88]
+        tune.kiBP = [0., 32.]
+        tune.kiV = [.4, .2] # appears to produce minimal oscillation on TSS-P
     else:
       tune.kiBP = [0.,  3.,  8.,  20., 27., 40.]
       tune.kiV = [.35, .24, .20, .17, .10, .06]
@@ -185,9 +187,6 @@ class CarInterface(CarInterfaceBase):
         ret.vEgoStopping = 0.25
         ret.vEgoStarting = 0.25
         ret.stoppingDecelRate = 0.0074  # reach stopping target smoothly
-      else:
-        ret.stopAccel = -2.5  # on stock Toyota this is -2.5
-        ret.stoppingDecelRate = 0.25  # This is okay for TSS-P
 
     return ret
 

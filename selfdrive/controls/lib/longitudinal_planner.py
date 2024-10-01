@@ -40,7 +40,7 @@ A_CRUISE_MIN_BP_DF =   [ 0.,    0.08,  0.09,  2.77,  2.78,  8.33,  8.34,  13.88,
 A_CRUISE_MAX_VALS_DF =       [2.4, 1.7, 1.32, 1.22, 1.02, .87, .73, .58, .38, .24, .082]  # Sets the limits of the planner accel, PID may exceed
 A_CRUISE_MAX_BP_DF =         [0.,  1.,  3.,   6.,   8.,    11., 15., 20., 25., 30., 55.]
 # A_CRUISE_MAX_VALS_TOYOTA = [1.7,       1.35, 1.22, 1.08, .92, .78, .62, .44, .28, .08]  # Sets the limits of the planner accel, PID may exceed
-A_CRUISE_MAX_VALS_TOYOTA =   [2.2, 1.7, 1.32, 1.22, .95, .82, .68, .53, .32, .20, .085]  # Sets the limits of the planner accel, PID may exceed
+A_CRUISE_MAX_VALS_TOYOTA =   [2.0, 1.7, 1.32, 1.22, .95, .82, .68, .53, .32, .20, .085]  # Sets the limits of the planner accel, PID may exceed
 # CRUISE_MAX_BP in kmh =     [0.,  3,   10,   20,    30,  40,  53,  72,  90,  107, 150]
 A_CRUISE_MAX_BP_TOYOTA =     [0.,  1,   3.,   6.,    8.,  11., 15., 20., 25., 30., 55.]
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
@@ -117,7 +117,7 @@ class LongitudinalPlanner:
     self.overridden_speed = 0
     self.slc_target = 0
     self.dynamic_follow = False
-    self.dynamic_follow = self.params.get_bool("Marc_Dynamic_Follow")
+    self.dynamic_follow = self.params.get_bool("Dynamic_Follow")
     self.alt_driving_personality = self.params.get_bool("alt_driving_personality")
     self._adp_controller = AlternativeDrivingPersonalityController()
 

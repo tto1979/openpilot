@@ -188,7 +188,7 @@ class Controls:
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
   def update_use_old_long(self):
-    self.use_old_long = self.params.get_bool("CydiaTune") and not Params().get_bool("ExperimentalMode")
+    self.use_old_long = self.params.get_bool("ToyotaTune")  # and not Params().get_bool("ExperimentalMode")
 
   def set_initial_state(self):
     if REPLAY:
