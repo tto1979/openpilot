@@ -1,6 +1,4 @@
 from cereal import car
-from openpilot.common.conversions import Conversions as CV
-from openpilot.common.params import Params
 from panda import Panda
 from panda.python import uds
 from openpilot.selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, CarControllerParams, TSS2_CAR, RADAR_ACC_CAR, NO_DSU_CAR, \
@@ -12,24 +10,12 @@ from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
-GearShifter = car.CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):
-  def __init__(self, CP, CarController, CarState):
-    super().__init__(CP, CarController, CarState)
-    self.prev_atl = False
-
-    # init for low speed re-write (dp)
-    self.low_cruise_speed = 0.
-
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
-    if Params().get_bool("Marc_Dynamic_Follow"):
-      # Allow for higher accel from PID controller at low speeds
-      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX_PLUS
-    else:
-      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
+    return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
 
   @staticmethod
   def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
@@ -58,19 +44,9 @@ class CarInterface(CarInterfaceBase):
 
     stop_and_go = candidate in TSS2_CAR
 
-    # Detect smartDSU, which intercepts ACC_CMD from the DSU (or radar) allowing openpilot to send it
-    # 0x2AA is sent by a similar device which intercepts the radar instead of DSU on NO_DSU_CARs
-    if 0x2FF in fingerprint[0] or (0x2AA in fingerprint[0] and candidate in NO_DSU_CAR):
-      ret.flags |= ToyotaFlags.SMART_DSU.value
-      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_SDSU
-
-    if 0x2AA in fingerprint[0] and candidate in NO_DSU_CAR:
-      ret.flags |= ToyotaFlags.RADAR_CAN_FILTER.value
-
     # In TSS2 cars, the camera does long control
     found_ecus = [fw.ecu for fw in car_fw]
-    ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR) \
-                                        and not (ret.flags & ToyotaFlags.SMART_DSU)
+    ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR)
 
     if candidate == CAR.TOYOTA_PRIUS:
       stop_and_go = True
@@ -113,7 +89,7 @@ class CarInterface(CarInterfaceBase):
     # TODO: these models can do stop and go, but unclear if it requires sDSU or unplugging DSU.
     #  For now, don't list stop and go functionality in the docs
     if ret.flags & ToyotaFlags.SNG_WITHOUT_DSU:
-      stop_and_go = stop_and_go or bool(ret.flags & ToyotaFlags.SMART_DSU.value) or (ret.enableDsu and not docs)
+      stop_and_go = stop_and_go or (ret.enableDsu and not docs)
 
     ret.centerToFront = ret.wheelbase * 0.44
 
@@ -125,90 +101,58 @@ class CarInterface(CarInterfaceBase):
     # TODO: make an adas dbc file for dsu-less models
     ret.radarUnavailable = DBC[candidate]['radar'] is None or candidate in (NO_DSU_CAR - TSS2_CAR)
 
-    # if the smartDSU is detected, openpilot can send ACC_CONTROL and the smartDSU will block it from the DSU or radar.
     # since we don't yet parse radar on TSS2/TSS-P radar-based ACC cars, gate longitudinal behind experimental toggle
-    use_sdsu = bool(ret.flags & ToyotaFlags.SMART_DSU)
     if candidate in (RADAR_ACC_CAR | NO_DSU_CAR):
-      ret.experimentalLongitudinalAvailable = use_sdsu or candidate in RADAR_ACC_CAR
+      ret.experimentalLongitudinalAvailable = candidate in RADAR_ACC_CAR
 
-      if not use_sdsu:
-        # Disabling radar is only supported on TSS2 radar-ACC cars
-        if experimental_long and candidate in RADAR_ACC_CAR:
-          ret.flags |= ToyotaFlags.DISABLE_RADAR.value
-      else:
-        use_sdsu = use_sdsu and experimental_long
+      # Disabling radar is only supported on TSS2 radar-ACC cars
+      if experimental_long and candidate in RADAR_ACC_CAR:
+        ret.flags |= ToyotaFlags.DISABLE_RADAR.value
 
     # openpilot longitudinal enabled by default:
-    #  - non-(TSS2 radar ACC cars) w/ smartDSU installed
     #  - cars w/ DSU disconnected
     #  - TSS2 cars with camera sending ACC_CONTROL where we can block it
     # openpilot longitudinal behind experimental long toggle:
-    #  - TSS2 radar ACC cars w/ smartDSU installed
-    #  - TSS2 radar ACC cars w/o smartDSU installed (disables radar)
-    #  - TSS-P DSU-less cars w/ CAN filter installed (no radar parser yet)
-    ret.openpilotLongitudinalControl = use_sdsu or ret.enableDsu or candidate in (TSS2_CAR - RADAR_ACC_CAR) or bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value)
+    #  - TSS2 radar ACC cars (disables radar)
+    ret.openpilotLongitudinalControl = ret.enableDsu or candidate in (TSS2_CAR - RADAR_ACC_CAR) or bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value)
     ret.autoResumeSng = ret.openpilotLongitudinalControl and candidate in NO_STOP_TIMER_CAR
 
     if not ret.openpilotLongitudinalControl:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_STOCK_LONGITUDINAL
 
-    if candidate in UNSUPPORTED_DSU_CAR:
-      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_UNSUPPORTED_DSU_CAR
-
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if stop_and_go else MIN_ACC_SPEED
 
-    # on stock Toyota this is -2.5
-    ret.stopAccel = -2.5
-
     tune = ret.longitudinalTuning
-    tune.deadzoneBP = [0., 5.,  6.,    7.,    20., 30]
-    tune.deadzoneV = [0.,  0.,  0.001, 0.003, .1, .15]
-    ret.stoppingDecelRate = 0.25  # This is okay for TSS-P
     if candidate in TSS2_CAR:
+      tune.kpV = [0.0]
+      tune.kiV = [0.5]
       ret.vEgoStopping = 0.25
       ret.vEgoStarting = 0.25
-      ret.stoppingDecelRate = 0.05  # reach stopping target smoothly
-    tune.kpV = [0.88]
-    tune.kiBP = [0., 32.]
-    tune.kiV = [.4, .2]
+      ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
+    else:
+      tune.kiBP = [0., 5., 35.]
+      tune.kiV = [3.6, 2.4, 1.5]
 
     return ret
 
   @staticmethod
-  def init(CP, logcan, sendcan):
-    # disable radar if alpha longitudinal toggled on radar-ACC car without CAN filter/smartDSU
+  def init(CP, can_recv, can_send):
+    # disable radar if alpha longitudinal toggled on radar-ACC car
     if CP.flags & ToyotaFlags.DISABLE_RADAR.value:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
-      disable_ecu(logcan, sendcan, bus=0, addr=0x750, sub_addr=0xf, com_cont_req=communication_control)
+      disable_ecu(can_recv, can_send, bus=0, addr=0x750, sub_addr=0xf, com_cont_req=communication_control)
 
   # returns a car.CarState
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
-    self.dp_atl = Params().get_bool("dp_atl")
 
-    # low speed re-write (dp)
-    self.cruise_speed_override = True if (self.CP.flags & ToyotaFlags.SMART_DSU) else False # change this to False if you want to disable cruise speed override
-    if self.cruise_speed_override:
-      if ret.cruiseState.enabled and ret.cruiseState.speed < 45 * CV.KPH_TO_MS and self.CP.openpilotLongitudinalControl:
-        if self.low_cruise_speed == 0.:
-          self.low_cruise_speed = self.low_cruise_speed = max(24 * CV.KPH_TO_MS, ret.vEgo)
-        else:
-          ret.cruiseState.speed = ret.cruiseState.speedCluster = self.low_cruise_speed
-      else:
-        self.low_cruise_speed = 0.
-
-    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
       ret.buttonEvents = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
 
     # events
-    events = self.create_common_events(ret, extra_gears=[GearShifter.sport])
-
-    # Lane Tracing Assist control is unavailable (EPS_STATUS->LTA_STATE=0) until
-    # the more accurate angle sensor signal is initialized
-    if self.CP.steerControlType == SteerControlType.angle and not self.CS.accurate_steer_angle_seen:
-      events.add(EventName.vehicleSensorsInvalid)
+    events = self.create_common_events(ret)
 
     if self.CP.openpilotLongitudinalControl:
       if ret.cruiseState.standstill and not ret.brakePressed:
@@ -223,19 +167,6 @@ class CarInterface(CarInterfaceBase):
         if ret.vEgo < 0.001:
           # while in standstill, send a user alert
           events.add(EventName.manualRestart)
-
-    if self.dp_atl and (self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.SMART_DSU)):
-      if not self.prev_atl and ret.cruiseState.available:
-        events.add(EventName.atlEngageSound)
-        Params().put_bool("LateralAllowed", True)
-      elif self.prev_atl and not (ret.cruiseState.available and self.CP.openpilotLongitudinalControl):
-        events.add(EventName.atlDisengageSound)
-        Params().put_bool("LateralAllowed", False)
-      self.prev_atl = ret.cruiseState.available
-
-    if self.CS.brakehold_governor:
-      events.add(EventName.automaticBrakehold)
-
 
     ret.events = events.to_msg()
 

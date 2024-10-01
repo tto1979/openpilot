@@ -116,10 +116,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     paramsdTemporaryError @50;
     paramsdPermanentError @119;
     actuatorsApiUnavailable @120;
-    atlEngageSound @121;
-    atlDisengageSound @122;
-    torqueNNLoad @123;
-    automaticBrakehold @124;
+    espActive @121;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
@@ -183,7 +180,6 @@ struct CarState {
   regenBraking @45 :Bool; # this is user pedal only
   parkingBrake @39 :Bool;
   brakeHoldActive @38 :Bool;
-  brakeLights @19 :Bool;
 
   # steering wheel
   steeringAngleDeg @7 :Float32;
@@ -199,6 +195,8 @@ struct CarState {
   espDisabled @32 :Bool;
   accFaulted @42 :Bool;
   carFaultedNonCritical @47 :Bool;  # some ECU is faulted, but car remains controllable
+  espActive @51 :Bool;
+  vehicleSensorsInvalid @52 :Bool;  # invalid steering angle readings, etc.
 
   # cruise state
   cruiseState @10 :CruiseState;
@@ -228,15 +226,6 @@ struct CarState {
 
   # process meta
   cumLagMs @50 :Float32;
-
-  # TOP
-  distanceLines @51 :UInt8; # KRKeegan toyota distance lines
-  steeringWheelCar @52 :Bool;
-  rightBlindspotD1 @53 :Float32;
-  rightBlindspotD2 @54 :Float32;
-  leftBlindspotD1 @55 :Float32;
-  leftBlindspotD2 @56 :Float32;
-  blindspotside @57 :Float32;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -292,6 +281,7 @@ struct CarState {
 
   # deprecated
   errorsDEPRECATED @0 :List(CarEvent.EventName);
+  brakeLightsDEPRECATED @19 :Bool;
   steeringRateLimitedDEPRECATED @29 :Bool;
   canMonoTimesDEPRECATED @12: List(UInt64);
   canRcvTimeoutDEPRECATED @49 :Bool;
@@ -425,9 +415,6 @@ struct CarControl {
       prompt @6;
       promptRepeat @7;
       promptDistracted @8;
-
-      # AleSato's automatic brakehold
-      engageBrakehold @9;
     }
   }
 
@@ -506,8 +493,7 @@ struct CarParams {
   startingState @70 :Bool; # Does this car make use of special starting state
 
   steerActuatorDelay @36 :Float32; # Steering wheel actuator delay in seconds
-  longitudinalActuatorDelayLowerBound @61 :Float32; # Gas/Brake actuator delay in seconds, lower bound
-  longitudinalActuatorDelayUpperBound @58 :Float32; # Gas/Brake actuator delay in seconds, upper bound
+  longitudinalActuatorDelay @58 :Float32; # Gas/Brake actuator delay in seconds
   openpilotLongitudinalControl @37 :Bool; # is openpilot doing the longitudinal control?
   carVin @38 :Text; # VIN number queried during fingerprinting
   dashcamOnly @41: Bool;
@@ -520,9 +506,6 @@ struct CarParams {
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
 
   wheelSpeedFactor @63 :Float32; # Multiplier on wheels speeds to computer actual speeds
-
-  experimentalModeViaWheel @74 :Bool;
-  twilsoncoNNFF @75 :Bool;
 
   struct SafetyConfig {
     safetyModel @0 :SafetyModel;
@@ -553,8 +536,6 @@ struct CarParams {
     steeringAngleDeadzoneDeg @5 :Float32;
     latAccelFactor @6 :Float32;
     latAccelOffset @7 :Float32;
-    nnModelName @8 :Text;
-    nnModelFuzzyMatch @9 :Bool;
   }
 
   struct LongitudinalPIDTuning {
@@ -563,8 +544,8 @@ struct CarParams {
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
     kf @6 :Float32;
-    deadzoneBP @4 :List(Float32);
-    deadzoneV @5 :List(Float32);
+    deadzoneBPDEPRECATED @4 :List(Float32);
+    deadzoneVDEPRECATED @5 :List(Float32);
   }
 
   struct LateralINDITuning {
@@ -724,4 +705,5 @@ struct CarParams {
   brakeMaxVDEPRECATED @16 :List(Float32);
   directAccelControlDEPRECATED @30 :Bool;
   maxSteeringAngleDegDEPRECATED @54 :Float32;
+  longitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED @61 :Float32;
 }
