@@ -1,4 +1,6 @@
 from cereal import car
+from openpilot.common.conversions import Conversions as CV
+from openpilot.common.params import Params
 from panda import Panda
 from panda.python import uds
 from openpilot.selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, CarControllerParams, TSS2_CAR, RADAR_ACC_CAR, NO_DSU_CAR, \
@@ -10,12 +12,24 @@ from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
+GearShifter = car.CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):
+  def __init__(self, CP, CarController, CarState):
+    super().__init__(CP, CarController, CarState)
+    self.prev_atl = False
+
+    # init for low speed re-write (dp)
+    self.low_cruise_speed = 0.
+
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
-    return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
+    if Params().get_bool("Marc_Dynamic_Follow"):
+      # Allow for higher accel from PID controller at low speeds
+      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX_PLUS
+    else:
+      return CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX
 
   @staticmethod
   def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
@@ -48,6 +62,7 @@ class CarInterface(CarInterfaceBase):
     # 0x2AA is sent by a similar device which intercepts the radar instead of DSU on NO_DSU_CARs
     if 0x2FF in fingerprint[0] or (0x2AA in fingerprint[0] and candidate in NO_DSU_CAR):
       ret.flags |= ToyotaFlags.SMART_DSU.value
+      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_SDSU
 
     if 0x2AA in fingerprint[0] and candidate in NO_DSU_CAR:
       ret.flags |= ToyotaFlags.RADAR_CAN_FILTER.value
@@ -137,27 +152,27 @@ class CarInterface(CarInterfaceBase):
     if not ret.openpilotLongitudinalControl:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_STOCK_LONGITUDINAL
 
+    if candidate in UNSUPPORTED_DSU_CAR:
+      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_UNSUPPORTED_DSU_CAR
+
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if stop_and_go else MIN_ACC_SPEED
 
+    # on stock Toyota this is -2.5
+    ret.stopAccel = -2.5
+
     tune = ret.longitudinalTuning
-    tune.deadzoneBP = [0., 9.]
-    tune.deadzoneV = [.0, .15]
+    tune.deadzoneBP = [0., 5.,  6.,    7.,    20., 30]
+    tune.deadzoneV = [0.,  0.,  0.001, 0.003, .1, .15]
+    ret.stoppingDecelRate = 0.25  # This is okay for TSS-P
     if candidate in TSS2_CAR:
-      tune.kpBP = [0., 5., 20.]
-      tune.kpV = [1.3, 1.0, 0.7]
-      tune.kiBP = [0., 5., 12., 20., 27.]
-      tune.kiV = [.35, .23, .20, .17, .1]
-      if candidate in TSS2_CAR:
-        ret.vEgoStopping = 0.25
-        ret.vEgoStarting = 0.25
-        ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
-    else:
-      tune.kpBP = [0., 5., 35.]
-      tune.kiBP = [0., 35.]
-      tune.kpV = [3.6, 2.4, 1.5]
-      tune.kiV = [0.54, 0.36]
+      ret.vEgoStopping = 0.25
+      ret.vEgoStarting = 0.25
+      ret.stoppingDecelRate = 0.05  # reach stopping target smoothly
+    tune.kpV = [0.88]
+    tune.kiBP = [0., 32.]
+    tune.kiV = [.4, .2]
 
     return ret
 
@@ -171,12 +186,24 @@ class CarInterface(CarInterfaceBase):
   # returns a car.CarState
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
+    self.dp_atl = Params().get_bool("dp_atl")
+
+    # low speed re-write (dp)
+    self.cruise_speed_override = True if (self.CP.flags & ToyotaFlags.SMART_DSU) else False # change this to False if you want to disable cruise speed override
+    if self.cruise_speed_override:
+      if ret.cruiseState.enabled and ret.cruiseState.speed < 45 * CV.KPH_TO_MS and self.CP.openpilotLongitudinalControl:
+        if self.low_cruise_speed == 0.:
+          self.low_cruise_speed = self.low_cruise_speed = max(24 * CV.KPH_TO_MS, ret.vEgo)
+        else:
+          ret.cruiseState.speed = ret.cruiseState.speedCluster = self.low_cruise_speed
+      else:
+        self.low_cruise_speed = 0.
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       ret.buttonEvents = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
 
     # events
-    events = self.create_common_events(ret)
+    events = self.create_common_events(ret, extra_gears=[GearShifter.sport])
 
     # Lane Tracing Assist control is unavailable (EPS_STATUS->LTA_STATE=0) until
     # the more accurate angle sensor signal is initialized
@@ -196,6 +223,19 @@ class CarInterface(CarInterfaceBase):
         if ret.vEgo < 0.001:
           # while in standstill, send a user alert
           events.add(EventName.manualRestart)
+
+    if self.dp_atl and (self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.SMART_DSU)):
+      if not self.prev_atl and ret.cruiseState.available:
+        events.add(EventName.atlEngageSound)
+        Params().put_bool("LateralAllowed", True)
+      elif self.prev_atl and not (ret.cruiseState.available and self.CP.openpilotLongitudinalControl):
+        events.add(EventName.atlDisengageSound)
+        Params().put_bool("LateralAllowed", False)
+      self.prev_atl = ret.cruiseState.available
+
+    if self.CS.brakehold_governor:
+      events.add(EventName.automaticBrakehold)
+
 
     ret.events = events.to_msg()
 
