@@ -180,8 +180,8 @@ class CarInterface(CarInterfaceBase):
         tune.kiBP = [0., 32.]
         tune.kiV = [.4, .2] # appears to produce minimal oscillation on TSS-P
     else:
-      tune.kiBP = [0.,  3.,  8.,  20., 27., 40.]
-      tune.kiV = [.35, .24, .20, .17, .10, .06]
+      tune.kiBP = [0.,   1.,    5.,    12.,  20.,  27.,   36.,  40.]
+      tune.kiV =  [0.35, 0.285, 0.234, 0.20, 0.17, 0.105, 0.09, 0.08]
 
       if candidate in TSS2_CAR:
         ret.vEgoStopping = 0.25
