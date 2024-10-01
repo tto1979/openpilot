@@ -51,6 +51,7 @@ def manager_init() -> None:
 
     ("AleSato_AutomaticBrakeHold", "0"),
     ("CarModel", ""),
+    ("ToyotaTune", "1"),
     ("dp_atl", "0"),
     ("dp_jetson", "0"),
     ("SearchInput", "0"),
@@ -60,7 +61,7 @@ def manager_init() -> None:
     ("SpeedLimitControl", "0"),
     ("MapSpeedLimitControl", "1"),
     ("NavSpeedLimitControl", "1"),
-    ("Marc_Dynamic_Follow", "0"),
+    ("Dynamic_Follow", "0"),
     ("NudgelessLaneChange", "0"),
     ("NNFF", "0"),
     ("PrimeAd", "1"),

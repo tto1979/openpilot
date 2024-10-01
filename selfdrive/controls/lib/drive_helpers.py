@@ -147,6 +147,16 @@ class VCruiseHelper:
     self.v_cruise_cluster_kph = self.v_cruise_kph
 
 
+def apply_deadzone(error, deadzone):
+  if error > deadzone:
+    error -= deadzone
+  elif error < - deadzone:
+    error += deadzone
+  else:
+    error = 0.
+  return error
+
+
 def clip_curvature(v_ego, prev_curvature, new_curvature):
   v_ego = max(MIN_SPEED, v_ego)
   max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
@@ -159,8 +169,8 @@ def clip_curvature(v_ego, prev_curvature, new_curvature):
 
 def get_speed_error(modelV2: log.ModelDataV2, v_ego: float) -> float:
   # ToDo: Try relative error, and absolute speed
-  if len(modelV2.temporalPose.trans):
-    vel_err = clip(modelV2.temporalPose.trans[0] - v_ego, -MAX_VEL_ERR, MAX_VEL_ERR)
+  if len(modelV2.velocity.x):
+    vel_err = clip(modelV2.velocity.x[0] - v_ego, -MAX_VEL_ERR, MAX_VEL_ERR)
     return float(vel_err)
   return 0.0
 

@@ -71,6 +71,20 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
+#ifdef ENABLE_MAPS
+    {
+      "NavSettingTime24h",
+      tr("Show ETA in 24h Format"),
+      tr("Use 24h format instead of am/pm"),
+      "../assets/offroad/icon_metric.png",
+    },
+    {
+      "NavSettingLeftSide",
+      tr("Show Map on Left Side of UI"),
+      tr("Show map on left side when in split screen view."),
+      "../assets/offroad/icon_road.png",
+    },
+#endif
   };
 
 
@@ -559,9 +573,15 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/offroad/icon_road.png",
                                   this));
 
-  toggles.append(new ParamControl("Marc_Dynamic_Follow",
+  toggles.append(new ParamControl("ToyotaTune",
+                                  tr("Toyota Longitudinal Tuning"),
+                                  tr("Using the longitudinal Tuning can increase the sensitivity of longitudinal control in Toyota models."),
+                                  "../assets/offroad/icon_road.png",
+                                  this));
+
+  toggles.append(new ParamControl("Dynamic_Follow",
                                   tr("Dynamic Distance Adjustment"),
-                                  tr("The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle. (Fine-tuned by Marc - cgw1968-5779)"),
+                                  tr("The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle."),
                                   "../assets/offroad/icon_road.png",
                                   this));
 

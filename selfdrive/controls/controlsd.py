@@ -187,6 +187,9 @@ class Controls:
     # controlsd is driven by carState, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
+  def update_use_old_long(self):
+    self.use_old_long = self.params.get_bool("ToyotaTune")  # and not Params().get_bool("ExperimentalMode")
+
   def set_initial_state(self):
     if REPLAY:
       controls_state = self.params.get("ReplayControlsState")
@@ -594,12 +597,19 @@ class Controls:
     if not CC.latActive:
       self.LaC.reset()
     if not CC.longActive:
-      self.LoC.reset()
+      if self.use_old_long:
+        self.LoC.reset_old_long(v_pid=CS.vEgo)
+      else:
+        self.LoC.reset()
 
     if not self.joystick_mode:
       # accel PID loop
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, self.v_cruise_helper.v_cruise_kph * CV.KPH_TO_MS)
-      actuators.accel = self.LoC.update(CC.longActive, CS, long_plan.aTarget, long_plan.shouldStop, pid_accel_limits)
+      if self.use_old_long:
+        t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
+        actuators.accel = self.LoC.update_old_long(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
+      else:
+        actuators.accel = self.LoC.update(CC.longActive, CS, long_plan.aTarget, long_plan.shouldStop, pid_accel_limits)
 
       # Steering PID loop and lateral MPC
       self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
@@ -782,6 +792,7 @@ class Controls:
     controlsState.state = self.state
     controlsState.engageable = not self.events.contains(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
+    controlsState.vPid = float(self.LoC.v_pid)
     controlsState.vCruise = float(self.v_cruise_helper.v_cruise_kph)
     controlsState.vCruiseCluster = float(self.v_cruise_helper.v_cruise_cluster_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
@@ -821,7 +832,7 @@ class Controls:
 
   def step(self):
     start_time = time.monotonic()
-
+    self.update_use_old_long()
     self.reverse_acc_change = self.params.get_bool("ReverseAccChange")
 
     # Sample data from sockets and get a carState
@@ -864,6 +875,7 @@ class Controls:
     try:
       t.start()
       while True:
+        self.update_use_old_long()
         self.step()
         self.rk.monitor_time()
     finally:

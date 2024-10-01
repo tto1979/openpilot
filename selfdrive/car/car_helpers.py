@@ -2,6 +2,7 @@ import os
 import time
 
 from cereal import car
+from openpilot.common.params import Params
 from openpilot.selfdrive.car import carlog, gen_empty_fingerprint
 from openpilot.selfdrive.car.can_definitions import CanRecvCallable, CanSendCallable
 from openpilot.selfdrive.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
