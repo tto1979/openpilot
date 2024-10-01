@@ -16,7 +16,6 @@ from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDX
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
 from openpilot.common.swaglog import cloudlog
 
-from openpilot.selfdrive.controls.alt_driving_personality_controller import AlternativeDrivingPersonalityController
 # PFEIFER - SLC {{
 from openpilot.selfdrive.controls.speed_limit_controller import slc
 # }} PFEIFER - SLC
@@ -118,8 +117,6 @@ class LongitudinalPlanner:
     self.slc_target = 0
     self.dynamic_follow = False
     self.dynamic_follow = self.params.get_bool("Dynamic_Follow")
-    self.alt_driving_personality = self.params.get_bool("alt_driving_personality")
-    self._adp_controller = AlternativeDrivingPersonalityController()
 
   @staticmethod
   def parse_model(model_msg, model_error):
@@ -226,15 +223,11 @@ class LongitudinalPlanner:
     lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
     v_lead0 = lead_xv_0[0,1]
     v_lead1 = lead_xv_1[0,1]
-    self._adp_controller.update(v_ego)
-    personality = sm['controlsState'].personality
-    if self.alt_driving_personality:
-      personality = self._adp_controller.get_personality(personality)
-    self.mpc.set_weights(prev_accel_constraint, personality=personality, v_lead0=v_lead0, v_lead1=v_lead1)
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality, v_lead0=v_lead0, v_lead1=v_lead1)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=personality, dynamic_follow=self.dynamic_follow)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality, dynamic_follow=self.dynamic_follow)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
