@@ -597,12 +597,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/offroad/icon_road.png",
                                   this));
 
-  toggles.append(new ParamControl("MTSCEnabled",
-                                  tr("Map Turn Speed Control"),
-                                  tr("Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2."),
-                                  "../assets/offroad/icon_road.png",
-                                  this));
-
   toggles.append(new ParamControl("fleetmanager",
                                   tr("Enable Local Nav and File Server"),
                                   tr("This will allow you to use the Navigation feature with your own access key and access openpilot data and files.\nUse web interface to control it: *http://&lt;device_ip&gt;:8082*.\nYou will need to apply your own mapbox token at https://www.mapbox.com/.\nInternet access from mobile phone (tethering) is required."),

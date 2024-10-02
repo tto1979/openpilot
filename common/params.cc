@@ -246,11 +246,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"TurnVisionControl", PERSISTENT},
     {"QuietDrive", PERSISTENT},
     {"RoadName", PERSISTENT},
-    // PFEIFER - MTSC {{
-    {"MapTargetVelocities", PERSISTENT},
-    {"MTSCEnabled", PERSISTENT},
-    {"MTSCMaxVDiff", PERSISTENT},
-    // }} PFEIFER - MTSC
     // NAV
     {"AMapKey1", PERSISTENT},
     {"AMapKey2", PERSISTENT},

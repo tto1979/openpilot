@@ -22,9 +22,6 @@ from openpilot.selfdrive.controls.speed_limit_controller import slc
 # PFEIFER - VTSC {{
 from openpilot.selfdrive.controls.vtsc import vtsc
 # }} PFEIFER - VTSC
-# PFEIFER - MTSC {{
-from openpilot.selfdrive.controls.mtsc import mtsc
-# }} PFEIFER - MTSC
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MIN = -1.2
@@ -213,12 +210,6 @@ class LongitudinalPlanner:
       v_cruise = vtsc.v_target
     # }} PFEIFER - VTSC
 
-    # PFEIFER - MTSC {{
-    mtsc_v = mtsc.target_speed(v_cruise, v_ego, sm['carState'].aEgo, self.j_desired_trajectory.tolist()[0])
-    if v_cruise > mtsc_v and mtsc_v != 0:
-      v_cruise = mtsc_v
-    # }} PFEIFER - MTSC
-
     lead_xv_0 = self.mpc.process_lead(sm['radarState'].leadOne)
     lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
     v_lead0 = lead_xv_0[0,1]
@@ -264,7 +255,6 @@ class LongitudinalPlanner:
     a_target, should_stop = get_accel_from_plan(self.CP, longitudinalPlan.speeds, longitudinalPlan.accels)
     longitudinalPlan.aTarget = a_target
     longitudinalPlan.shouldStop = should_stop
-
     longitudinalPlan.allowBrake = True
     longitudinalPlan.allowThrottle = True
 
