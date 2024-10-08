@@ -78,7 +78,7 @@ class CarState(CarStateBase):
 
     # AleSato's automatic brakehold
     self.time_to_brakehold = 100 * 1   # 1 seconds stopped to activate
-    self.GearShifter = car.CarState.GearShifter # avoid Rear and Park gears
+    self.GearShifter = structs.CarState.GearShifter # avoid Rear and Park gears
     self.stock_aeb = {}
     self.brakehold_condition_satisfied = False
     self.brakehold_condition_counter = 0

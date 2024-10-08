@@ -187,8 +187,8 @@ class LatControlTorque(LatControl):
         # update past data
         pitch = 0
         roll = params.roll
-        if len(llk.calibratedOrientationNED.value) > 1:
-          pitch = self.pitch.update(llk.calibratedOrientationNED.value[1])
+        if len(calibrated_pose.orientation.xyz) > 1:
+          pitch = self.pitch.update(calibrated_pose.orientation.pitch)
           roll = roll_pitch_adjust(roll, pitch)
         self.roll_deque.append(roll)
         self.lateral_accel_desired_deque.append(desired_lateral_accel)
