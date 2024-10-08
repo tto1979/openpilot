@@ -10,8 +10,6 @@ from typing import Any, NamedTuple
 from collections.abc import Callable
 from functools import cache
 
-from openpilot.common.basedir import BASEDIR
-from openpilot.common.simple_kalman import KF1D, get_kalman_gain
 from openpilot.common.params import Params
 from openpilot.selfdrive.car import DT_CTRL, apply_hysteresis, gen_empty_fingerprint, scale_rot_inertia, scale_tire_stiffness, get_friction, STD_CARGO_KG
 from openpilot.selfdrive.car import structs
@@ -252,7 +250,7 @@ class CarInterfaceBase(ABC):
     ret.flags |= int(platform.config.flags)
 
     ret = cls._get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs)
-    if ret.steerControlType != car.CarParams.SteerControlType.angle:
+    if ret.steerControlType != structs.CarParams.SteerControlType.angle:
       if Params().get_bool("NNFF"):
         ret = CarInterfaceBase.top_configure_torque_tune(candidate, ret)
 
@@ -357,9 +355,8 @@ class CarInterfaceBase(ABC):
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
     return ret
 
-  @abstractmethod
-  def _update(self, c: car.CarControl) -> structs.CarState:
-    pass
+  def _update(self) -> structs.CarState:
+    return self.CS.update(*self.can_parsers)
 
   def update(self, can_packets: list[tuple[int, list[CanData]]]) -> structs.CarState:
     # parse can

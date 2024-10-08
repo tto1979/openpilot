@@ -8,9 +8,7 @@ from openpilot.selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, Ca
 from openpilot.selfdrive.car.disable_ecu import disable_ecu
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
-EventName = structs.CarEvent.EventName
 SteerControlType = structs.CarParams.SteerControlType
-GearShifter = structs..CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):

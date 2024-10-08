@@ -5,6 +5,7 @@ from openpilot.selfdrive.car import DT_CTRL, structs
 from openpilot.selfdrive.car.interfaces import MAX_CTRL_SPEED, CarStateBase, CarControllerBase
 from openpilot.selfdrive.car.volkswagen.values import CarControllerParams as VWCarControllerParams
 from openpilot.selfdrive.car.hyundai.interface import ENABLE_BUTTONS as HYUNDAI_ENABLE_BUTTONS
+from openpilot.selfdrive.car.toyota.values import TSS2_CAR, ToyotaFlags
 
 from openpilot.selfdrive.controls.lib.events import Events
 
@@ -114,13 +115,13 @@ class CarSpecificEvents:
             events.add(EventName.manualRestart)
 
       if self.dp_atl and (self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.SMART_DSU)):
-        if not self.prev_atl and ret.cruiseState.available:
+        if not self.prev_atl and CS.cruiseState.available:
           events.add(EventName.atlEngageSound)
           Params().put_bool("LateralAllowed", True)
-        elif self.prev_atl and not (ret.cruiseState.available and self.CP.openpilotLongitudinalControl):
+        elif self.prev_atl and not (CS.cruiseState.available and self.CP.openpilotLongitudinalControl):
           events.add(EventName.atlDisengageSound)
           Params().put_bool("LateralAllowed", False)
-        self.prev_atl = ret.cruiseState.available
+        self.prev_atl = CS.cruiseState.available
 
       if self.CS.brakehold_governor:
         events.add(EventName.automaticBrakehold)
