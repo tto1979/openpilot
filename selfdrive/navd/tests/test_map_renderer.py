@@ -9,7 +9,7 @@ import cereal.messaging as messaging
 
 from typing import Any
 from msgq.visionipc import VisionIpcClient, VisionStreamType
-from openpilot.common.mock.generators import LLK_DECIMATION, LOCATION1, LOCATION2, generate_liveLocationKalman
+from openpilot.common.mock.generators import LLK_DECIMATION, LOCATION1, LOCATION2, generate_livePose
 from openpilot.selfdrive.test.helpers import with_processes
 
 CACHE_PATH = "/data/mbgl-cache-navd.db"
@@ -84,14 +84,14 @@ class TestMapRenderer:
     os.environ['MAPS_HOST'] = f'http://localhost:{self.server.port}'
 
     self.sm = messaging.SubMaster(['mapRenderState'])
-    self.pm = messaging.PubMaster(['liveLocationKalman'])
+    self.pm = messaging.PubMaster(['livePose'])
     self.vipc = VisionIpcClient("navd", VisionStreamType.VISION_STREAM_MAP, True)
 
     if os.path.exists(CACHE_PATH):
       os.remove(CACHE_PATH)
 
   def _setup_test(self):
-    assert self.pm.wait_for_readers_to_update("liveLocationKalman", 10)
+    assert self.pm.wait_for_readers_to_update("livePose", 10)
 
     time.sleep(0.5)
 
@@ -119,9 +119,9 @@ class TestMapRenderer:
       if starting_frame_id is None:
         starting_frame_id = prev_frame_id
 
-      llk = generate_liveLocationKalman(location)
-      self.pm.send("liveLocationKalman", llk)
-      self.pm.wait_for_readers_to_update("liveLocationKalman", 10)
+      pose = generate_livePose(location)
+      self.pm.send("livePose", pose)
+      self.pm.wait_for_readers_to_update("livePose", 10)
       self.sm.update(1000 if frame_expected else 0)
       assert self.sm.updated['mapRenderState'] == frame_expected, "renderer running at wrong frequency"
 
@@ -140,7 +140,7 @@ class TestMapRenderer:
       # check output
       assert self.sm.valid['mapRenderState'] == expect_valid
       assert self.sm['mapRenderState'].frameId == (prev_frame_id + 1)
-      assert self.sm['mapRenderState'].locationMonoTime == llk.logMonoTime
+      assert self.sm['mapRenderState'].locationMonoTime == pose.logMonoTime
       if not expect_valid:
         assert self.sm['mapRenderState'].renderTime == 0.
       else:
@@ -150,7 +150,7 @@ class TestMapRenderer:
       # check vision ipc output
       assert self.vipc.recv() is not None
       assert self.vipc.valid == expect_valid
-      assert self.vipc.timestamp_sof == llk.logMonoTime
+      assert self.vipc.timestamp_sof == pose.logMonoTime
       assert self.vipc.frame_id == self.sm['mapRenderState'].frameId
 
     assert frames_since_test_start >= RENDER_FRAMES
