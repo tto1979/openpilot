@@ -112,6 +112,10 @@ class CarState:
   # process meta
   cumLagMs: float = auto_field()
 
+  # TOP
+  brakeLights: bool = auto_field()
+  steeringWheelCar: bool = auto_field()
+
   @auto_dataclass
   class WheelSpeeds:
     # optional wheel speeds
@@ -316,6 +320,10 @@ class CarParams:
   lateralParams: 'CarParams.LateralParams' = field(default_factory=lambda: CarParams.LateralParams())
   lateralTuning: 'CarParams.LateralTuning' = field(default_factory=lambda: CarParams.LateralTuning())
 
+  # TOP
+  experimentalModeViaWheel: bool = auto_field()
+  twilsoncoNNFF: bool = auto_field()
+
   @auto_dataclass
   class LateralTuning:
     def init(self, which: str):
@@ -362,6 +370,10 @@ class CarParams:
     latAccelFactor: float = auto_field()
     latAccelOffset: float = auto_field()
 
+    #TOP
+    nnModelName: str = auto_field()
+    nnModelFuzzyMatch: bool = auto_field()
+
   steerLimitAlert: bool = auto_field()
   steerLimitTimer: float = auto_field()  # time before steerLimitAlert is issued
 
@@ -398,6 +410,10 @@ class CarParams:
     kiBP: list[float] = auto_field()
     kiV: list[float] = auto_field()
     kf: float = auto_field()
+
+    #TOP
+    deadzoneBP: list[float] = auto_field()
+    deadzoneV: list[float] = auto_field()
 
   class SafetyModel(StrEnum):
     silent = auto()

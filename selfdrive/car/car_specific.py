@@ -115,13 +115,13 @@ class CarSpecificEvents:
             events.add(EventName.manualRestart)
 
       if self.dp_atl and (self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.SMART_DSU)):
-        if not self.prev_atl and CS.cruiseState.available:
+        if not self.prev_atl and CS_prev.cruiseState.available:
           events.add(EventName.atlEngageSound)
           Params().put_bool("LateralAllowed", True)
-        elif self.prev_atl and not (CS.cruiseState.available and self.CP.openpilotLongitudinalControl):
+        elif self.prev_atl and not (CS_prev.cruiseState.available and self.CP.openpilotLongitudinalControl):
           events.add(EventName.atlDisengageSound)
           Params().put_bool("LateralAllowed", False)
-        self.prev_atl = CS.cruiseState.available
+        self.prev_atl = CS_prev.cruiseState.available
 
       if self.CS.brakehold_governor:
         events.add(EventName.automaticBrakehold)
