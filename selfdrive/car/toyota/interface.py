@@ -1,4 +1,3 @@
-from openpilot.selfdrive.car.conversions import Conversions as CV
 from openpilot.common.params import Params
 from panda import Panda
 from panda.python import uds
@@ -12,13 +11,6 @@ SteerControlType = structs.CarParams.SteerControlType
 
 
 class CarInterface(CarInterfaceBase):
-  def __init__(self, CP, CarController, CarState):
-    super().__init__(CP, CarController, CarState)
-    self.prev_atl = False
-
-    # init for low speed re-write (dp)
-    self.low_cruise_speed = 0.
-
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
     return CarControllerParams(CP).ACCEL_MIN, CarControllerParams(CP).ACCEL_MAX
@@ -187,19 +179,8 @@ class CarInterface(CarInterfaceBase):
     return ret
 
   @staticmethod
-  def init(self, CP, can_recv, can_send):
+  def init(CP, can_recv, can_send):
     # disable radar if alpha longitudinal toggled on radar-ACC car without CAN filter/smartDSU
     if CP.flags & ToyotaFlags.DISABLE_RADAR.value:
       communication_control = bytes([uds.SERVICE_TYPE.COMMUNICATION_CONTROL, uds.CONTROL_TYPE.ENABLE_RX_DISABLE_TX, uds.MESSAGE_TYPE.NORMAL])
       disable_ecu(can_recv, can_send, bus=0, addr=0x750, sub_addr=0xf, com_cont_req=communication_control)
-
-    # low speed re-write (dp)
-    self.cruise_speed_override = True if (self.CP.flags & ToyotaFlags.SMART_DSU) else False # change this to False if you want to disable cruise speed override
-    if self.cruise_speed_override:
-      if ret.cruiseState.enabled and ret.cruiseState.speed < 45 * CV.KPH_TO_MS and self.CP.openpilotLongitudinalControl:
-        if self.low_cruise_speed == 0.:
-          self.low_cruise_speed = self.low_cruise_speed = max(24 * CV.KPH_TO_MS, ret.vEgo)
-        else:
-          ret.cruiseState.speed = ret.cruiseState.speedCluster = self.low_cruise_speed
-      else:
-        self.low_cruise_speed = 0.
