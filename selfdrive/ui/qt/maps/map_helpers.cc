@@ -35,12 +35,11 @@ QGeoCoordinate to_QGeoCoordinate(const QMapLibre::Coordinate &in) {
 }
 
 QMapLibre::CoordinatesCollections model_to_collection(
-  const cereal::LiveLocationKalman::Measurement::Reader &calibratedOrientationECEF,
-  const cereal::LiveLocationKalman::Measurement::Reader &positionECEF,
-  const cereal::XYZTData::Reader &line){
+  const cereal::LivePose::Reader &pose,
+  const cereal::XYZTData::Reader &line) {
 
-  Eigen::Vector3d ecef(positionECEF.getValue()[0], positionECEF.getValue()[1], positionECEF.getValue()[2]);
-  Eigen::Vector3d orient(calibratedOrientationECEF.getValue()[0], calibratedOrientationECEF.getValue()[1], calibratedOrientationECEF.getValue()[2]);
+  Eigen::Vector3d ecef(pose.getPositionECEF().getValue()[0], pose.getPositionECEF().getValue()[1], pose.getPositionECEF().getValue()[2]);
+  Eigen::Vector3d orient(pose.getOrientationECEF().getValue()[0], pose.getOrientationECEF().getValue()[1], pose.getOrientationECEF().getValue()[2]);
   Eigen::Matrix3d ecef_from_local = euler2rot(orient);
 
   QMapLibre::Coordinates coordinates;
@@ -57,24 +56,24 @@ QMapLibre::CoordinatesCollections model_to_collection(
 }
 
 QMapLibre::CoordinatesCollections coordinate_to_collection(const QMapLibre::Coordinate &c) {
-  QMapLibre::Coordinates coordinates{c};
-  return {QMapLibre::CoordinatesCollection{coordinates}};
+  QMapLibre::Coordinates coords{c};
+  return {QMapLibre::CoordinatesCollection{coords}};
 }
 
 QMapLibre::CoordinatesCollections capnp_coordinate_list_to_collection(const capnp::List<cereal::NavRoute::Coordinate>::Reader& coordinate_list) {
-  QMapLibre::Coordinates coordinates;
+  QMapLibre::Coordinates coords;
   for (auto const &c : coordinate_list) {
-    coordinates.push_back({c.getLatitude(), c.getLongitude()});
+    coords.push_back({c.getLatitude(), c.getLongitude()});
   }
-  return {QMapLibre::CoordinatesCollection{coordinates}};
+  return {QMapLibre::CoordinatesCollection{coords}};
 }
 
 QMapLibre::CoordinatesCollections coordinate_list_to_collection(const QList<QGeoCoordinate> &coordinate_list) {
-  QMapLibre::Coordinates coordinates;
+  QMapLibre::Coordinates coords;
   for (auto &c : coordinate_list) {
-    coordinates.push_back({c.latitude(), c.longitude()});
+    coords.push_back({c.latitude(), c.longitude()});
   }
-  return {QMapLibre::CoordinatesCollection{coordinates}};
+  return {QMapLibre::CoordinatesCollection{coords}};
 }
 
 QList<QGeoCoordinate> polyline_to_coordinate_list(const QString &polylineString) {
