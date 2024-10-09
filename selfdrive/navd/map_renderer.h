@@ -15,20 +15,6 @@
 #include "msgq/visionipc/visionipc_server.h"
 #include "cereal/messaging/messaging.h"
 
-struct Pose {
-  struct Vec3 {
-    float x, y, z;
-  };
-  Vec3 position;
-  Vec3 orientation;
-  
-  static Pose from_live_pose(const cereal::LivePose::Reader& live_pose) {
-    Pose pose;
-    pose.position = {live_pose.getOrientationNED().getX(), live_pose.getOrientationNED().getY(), live_pose.getOrientationNED().getZ()};
-    pose.orientation = {live_pose.getAngularVelocityDevice().getX(), live_pose.getAngularVelocityDevice().getY(), live_pose.getAngularVelocityDevice().getZ()};
-    return pose;
-  }
-};
 
 class MapRenderer : public QObject {
   Q_OBJECT
@@ -39,7 +25,6 @@ public:
   void update();
   bool loaded();
   ~MapRenderer();
-  void updatePose(const Pose& pose);
 
 private:
   std::unique_ptr<QOpenGLContext> ctx;
@@ -60,15 +45,14 @@ private:
 
   double start_render_t;
   uint32_t frame_id = 0;
-  uint64_t last_pose_rendered = 0;
+  uint64_t last_llk_rendered = 0;
   bool rendering = false;
   bool rendered() {
-    return last_pose_rendered == (*sm)["livePose"].getLogMonoTime();
+    return last_llk_rendered == (*sm)["liveLocationKalman"].getLogMonoTime();
   }
 
   QTimer* timer;
   bool ever_loaded = false;
-  Pose calibrated_pose;
 
 public slots:
   void updatePosition(QMapLibre::Coordinate position, float bearing);
