@@ -174,11 +174,11 @@ void MapWindow::updateState(const UIState &s) {
 
   if (sm.updated("livePose")) {
     auto pose = sm["livePose"].getLivePose();
-    locationd_valid = pose.getPosenetOK() && pose.getInputsOK();
+    locationd_valid = pose.getInputsOK() && pose.getPosenetOK();
     if (locationd_valid) {
-      last_position = QMapLibre::Coordinate(pose.getPositionGeodetic().getLatitude(), pose.getPositionGeodetic().getLongitude());
-      last_bearing = RAD2DEG(pose.getOrientationNED().getYaw());
-      velocity_filter.update(std::max(10.0, pose.getVelocityCalibrated().getX()));
+      last_position = QMapLibre::Coordinate(pose.getOrientationNED().getX(), pose.getOrientationNED().getY());
+      last_bearing = RAD2DEG(pose.getOrientationNED().getZ());
+      velocity_filter.update(std::max(10.0, pose.getVelocityDevice().getX()));
     }
   }
 

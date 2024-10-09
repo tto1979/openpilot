@@ -38,8 +38,8 @@ QMapLibre::CoordinatesCollections model_to_collection(
   const cereal::LivePose::Reader &pose,
   const cereal::XYZTData::Reader &line) {
 
-  Eigen::Vector3d ecef(pose.getPositionECEF().getValue()[0], pose.getPositionECEF().getValue()[1], pose.getPositionECEF().getValue()[2]);
-  Eigen::Vector3d orient(pose.getOrientationECEF().getValue()[0], pose.getOrientationECEF().getValue()[1], pose.getOrientationECEF().getValue()[2]);
+  Eigen::Vector3d ecef(pose.getOrientationNED().getX(), pose.getOrientationNED().getY(), pose.getOrientationNED().getZ());
+  Eigen::Vector3d orient(pose.getOrientationNED().getX(), pose.getOrientationNED().getY(), pose.getOrientationNED().getZ());
   Eigen::Matrix3d ecef_from_local = euler2rot(orient);
 
   QMapLibre::Coordinates coordinates;
