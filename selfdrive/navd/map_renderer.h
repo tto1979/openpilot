@@ -14,7 +14,7 @@
 
 #include "msgq/visionipc/visionipc_server.h"
 #include "cereal/messaging/messaging.h"
-
+#include "selfdrive/locationd/helpers.h"
 
 class MapRenderer : public QObject {
   Q_OBJECT
@@ -25,6 +25,7 @@ public:
   void update();
   bool loaded();
   ~MapRenderer();
+  void updatePose(const Pose& pose);
 
 private:
   std::unique_ptr<QOpenGLContext> ctx;
@@ -45,14 +46,15 @@ private:
 
   double start_render_t;
   uint32_t frame_id = 0;
-  uint64_t last_llk_rendered = 0;
+  uint64_t last_pose_rendered = 0;
   bool rendering = false;
   bool rendered() {
-    return last_llk_rendered == (*sm)["liveLocationKalman"].getLogMonoTime();
+    return last_pose_rendered == (*sm)["livePose"].getLogMonoTime();
   }
 
   QTimer* timer;
   bool ever_loaded = false;
+  Pose calibrated_pose;
 
 public slots:
   void updatePosition(QMapLibre::Coordinate position, float bearing);

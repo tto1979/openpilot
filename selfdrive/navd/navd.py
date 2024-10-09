@@ -17,6 +17,7 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                     minimum_distance,
                                     parse_banner_instructions)
 from openpilot.common.swaglog import cloudlog
+from openpilot.selfdrive.locationd.helpers import Pose
 
 # PFEIFER - SLC {{
 from openpilot.selfdrive.controls.speed_limit_controller import slc
@@ -42,7 +43,7 @@ class RouteEngine:
 
     # Get last gps position from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
-    self.last_bearing = None
+    self.last_pose = None
 
     self.gps_ok = False
     self.localizer_valid = False
@@ -97,10 +98,9 @@ class RouteEngine:
       cloudlog.exception("navd.failed_to_compute")
 
   def update_location(self):
-    location = self.sm['liveLocationKalman']
-    self.gps_ok = location.gpsOK
-
-    self.localizer_valid = (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid
+    location = self.sm['livePose']
+    self.gps_ok = location.posenetOK
+    self.localizer_valid = location.inputsOK
 
     if self.localizer_valid:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
@@ -163,7 +163,7 @@ class RouteEngine:
       (destination.longitude, destination.latitude)
     ]
     params['waypoints'] = f'0;{len(coords)-1}'
-    if self.last_bearing is not None:
+    if self.last_pose is not None:
       params['bearings'] = f"{(self.last_bearing + 360) % 360:.0f},90" + (';'*(len(coords)-1))
 
     coords_str = ';'.join([f'{lon},{lat}' for lon, lat in coords])
@@ -335,15 +335,17 @@ class RouteEngine:
 
     if ('maxspeed' in closest.annotations) and self.localizer_valid:
       msg.navInstruction.speedLimit = closest.annotations['maxspeed']
-    # PFEIFER - SLC {{
+      # PFEIFER - SLC {{
       slc.load_state()
       slc.nav_speed_limit = closest.annotations['maxspeed']
       slc.write_nav_state()
-    if not self.localizer_valid or ('maxspeed' not in closest.annotations):
+      # }} PFEIFER - SLC
+    else:
+      # PFEIFER - SLC {{
       slc.load_state()
       slc.nav_speed_limit = 0
       slc.write_nav_state()
-    # }} PFEIFER - SLC
+      # }} PFEIFER - SLC
 
     # Speed limit sign type
     if 'speedLimitSign' in step:
@@ -452,7 +454,7 @@ class RouteEngine:
 
 def main():
   pm = messaging.PubMaster(['navInstruction', 'navRoute'])
-  sm = messaging.SubMaster(['liveLocationKalman', 'managerState'])
+  sm = messaging.SubMaster(['livePose', 'managerState'])
 
   rk = Ratekeeper(1.0)
   route_engine = RouteEngine(sm, pm)
