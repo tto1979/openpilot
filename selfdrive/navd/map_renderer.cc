@@ -195,7 +195,7 @@ void MapRenderer::publish(const double render_time, const bool loaded) {
   QImage cap = fbo->toImage().convertToFormat(QImage::Format_RGB888, Qt::AutoColor);
 
   auto pose = (*sm)["livePose"].getLivePose();
-  bool valid = loaded && pose.getPosenetOk() && pose.getInputsOk();
+  bool valid = loaded && pose.getPosenetOK() && pose.getInputsOK();
   ever_loaded = ever_loaded || loaded;
   uint64_t ts = nanos_since_boot();
   VisionBuf* buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_MAP);

@@ -24,8 +24,8 @@ struct Pose {
   
   static Pose from_live_pose(const cereal::LivePose::Reader& live_pose) {
     Pose pose;
-    pose.position = {live_pose.getPosition().getX(), live_pose.getPosition().getY(), live_pose.getPosition().getZ()};
-    pose.orientation = {live_pose.getOrientation().getX(), live_pose.getOrientation().getY(), live_pose.getOrientation().getZ()};
+    pose.position = {live_pose.getOrientationNED().getX(), live_pose.getOrientationNED().getY(), live_pose.getOrientationNED().getZ()};
+    pose.orientation = {live_pose.getAngularVelocityDevice().getX(), live_pose.getAngularVelocityDevice().getY(), live_pose.getAngularVelocityDevice().getZ()};
     return pose;
   }
 };
