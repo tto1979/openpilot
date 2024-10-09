@@ -178,7 +178,7 @@ void MapWindow::updateState(const UIState &s) {
     if (locationd_valid) {
       last_position = QMapLibre::Coordinate(pose.getOrientationNED().getX(), pose.getOrientationNED().getY());
       last_bearing = RAD2DEG(pose.getOrientationNED().getZ());
-      velocity_filter.update(std::max(10.0, pose.getVelocityDevice().getX()));
+      velocity_filter.update(std::max(10.0f, static_cast<float>(pose.getVelocityDevice().getX())));
     }
   }
 
