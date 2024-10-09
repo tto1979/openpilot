@@ -15,6 +15,20 @@
 #include "msgq/visionipc/visionipc_server.h"
 #include "cereal/messaging/messaging.h"
 
+struct Pose {
+  struct Vec3 {
+    float x, y, z;
+  };
+  Vec3 position;
+  Vec3 orientation;
+  
+  static Pose from_live_pose(const cereal::LivePose::Reader& live_pose) {
+    Pose pose;
+    pose.position = {live_pose.getPosition().getX(), live_pose.getPosition().getY(), live_pose.getPosition().getZ()};
+    pose.orientation = {live_pose.getOrientation().getX(), live_pose.getOrientation().getY(), live_pose.getOrientation().getZ()};
+    return pose;
+  }
+};
 
 class MapRenderer : public QObject {
   Q_OBJECT
