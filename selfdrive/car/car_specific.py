@@ -123,8 +123,6 @@ class CarSpecificEvents:
           Params().put_bool("LateralAllowed", False)
         self.prev_atl = CS_prev.cruiseState.available
 
-      if CS.brakehold_governor:
-        events.add(EventName.automaticBrakehold)
 
     elif self.CP.carName == 'gm':
       # The ECM allows enabling on falling edge of set, but only rising edge of resume
