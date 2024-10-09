@@ -23,7 +23,6 @@
 #include "selfdrive/ui/ui.h"
 #include "selfdrive/ui/qt/maps/map_eta.h"
 #include "selfdrive/ui/qt/maps/map_instructions.h"
-#include "selfdrive/locationd/helpers.h"  // 新增這行
 
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT

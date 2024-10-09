@@ -17,7 +17,6 @@ from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
                                     minimum_distance,
                                     parse_banner_instructions)
 from openpilot.common.swaglog import cloudlog
-from openpilot.selfdrive.locationd.helpers import Pose
 
 # PFEIFER - SLC {{
 from openpilot.selfdrive.controls.speed_limit_controller import slc
