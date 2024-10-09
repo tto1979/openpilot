@@ -123,7 +123,7 @@ class CarSpecificEvents:
           Params().put_bool("LateralAllowed", False)
         self.prev_atl = CS_prev.cruiseState.available
 
-      if CS_prev.brakehold_governor:
+      if CS.brakehold_governor:
         events.add(EventName.automaticBrakehold)
 
     elif self.CP.carName == 'gm':
