@@ -5,7 +5,7 @@ import numpy as np
 from cereal import log
 from openpilot.common.conversions import Conversions as CV
 from opendbc.car.interfaces import ACCEL_MIN
-from opendbc.selfdrive.car.toyota.values import ToyotaFlags
+from opendbc.car.toyota.values import ToyotaFlags
 from openpilot.common.numpy_fast import clip
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.swaglog import cloudlog
