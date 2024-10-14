@@ -14,7 +14,7 @@ blacklist = [
   "panda/examples/",
   "panda/tests/safety/",
 
-  "selfdrive/car/torque_data/lat_models/*",
+  "opendbc_repo/dbc/car/torque_data/lat_models/*",
 
   "opendbc_repo/dbc/.*.dbc$",
   "opendbc_repo/dbc/generator/",
