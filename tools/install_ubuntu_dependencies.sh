@@ -59,8 +59,6 @@ function install_ubuntu_common_requirements() {
     ocl-icd-libopencl1 \
     ocl-icd-opencl-dev \
     portaudio19-dev \
-    qml-module-qtquick2 \
-    qtmultimedia5-dev \
     qtlocation5-dev \
     qtpositioning5-dev \
     qttools5-dev-tools \
@@ -68,26 +66,6 @@ function install_ubuntu_common_requirements() {
     libqt5serialbus5-dev  \
     libqt5x11extras5-dev \
     libqt5opengl5-dev
-}
-
-# Install extra packages
-function install_extra_packages() {
-  echo "Installing extra packages..."
-  $SUDO apt-get install -y --no-install-recommends \
-    casync \
-    cmake \
-    make \
-    clinfo \
-    libqt5sql5-sqlite \
-    libreadline-dev \
-    libdw1 \
-    autoconf \
-    libtool \
-    bzip2 \
-    libarchive-dev \
-    libncursesw5-dev \
-    libportaudio2 \
-    locales
 }
 
 # Install Ubuntu 24.04 LTS packages
@@ -137,18 +115,6 @@ if [ -f "/etc/os-release" ]; then
         install_ubuntu_lts_latest_requirements
       fi
   esac
-
-  # Install extra packages
-  if [[ -z "$INSTALL_EXTRA_PACKAGES" && -n "$INTERACTIVE" ]]; then
-    read -p "Base setup done. Do you want to install extra development packages? [Y/n]: " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      INSTALL_EXTRA_PACKAGES="yes"
-    fi
-  fi
-  if [[ "$INSTALL_EXTRA_PACKAGES" == "yes" ]]; then
-    install_extra_packages
-  fi
 
   if [[ -d "/etc/udev/rules.d/" ]]; then
     # Setup panda udev rules
