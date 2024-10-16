@@ -133,7 +133,7 @@ def main():
   REPLAY = bool(int(os.getenv("REPLAY", "0")))
 
   pm = messaging.PubMaster(['liveParameters'])
-  sm = messaging.SubMaster(['livePose', 'liveCalibration', 'liveLocationKalman', 'carState'], poll='livePose')
+  sm = messaging.SubMaster(['livePose', 'liveCalibration', 'carState'], poll='livePose')
 
   params_reader = Params()
   # wait for stats about the car to come in from controls
@@ -198,13 +198,13 @@ def main():
           t = sm.logMonoTime[which] * 1e-9
           learner.handle_log(t, which, sm[which])
 
-    if sm.updated['liveLocationKalman']:
+    if sm.updated['livePose']:
       # PFEIFER - MAPD {{
-      location = sm['liveLocationKalman']
-      if (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid and location.gpsOK:
-        bearing = math.degrees(location.calibratedOrientationNED.value[2])
-        lat = location.positionGeodetic.value[0]
-        lon = location.positionGeodetic.value[1]
+      live_pose = sm['livePose']
+      if live_pose.inputsOK and live_pose.orientationNED.valid:
+        bearing = math.degrees(live_pose.orientationNED.z)
+        lat = live_pose.orientationNED.x
+        lon = live_pose.orientationNED.y
         mem_params.put("LastGPSPosition", json.dumps({ "latitude": lat, "longitude": lon, "bearing": bearing }))
       # }} PFEIFER - MAPD
       x = learner.kf.x

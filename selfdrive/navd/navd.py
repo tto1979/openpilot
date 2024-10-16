@@ -97,14 +97,14 @@ class RouteEngine:
       cloudlog.exception("navd.failed_to_compute")
 
   def update_location(self):
-    location = self.sm['liveLocationKalman']
-    self.gps_ok = location.gpsOK
+    location = self.sm['livePose']
+    self.gps_ok = location.posenetOK
 
-    self.localizer_valid = (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid
+    self.localizer_valid = location.inputsOK and location.orientationNED.valid
 
     if self.localizer_valid:
-      self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
-      self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
+      self.last_bearing = math.degrees(location.orientationNED.z)
+      self.last_position = Coordinate(location.orientationNED.x, location.orientationNED.y)
 
   def recompute_route(self):
     if self.last_position is None:
@@ -452,7 +452,7 @@ class RouteEngine:
 
 def main():
   pm = messaging.PubMaster(['navInstruction', 'navRoute'])
-  sm = messaging.SubMaster(['liveLocationKalman', 'managerState'])
+  sm = messaging.SubMaster(['livePose', 'managerState'])
 
   rk = Ratekeeper(1.0)
   route_engine = RouteEngine(sm, pm)

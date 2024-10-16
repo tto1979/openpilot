@@ -172,31 +172,22 @@ void MapWindow::updateState(const UIState &s) {
   }
   prev_time_valid = sm.valid("clocks");
 
-  if (sm.updated("liveLocationKalman")) {
-    auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
-    auto locationd_pos = locationd_location.getPositionGeodetic();
-    auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
-    auto locationd_velocity = locationd_location.getVelocityCalibrated();
-    auto locationd_ecef = locationd_location.getPositionECEF();
+  if (sm.updated("livePose")) {
+    auto live_pose = sm["livePose"].getLivePose();
+    auto pose_orientation = live_pose.getOrientationNED();
+    auto pose_velocity = live_pose.getVelocityDevice();
 
-    locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
+    locationd_valid = (live_pose.getInputsOK() && pose_orientation.getValid() && pose_velocity.getValid());
     if (locationd_valid) {
-      // Check std norm
-      auto pos_ecef_std = locationd_ecef.getStd();
-      bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
-      locationd_valid = pos_accurate_enough;
-    }
-
-    if (locationd_valid) {
-      last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
-      last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
-      velocity_filter.update(std::max(10.0, locationd_velocity.getValue()[0]));
+      last_position = QMapLibre::Coordinate(pose_orientation.getX(), pose_orientation.getY());
+      last_bearing = RAD2DEG(pose_orientation.getZ());
+      velocity_filter.update(std::max(10.0, pose_velocity.getX()));
     }
 }
   // Credit to jakethesnake420
   if (loaded_once && (sm.rcv_frame("modelV2") != model_rcv_frame)) {
-    auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
-    auto model_path = model_to_collection(locationd_location.getCalibratedOrientationECEF(), locationd_location.getPositionECEF(), sm["modelV2"].getModelV2().getPosition());
+    auto live_pose = sm["livePose"].getLivePose();
+    auto model_path = model_to_collection(live_pose.getOrientationNED(), live_pose.getPositionECEF(), sm["modelV2"].getModelV2().getPosition());
     QMapLibre::Feature model_path_feature(QMapLibre::Feature::LineStringType, model_path, {}, {});
     QVariantMap modelV2Path;
     modelV2Path["type"] =  "geojson";

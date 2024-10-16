@@ -22,8 +22,8 @@ QString get_mapbox_token();
 QMapLibre::Settings get_mapbox_settings();
 QGeoCoordinate to_QGeoCoordinate(const QMapLibre::Coordinate &in);
 QMapLibre::CoordinatesCollections model_to_collection(
-  const cereal::LiveLocationKalman::Measurement::Reader &calibratedOrientationECEF,
-  const cereal::LiveLocationKalman::Measurement::Reader &positionECEF,
+  const cereal::LivePose::XYZMeasurement::Reader &orientationNED,
+  const cereal::LivePose::XYZMeasurement::Reader &positionECEF,
   const cereal::XYZTData::Reader &line);
 QMapLibre::CoordinatesCollections coordinate_to_collection(const QMapLibre::Coordinate &c);
 QMapLibre::CoordinatesCollections capnp_coordinate_list_to_collection(const capnp::List<cereal::NavRoute::Coordinate>::Reader &coordinate_list);

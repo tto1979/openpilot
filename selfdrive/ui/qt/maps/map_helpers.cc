@@ -35,12 +35,12 @@ QGeoCoordinate to_QGeoCoordinate(const QMapLibre::Coordinate &in) {
 }
 
 QMapLibre::CoordinatesCollections model_to_collection(
-  const cereal::LiveLocationKalman::Measurement::Reader &calibratedOrientationECEF,
-  const cereal::LiveLocationKalman::Measurement::Reader &positionECEF,
+  const cereal::LivePose::XYZMeasurement::Reader &orientationNED,
+  const cereal::LivePose::XYZMeasurement::Reader &positionECEF,
   const cereal::XYZTData::Reader &line){
 
-  Eigen::Vector3d ecef(positionECEF.getValue()[0], positionECEF.getValue()[1], positionECEF.getValue()[2]);
-  Eigen::Vector3d orient(calibratedOrientationECEF.getValue()[0], calibratedOrientationECEF.getValue()[1], calibratedOrientationECEF.getValue()[2]);
+  Eigen::Vector3d ecef(positionECEF.getX(), positionECEF.getY(), positionECEF.getZ());
+  Eigen::Vector3d orient(orientationNED.getX(), orientationNED.getY(), orientationNED.getZ());
   Eigen::Matrix3d ecef_from_local = euler2rot(orient);
 
   QMapLibre::Coordinates coordinates;
