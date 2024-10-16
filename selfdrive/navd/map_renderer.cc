@@ -121,12 +121,11 @@ void MapRenderer::msgUpdate() {
 
   if (sm->updated("livePose")) {
     auto pose = (*sm)["livePose"].getLivePose();
-    auto pos = pose.getPositionGeodetic();
     auto orientation = pose.getOrientationNED();
 
     if ((sm->rcv_frame("livePose") % LLK_DECIMATION) == 0) {
       float bearing = RAD2DEG(orientation.getZ());
-      updatePosition(QMapLibre::Coordinate(pos.getX(), pos.getY()), bearing);
+      updatePosition(QMapLibre::Coordinate(orientation.getX(), orientation.getY()), bearing);
 
       if (!rendering) {
         update();
@@ -194,10 +193,7 @@ void MapRenderer::publish(const double render_time, const bool loaded) {
   QImage cap = fbo->toImage().convertToFormat(QImage::Format_RGB888, Qt::AutoColor);
 
   auto pose = (*sm)["livePose"].getLivePose();
-  bool valid = loaded && pose.getPositionGeodetic().getValid();
-  ever_loaded = ever_loaded || loaded;
-  uint64_t ts = nanos_since_boot();
-  VisionBuf* buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_MAP);
+  bool valid = loaded && pose.getOrientationNED().getValid();
   VisionIpcBufExtra extra = {
     .frame_id = frame_id,
     .timestamp_sof = (*sm)["livePose"].getLogMonoTime(),

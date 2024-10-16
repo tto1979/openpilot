@@ -46,7 +46,6 @@ private:
   double start_render_t;
   uint32_t frame_id = 0;
   uint64_t last_pose_rendered = 0;
-  bool rendering = false;
   bool rendered() {
     return last_pose_rendered == (*sm)["livePose"].getLogMonoTime();
   }
