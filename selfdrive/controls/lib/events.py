@@ -250,7 +250,7 @@ def calibration_incomplete_alert(CP: car.CarParams, CS: car.CarState, sm: messag
     Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2)
 
 
-def torque_nn_load_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int) -> Alert:
+def torque_nn_load_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
   model_name = CP.lateralTuning.torque.nnModelName
   if model_name == "":
     return Alert(

@@ -38,6 +38,8 @@ typedef enum UIStatus {
   STATUS_DISENGAGED,
   STATUS_OVERRIDE,
   STATUS_ENGAGED,
+  STATUS_WARNING,
+  STATUS_ALERT,
   // dpatl {{
   STATUS_LAT_ALLOWED,
   // }} dpatl

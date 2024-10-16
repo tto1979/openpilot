@@ -216,11 +216,17 @@ void ui_live_update_params(UIState *s) {
 void UIState::updateStatus() {
   if (scene.started && sm->updated("selfdriveState")) {
     auto ss = (*sm)["selfdriveState"].getSelfdriveState();
-    auto state = ss .getState();
+    auto state = ss.getState();
     if (state == cereal::SelfdriveState::OpenpilotState::PRE_ENABLED || state == cereal::SelfdriveState::OpenpilotState::OVERRIDING) {
       status = STATUS_OVERRIDE;
     } else {
-      status = ss.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
+      if (ss.getAlertStatus() == cereal::SelfdriveState::AlertStatus::USER_PROMPT) {
+        status = STATUS_WARNING;
+      } else if (ss.getAlertStatus() == cereal::SelfdriveState::AlertStatus::CRITICAL) {
+        status = STATUS_ALERT;
+      } else {
+        status = ss.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
+      }
     }
   }
 
@@ -337,7 +343,7 @@ void Device::updateBrightness(const UIState &s) {
     brightness = 0;
   } else if (s.scene.onroadScreenOff) {
       if (s.status == STATUS_WARNING || s.status == STATUS_ALERT) {
-        // I personal feel more comfortable to keep 0.4 second screen-on after warning and alert
+        // I personally feel more comfortable to keep 0.4 second screen-on after warning and alert
         interactive_timeout = 0.4 * UI_FREQ;
       } else if (s.scene.started && interactive_timeout == 0) {
         brightness = 0;
