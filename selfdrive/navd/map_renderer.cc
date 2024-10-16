@@ -126,7 +126,7 @@ void MapRenderer::msgUpdate() {
 
     if ((sm->rcv_frame("livePose") % LLK_DECIMATION) == 0) {
       float bearing = RAD2DEG(orientation.getZ());
-      updatePosition(QMapLibre::Coordinate(orientation.getX(), orientation.getY()), bearing);
+      updatePosition(QMapLibre::Coordinate(orientation.getX(), orientation.getY(), MAP_OFFSET), bearing);
 
       if (!rendering) {
         update();
