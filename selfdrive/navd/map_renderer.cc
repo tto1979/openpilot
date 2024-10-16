@@ -181,7 +181,7 @@ void MapRenderer::update() {
   m_map->startStaticRender();
 }
 
-void MapRenderer::sendThumbnail(const uint64_t ts, const kj::Array<capnp::byte> &buf) {
+void MapRenderer::sendThumbnail(const uint64_t timestamp, const kj::Array<capnp::byte> &thumbnail_buf) {
   MessageBuilder msg;
   auto thumbnaild = msg.initEvent().initNavThumbnail();
   thumbnaild.setFrameId(frame_id);
