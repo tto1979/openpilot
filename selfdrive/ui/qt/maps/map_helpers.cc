@@ -41,14 +41,18 @@ QMapLibre::CoordinatesCollections model_to_collection(
 
   Eigen::Vector3d ned(positionNED.getX(), positionNED.getY(), positionNED.getZ());
   Eigen::Vector3d orient(orientationNED.getX(), orientationNED.getY(), orientationNED.getZ());
-  Eigen::Matrix3d ecef_from_local = euler2rot(orient);
+  Eigen::Matrix3d ned_from_local = euler2rot(orient);
+
+  ECEF ecef = ned2ecef({.x = ned[0], .y = ned[1], .z = ned[2]});
+  Eigen::Vector3d ecef_vec(ecef.x, ecef.y, ecef.z);
 
   QMapLibre::Coordinates coordinates;
   auto x = line.getX();
   auto y = line.getY();
   auto z = line.getZ();
   for (int i = 0; i < x.size(); i++) {
-    Eigen::Vector3d point_ecef = ecef_from_local * Eigen::Vector3d(x[i], y[i], z[i]) + ecef;
+    Eigen::Vector3d point_ned = ned_from_local * Eigen::Vector3d(x[i], y[i], z[i]);
+    Eigen::Vector3d point_ecef = ecef_vec + point_ned;
     Geodetic point_geodetic = ecef2geodetic((ECEF){.x = point_ecef[0], .y = point_ecef[1], .z = point_ecef[2]});
     coordinates.push_back({point_geodetic.lat, point_geodetic.lon});
   }
