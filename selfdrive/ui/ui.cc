@@ -175,8 +175,8 @@ static void update_state(UIState *s) {
       scene.turn_signal_right = sm["carState"].getCarState().getRightBlinker();
     }
   }
-  if (sm.updated("controlsState")) {
-    scene.experimental_mode = sm["controlsState"].getControlsState().getExperimentalMode();
+  if (sm.updated("selfdriveState")) {
+    scene.experimental_mode = sm["selfdriveState"].getControlsState().getExperimentalMode();
   }
   if (sm.updated("wideRoadCameraState")) {
     auto cam_state = sm["wideRoadCameraState"].getWideRoadCameraState();

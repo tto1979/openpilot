@@ -833,7 +833,6 @@ class Controls:
     self.pm.send('carControl', cc_send)
 
   def step(self):
-    start_time = time.monotonic()
     self.update_use_old_long()
 
     # Sample data from sockets and get a carState
