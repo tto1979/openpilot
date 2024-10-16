@@ -239,13 +239,13 @@ struct CarState {
   cumLagMs @50 :Float32;
 
   # TOP
-  steeringWheelCar @54 :Bool;
-  rightBlindspotD1 @55 :Float32;
-  rightBlindspotD2 @56 :Float32;
-  leftBlindspotD1 @57 :Float32;
-  leftBlindspotD2 @58 :Float32;
-  blindspotside @59 :Float32;
-  distanceLines @60 :UInt8; # KRKeegan toyota distance lines
+  steeringWheelCar @55 :Bool;
+  rightBlindspotD1 @56 :Float32;
+  rightBlindspotD2 @57 :Float32;
+  leftBlindspotD1 @58 :Float32;
+  leftBlindspotD2 @59 :Float32;
+  blindspotside @60 :Float32;
+  distanceLines @61 :UInt8; # KRKeegan toyota distance lines
 
   struct WheelSpeeds {
     # optional wheel speeds
