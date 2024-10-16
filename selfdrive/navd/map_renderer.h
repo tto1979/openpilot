@@ -12,6 +12,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLFramebufferObject>
 
+#include "msgq/visionipc/visionbuf.h"
 #include "msgq/visionipc/visionipc_server.h"
 #include "cereal/messaging/messaging.h"
 
@@ -46,6 +47,9 @@ private:
   double start_render_t;
   uint32_t frame_id = 0;
   uint64_t last_pose_rendered = 0;
+  bool rendering = false;
+  uint64_t ts = 0;
+  VisionBuf* buf = nullptr;
   bool rendered() {
     return last_pose_rendered == (*sm)["livePose"].getLogMonoTime();
   }

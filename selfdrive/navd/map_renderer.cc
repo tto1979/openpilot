@@ -8,6 +8,7 @@
 #include "common/util.h"
 #include "common/timing.h"
 #include "common/swaglog.h"
+#include "msgq/visionipc/visionbuf.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 
 const float DEFAULT_ZOOM = 13.5; // Don't go below 13 or features will start to disappear
@@ -102,7 +103,7 @@ MapRenderer::MapRenderer(const QMapLibre::Settings &settings, bool online) : m_s
   });
 
   if (online) {
-    vipc_server.reset(new VisionIpcServer("navd"));
+    vipc_server = std::make_unique<VisionIpcServer>("navd");
     vipc_server->create_buffers(VisionStreamType::VISION_STREAM_MAP, NUM_VIPC_BUFFERS, false, WIDTH, HEIGHT);
     vipc_server->start_listener();
 
@@ -194,6 +195,8 @@ void MapRenderer::publish(const double render_time, const bool loaded) {
 
   auto pose = (*sm)["livePose"].getLivePose();
   bool valid = loaded && pose.getOrientationNED().getValid();
+  ts = nanos_since_boot();
+  buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_MAP);
   VisionIpcBufExtra extra = {
     .frame_id = frame_id,
     .timestamp_sof = (*sm)["livePose"].getLogMonoTime(),
