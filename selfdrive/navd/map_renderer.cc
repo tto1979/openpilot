@@ -18,7 +18,7 @@ const int NUM_VIPC_BUFFERS = 4;
 const int EARTH_CIRCUMFERENCE_METERS = 40075000;
 const int EARTH_RADIUS_METERS = 6378137;
 const int PIXELS_PER_TILE = 256;
-const int MAP_OFFSET = 128;
+[[maybe_unused]] const int MAP_OFFSET = 128;
 
 const bool TEST_MODE = getenv("MAP_RENDER_TEST_MODE");
 const int LLK_DECIMATION = TEST_MODE ? 1 : 10;
@@ -126,7 +126,7 @@ void MapRenderer::msgUpdate() {
 
     if ((sm->rcv_frame("livePose") % LLK_DECIMATION) == 0) {
       float bearing = RAD2DEG(orientation.getZ());
-      updatePosition(QMapLibre::Coordinate(orientation.getX(), orientation.getY(), MAP_OFFSET), bearing);
+      updatePosition(QMapLibre::Coordinate(orientation.getX(), orientation.getY()), bearing);
 
       if (!rendering) {
         update();
