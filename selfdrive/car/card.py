@@ -158,6 +158,7 @@ class Car:
 
     self.is_metric = self.params.get_bool("IsMetric")
     self.experimental_mode = self.params.get_bool("ExperimentalMode")
+    self.reverse_acc_change = False
 
     # card is driven by can recv, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
@@ -184,7 +185,7 @@ class Car:
       self.can_log_mono_time = messaging.log_from_bytes(can_strs[0]).logMonoTime
 
     # TODO: mirror the carState.cruiseState struct?
-    self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric)
+    self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric, self.reverse_acc_change)
     CS.vCruise = float(self.v_cruise_helper.v_cruise_kph)
     CS.vCruiseCluster = float(self.v_cruise_helper.v_cruise_cluster_kph)
 
@@ -257,6 +258,8 @@ class Car:
     CS = self.state_update()
 
     self.update_events(CS)
+
+    self.reverse_acc_change = self.params.get_bool("ReverseAccChange")
 
     if not self.sm['carControl'].enabled and self.events.contains(ET.ENABLE):
       self.v_cruise_helper.initialize_v_cruise(CS, self.experimental_mode)
