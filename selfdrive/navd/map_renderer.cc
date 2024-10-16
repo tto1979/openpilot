@@ -185,8 +185,8 @@ void MapRenderer::sendThumbnail(const uint64_t ts, const kj::Array<capnp::byte> 
   MessageBuilder msg;
   auto thumbnaild = msg.initEvent().initNavThumbnail();
   thumbnaild.setFrameId(frame_id);
-  thumbnaild.setTimestampEof(ts);
-  thumbnaild.setThumbnail(buf);
+  thumbnaild.setTimestampEof(timestamp);
+  thumbnaild.setThumbnail(thumbnail_buf);
   pm->send("navThumbnail", msg);
 }
 

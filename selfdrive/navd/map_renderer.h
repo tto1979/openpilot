@@ -37,7 +37,7 @@ private:
   std::unique_ptr<PubMaster> pm;
   std::unique_ptr<SubMaster> sm;
   void publish(const double render_time, const bool loaded);
-  void sendThumbnail(const uint64_t ts, const kj::Array<capnp::byte> &buf);
+  void sendThumbnail(const uint64_t timestamp, const kj::Array<capnp::byte> &thumbnail_buf);
 
   QMapLibre::Settings m_settings;
   QScopedPointer<QMapLibre::Map> m_map;
