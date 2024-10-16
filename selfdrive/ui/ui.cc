@@ -176,7 +176,7 @@ static void update_state(UIState *s) {
     }
   }
   if (sm.updated("selfdriveState")) {
-    scene.experimental_mode = sm["selfdriveState"].getControlsState().getExperimentalMode();
+    scene.experimental_mode = sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
   }
   if (sm.updated("wideRoadCameraState")) {
     auto cam_state = sm["wideRoadCameraState"].getWideRoadCameraState();

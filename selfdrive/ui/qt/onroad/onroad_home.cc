@@ -71,7 +71,7 @@ void OnroadWindow::updateState(const UIState &s) {
   mapVisible = isMapVisible();
 
   QColor bgColor = bg_colors[s.status];
-  if (s.status == STATUS_DISENGAGED && Params().getBool("LateralAllowed")){
+  if (s.status == STATUS_DISENGAGED && Params("/dev/shm/params").getBool("LateralAllowed")){
     bgColor = bg_colors[STATUS_LAT_ALLOWED];
   }
 
