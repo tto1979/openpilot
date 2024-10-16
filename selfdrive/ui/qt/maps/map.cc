@@ -181,13 +181,13 @@ void MapWindow::updateState(const UIState &s) {
     if (locationd_valid) {
       last_position = QMapLibre::Coordinate(pose_orientation.getX(), pose_orientation.getY());
       last_bearing = RAD2DEG(pose_orientation.getZ());
-      velocity_filter.update(std::max(10.0, pose_velocity.getX()));
+      velocity_filter.update(std::max(10.0f, static_cast<float>(pose_velocity.getX())));
     }
 }
   // Credit to jakethesnake420
   if (loaded_once && (sm.rcv_frame("modelV2") != model_rcv_frame)) {
     auto live_pose = sm["livePose"].getLivePose();
-    auto model_path = model_to_collection(live_pose.getOrientationNED(), live_pose.getPositionECEF(), sm["modelV2"].getModelV2().getPosition());
+    auto model_path = model_to_collection(live_pose.getOrientationNED(), live_pose.getPositionNED(), sm["modelV2"].getModelV2().getPosition());
     QMapLibre::Feature model_path_feature(QMapLibre::Feature::LineStringType, model_path, {}, {});
     QVariantMap modelV2Path;
     modelV2Path["type"] =  "geojson";
