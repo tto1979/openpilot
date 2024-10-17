@@ -38,10 +38,10 @@ QGeoCoordinate to_QGeoCoordinate(const QMapLibre::Coordinate &in) {
 
 QMapLibre::CoordinatesCollections model_to_collection(
   const cereal::LivePose::XYZMeasurement::Reader &orientationNED,
-  const cereal::LivePose::XYZMeasurement::Reader &positionDevice,
+  const cereal::LivePose::XYZMeasurement::Reader &positionNED,
   const cereal::XYZTData::Reader &line) {
 
-  Eigen::Vector3d ned(positionDevice.getX(), positionDevice.getY(), positionDevice.getZ());
+  Eigen::Vector3d ned(positionNED.getX(), positionNED.getY(), positionNED.getZ());
   Eigen::Vector3d orient(orientationNED.getX(), orientationNED.getY(), orientationNED.getZ());
   Eigen::Matrix3d ned_from_local = euler2rot(orient);
 
