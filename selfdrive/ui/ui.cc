@@ -252,7 +252,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
     "wideRoadCameraState", "managerState", "selfdriveState",
-    "livePose", "navInstruction", "navRoute", "clocks",
+    "livePose", "navInstruction", "navRoute",
   });
 
   Params params;
@@ -272,6 +272,10 @@ void UIState::update() {
   update_sockets(this);
   update_state(this);
   updateStatus();
+
+  if (std::getenv("PRIME_TYPE")) {
+      setPrimeType((PrimeType)atoi(std::getenv("PRIME_TYPE")));
+  }
 
   if (sm->frame % UI_FREQ == 0) {
     watchdog_kick(nanos_since_boot());

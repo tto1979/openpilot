@@ -28,16 +28,6 @@ private slots:
   void refresh();
 };
 
-
-// NOO popup widget
-class MyNooPopup : public DialogBase {
-  Q_OBJECT
-
-public:
-  explicit MyNooPopup(QWidget* parent);
-};
-
-
 // footage QR code
 class MyFootageQRWidget : public QWidget {
   Q_OBJECT

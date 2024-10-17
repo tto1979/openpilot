@@ -15,7 +15,6 @@
 #include "selfdrive/ui/qt/widgets/scrollview.h"
 #include "selfdrive/ui/qt/widgets/ssh_keys.h"
 #include "selfdrive/ui/qt/offroad/timpilot.h"
-#include "selfdrive/ui/qt/offroad/nav_settings.h"
 
 TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   // param, title, desc, icon
@@ -71,20 +70,6 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Display speed in km/h instead of mph."),
       "../assets/offroad/icon_metric.png",
     },
-#ifdef ENABLE_MAPS
-    {
-      "NavSettingTime24h",
-      tr("Show ETA in 24h Format"),
-      tr("Use 24h format instead of am/pm"),
-      "../assets/offroad/icon_metric.png",
-    },
-    {
-      "NavSettingLeftSide",
-      tr("Show Map on Left Side of UI"),
-      tr("Show map on left side when in split screen view."),
-      "../assets/offroad/icon_road.png",
-    },
-#endif
   };
 
 
@@ -206,14 +191,6 @@ void TogglesPanel::updateToggles() {
 
 DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   setSpacing(50);
-
-  auto nooPopup = new MyNooPopup(this);
-  auto qrcodeNooBtn = new ButtonControl(tr("Navigate on Openpilot"), "QR-Code",
-                                        tr("Open the destination input web page for navigation on openpilot"));
-  connect(qrcodeNooBtn, &ButtonControl::clicked, [=] {
-      nooPopup->exec();
-    });
-  addItem(qrcodeNooBtn);
 
   auto footagePopup = new MyFootagePopup(this);
   auto qrcodeBtn = new ButtonControl(tr("DashCam footage"), "QR-Code",
@@ -427,7 +404,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     {tr("Toggles"), toggles},
     {tr("Software"), new SoftwarePanel(this)},
     {tr("T.O.P"), new TimpilotPanel(this)},
-    {tr("Navigation"), new NavigationPanel(this)},
   };
 
   nav_btns = new QButtonGroup(this);
@@ -604,8 +580,8 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   this));
 
   toggles.append(new ParamControl("fleetmanager",
-                                  tr("Enable Local Nav and File Server"),
-                                  tr("This will allow you to use the Navigation feature with your own access key and access openpilot data and files.\nUse web interface to control it: *http://&lt;device_ip&gt;:8082*.\nYou will need to apply your own mapbox token at https://www.mapbox.com/.\nInternet access from mobile phone (tethering) is required."),
+                                  tr("Enable Local File Server"),
+                                  tr("This will allow you to play or download openpilot driving record files through your browser.\nUse web interface to control it: *http://&lt;device_ip&gt;:8082*.\nInternet access from mobile phone (tethering) is required."),
                                   "../assets/offroad/icon_road.png",
                                   this));
 

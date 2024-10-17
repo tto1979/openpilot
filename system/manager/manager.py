@@ -44,7 +44,6 @@ def manager_init() -> None:
     ("IsLdwEnabled", "1"),
     ("IsMetric", "1"),
     ("LanguageSetting", "main_en"),
-    ("NavSettingTime24h", "1"),
     ("OpenpilotEnabledToggle", "1"),
     ("RecordFront", "0"),
     ("LongitudinalPersonality", str(log.LongitudinalPersonality.standard)),

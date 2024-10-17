@@ -137,33 +137,6 @@
     </message>
 </context>
 <context>
-    <name>DestinationWidget</name>
-    <message>
-        <source>Home</source>
-        <translation>住家</translation>
-    </message>
-    <message>
-        <source>Work</source>
-        <translation>工作</translation>
-    </message>
-    <message>
-        <source>No destination set</source>
-        <translation>尚未設定目的地</translation>
-    </message>
-    <message>
-        <source>No %1 location set</source>
-        <translation>尚未設定 %1 的位置</translation>
-    </message>
-    <message>
-        <source>home</source>
-        <translation>住家</translation>
-    </message>
-    <message>
-        <source>work</source>
-        <translation>工作</translation>
-    </message>
-</context>
-<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -306,14 +279,6 @@
         <translation>配對</translation>
     </message>
     <message>
-        <source>Navigate on Openpilot</source>
-        <translation>NOO導航操控</translation>
-    </message>
-    <message>
-        <source>Open the destination input web page for navigation on openpilot</source>
-        <translation>開啟NOO導航操控的目的地輸入網頁</translation>
-    </message>
-    <message>
         <source>DashCam footage</source>
         <translation>行車記錄影像</translation>
     </message>
@@ -372,51 +337,6 @@
     </message>
 </context>
 <context>
-    <name>MapETA</name>
-    <message>
-        <source>eta</source>
-        <translation>抵達</translation>
-    </message>
-    <message>
-        <source>min</source>
-        <translation>分鐘</translation>
-    </message>
-    <message>
-        <source>hr</source>
-        <translation>小時</translation>
-    </message>
-</context>
-<context>
-    <name>MapSettings</name>
-    <message>
-        <source>NAVIGATION</source>
-        <translation>導航</translation>
-    </message>
-    <message>
-        <source>Manage at connect.comma.ai</source>
-        <translation>請在 connect.comma.ai 上管理</translation>
-    </message>
-    <message>
-        <source>Manage at %1</source>
-        <translation>以瀏覽器連結 %1</translation>
-    </message>
-</context>
-<context>
-    <name>MapWindow</name>
-    <message>
-        <source>Map Loading</source>
-        <translation>地圖載入中</translation>
-    </message>
-    <message>
-        <source>Waiting for GPS</source>
-        <translation>等待 GPS</translation>
-    </message>
-    <message>
-        <source>Waiting for route</source>
-        <translation>等待路線</translation>
-    </message>
-</context>
-<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -440,36 +360,6 @@
     <message>
         <source>Scan the QR code on the right</source>
         <translation>掃描右側行動條碼</translation>
-    </message>
-</context>
-<context>
-    <name>MyNooPopup</name>
-    <message>
-        <source>Open the navigate on openpilot web page</source>
-        <translation>開啟NOO導航操控網頁</translation>
-    </message>
-    <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
-        <translation>請先將您的手機和comma裝置連接到同一個 Wi-Fi 網路上</translation>
-    </message>
-    <message>
-        <source>Scan the QR code on the right</source>
-        <translation>掃描右側行動條碼</translation>
-    </message>
-</context>
-<context>
-    <name>NavigationPanel</name>
-    <message>
-        <source>Manage Primeless Navigation Settings</source>
-        <translation>管理免付費導航設置</translation>
-    </message>
-    <message>
-        <source>MANAGE</source>
-        <translation>管理</translation>
-    </message>
-    <message>
-        <source>Manage primeless navigate on openpilot settings.</source>
-        <translation>在 openpilot 設定上管理免付費導航。</translation>
     </message>
 </context>
 <context>
@@ -635,12 +525,12 @@
         <translation>24/7 LTE 連線</translation>
     </message>
     <message>
-        <source>Turn-by-turn navigation</source>
-        <translation>導航功能</translation>
-    </message>
-    <message>
         <source>1 year of drive storage</source>
         <translation>一年的行駛記錄儲存空間</translation>
+    </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -652,81 +542,6 @@
     <message>
         <source>comma prime</source>
         <translation>comma 高級會員</translation>
-    </message>
-</context>
-<context>
-    <name>Primeless</name>
-    <message>
-        <source>Back</source>
-        <translation>回上頁</translation>
-    </message>
-    <message>
-        <source>Manage Your Settings At</source>
-        <translation>管理您的設置</translation>
-    </message>
-    <message>
-        <source>MapBox</source>
-        <translation>MapBox</translation>
-    </message>
-    <message>
-        <source>Amap</source>
-        <translation>Amap</translation>
-    </message>
-    <message>
-        <source>Google</source>
-        <translation>Google</translation>
-    </message>
-    <message>
-        <source>Destination Search Provider</source>
-        <translation>目的地搜尋提供者</translation>
-    </message>
-    <message>
-        <source>Select a search provider for destination queries in Navigate on Openpilot. Options include MapBox (recommended), Amap, and Google Maps.</source>
-        <translation>選擇導航目的地查詢的搜尋提供者。選項包括 MapBox（建議）、Amap 和 Google 地圖。</translation>
-    </message>
-    <message>
-        <source>Public Mapbox Key</source>
-        <translation>Mapbox 公鑰</translation>
-    </message>
-    <message>
-        <source>Secret Mapbox Key</source>
-        <translation>Mapbox 私鑰</translation>
-    </message>
-    <message>
-        <source>Google Map Key</source>
-        <translation>Google 地圖金鑰</translation>
-    </message>
-    <message>
-        <source>Mapbox Setup Instructions</source>
-        <translation>Mapbox 設定說明</translation>
-    </message>
-    <message>
-        <source>VIEW</source>
-        <translation>觀看</translation>
-    </message>
-    <message>
-        <source>View the instructions to set up MapBox for Primeless Navigation.</source>
-        <translation>查看 MapBox 導覽設定說明。</translation>
-    </message>
-    <message>
-        <source>Device Offline</source>
-        <translation>裝置離線</translation>
-    </message>
-    <message>
-        <source>REMOVE</source>
-        <translation>移除</translation>
-    </message>
-    <message>
-        <source>ADD</source>
-        <translation>新增</translation>
-    </message>
-    <message>
-        <source>Manage your %1.</source>
-        <translation>管理您的 %1.</translation>
-    </message>
-    <message>
-        <source>Enter your %1</source>
-        <translation>輸入您的 %1.</translation>
     </message>
 </context>
 <context>
@@ -760,22 +575,6 @@
         <translation>
             <numerusform>%n 天前</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>km</source>
-        <translation>km</translation>
-    </message>
-    <message>
-        <source>m</source>
-        <translation>m</translation>
-    </message>
-    <message>
-        <source>mi</source>
-        <translation>mi</translation>
-    </message>
-    <message>
-        <source>ft</source>
-        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -848,10 +647,6 @@ This may take up to a minute.</source>
     <message>
         <source>T.O.P</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Navigation</source>
-        <translation>導航</translation>
     </message>
 </context>
 <context>
@@ -1364,11 +1159,11 @@ Enabled: Short and Long = 5.</source>
         <translation>開啟免付費導航操控與檔案服務器</translation>
     </message>
     <message>
-        <source>This will allow you to use the Navigation feature with your own access key and access openpilot data and files.
+        <source>This will allow you to play or download openpilot driving record files through your browser.
 Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
 You will need to apply your own mapbox token at https://www.mapbox.com/.
 Internet access from mobile phone (tethering) is required.</source>
-        <translation>這將使您不需透過官方的Prime服務，而是以自己的密鑰使用導航功能，並且可透過本地檔案服務器存取 openpilot 的資料及檔案。
+        <translation>這將允許您透過瀏覽器播放或下載 openpilot 駕駛記錄檔案。
 使用瀏覽器的Web界面連結下面網址以操作導航服務： *http://&lt;device_ip&gt;:8082*.
 您需要在 https://www.mapbox.com/ 上申請自己的 Mapbox 身分驗證。
 開啟此服務需要讓機器連接到網際網路才可運作。</translation>
@@ -1415,22 +1210,6 @@ Internet access from mobile phone (tethering) is required.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>啟用後，踩踏油門將會取消 openpilot 控制。</translation>
-    </message>
-    <message>
-        <source>Show ETA in 24h Format</source>
-        <translation>預計到達時間單位改用 24 小時制</translation>
-    </message>
-    <message>
-        <source>Use 24h format instead of am/pm</source>
-        <translation>使用 24 小時制。(預設值為 12 小時制)</translation>
-    </message>
-    <message>
-        <source>Show Map on Left Side of UI</source>
-        <translation>將地圖顯示在畫面的左側</translation>
-    </message>
-    <message>
-        <source>Show map on left side when in split screen view.</source>
-        <translation>進入分割畫面後，地圖將會顯示在畫面的左側。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>

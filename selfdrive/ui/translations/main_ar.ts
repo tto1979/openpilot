@@ -137,33 +137,6 @@
     </message>
 </context>
 <context>
-    <name>DestinationWidget</name>
-    <message>
-        <source>Home</source>
-        <translation>المنزل</translation>
-    </message>
-    <message>
-        <source>Work</source>
-        <translation>العمل</translation>
-    </message>
-    <message>
-        <source>No destination set</source>
-        <translation>لم يتم ضبط الوجهة</translation>
-    </message>
-    <message>
-        <source>home</source>
-        <translation>المنزل</translation>
-    </message>
-    <message>
-        <source>work</source>
-        <translation>العمل</translation>
-    </message>
-    <message>
-        <source>No %1 location set</source>
-        <translation>لم يتم ضبط %1 موقع</translation>
-    </message>
-</context>
-<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -306,14 +279,6 @@
         <translation>إقران</translation>
     </message>
     <message>
-        <source>Navigate on Openpilot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open the destination input web page for navigation on openpilot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>DashCam footage</source>
         <translation type="unfinished"></translation>
     </message>
@@ -377,51 +342,6 @@
     </message>
 </context>
 <context>
-    <name>MapETA</name>
-    <message>
-        <source>eta</source>
-        <translation>الوصول</translation>
-    </message>
-    <message>
-        <source>min</source>
-        <translation>د</translation>
-    </message>
-    <message>
-        <source>hr</source>
-        <translation>س</translation>
-    </message>
-</context>
-<context>
-    <name>MapSettings</name>
-    <message>
-        <source>NAVIGATION</source>
-        <translation>التنقل</translation>
-    </message>
-    <message>
-        <source>Manage at connect.comma.ai</source>
-        <translation>الإدارة في connect.comma.ai</translation>
-    </message>
-    <message>
-        <source>Manage at %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MapWindow</name>
-    <message>
-        <source>Map Loading</source>
-        <translation>تحميل الخريطة</translation>
-    </message>
-    <message>
-        <source>Waiting for GPS</source>
-        <translation>بانتظار GPS</translation>
-    </message>
-    <message>
-        <source>Waiting for route</source>
-        <translation>بانتظار الطريق</translation>
-    </message>
-</context>
-<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -444,36 +364,6 @@
     </message>
     <message>
         <source>Scan the QR code on the right</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MyNooPopup</name>
-    <message>
-        <source>Open the navigate on openpilot web page</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connect your smartphone and comma device to the same Wi-Fi network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Scan the QR code on the right</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NavigationPanel</name>
-    <message>
-        <source>Manage Primeless Navigation Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MANAGE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Manage primeless navigate on openpilot settings.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -644,8 +534,8 @@
         <translation>سنة واحدة من تخزين القرص</translation>
     </message>
     <message>
-        <source>Turn-by-turn navigation</source>
-        <translation>التنقل خطوة بخطوة</translation>
+        <source>Remote snapshots</source>
+        <translation>لقطات عن بُعد</translation>
     </message>
 </context>
 <context>
@@ -657,81 +547,6 @@
     <message>
         <source>comma prime</source>
         <translation>comma prime</translation>
-    </message>
-</context>
-<context>
-    <name>Primeless</name>
-    <message>
-        <source>Back</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Manage Your Settings At</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MapBox</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Amap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Google</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Destination Search Provider</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select a search provider for destination queries in Navigate on Openpilot. Options include MapBox (recommended), Amap, and Google Maps.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Public Mapbox Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Secret Mapbox Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Google Map Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mapbox Setup Instructions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VIEW</source>
-        <translation type="unfinished">عرض</translation>
-    </message>
-    <message>
-        <source>View the instructions to set up MapBox for Primeless Navigation.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Device Offline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>REMOVE</source>
-        <translation type="unfinished">إزالة</translation>
-    </message>
-    <message>
-        <source>ADD</source>
-        <translation type="unfinished">إضافة</translation>
-    </message>
-    <message>
-        <source>Manage your %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enter your %1</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -780,22 +595,6 @@
             <numerusform>منذ %n أيام</numerusform>
             <numerusform>منذ %n يوم</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>km</source>
-        <translation>كم</translation>
-    </message>
-    <message>
-        <source>m</source>
-        <translation>م</translation>
-    </message>
-    <message>
-        <source>mi</source>
-        <translation>ميل</translation>
-    </message>
-    <message>
-        <source>ft</source>
-        <translation>قدم</translation>
     </message>
     <message>
         <source>now</source>
@@ -867,10 +666,6 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>T.O.P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Navigation</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1379,7 +1174,7 @@ Enabled: Short and Long = 5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>This will allow you to use the Navigation feature with your own access key and access openpilot data and files.
+        <source>This will allow you to play or download openpilot driving record files through your browser.
 Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
 You will need to apply your own mapbox token at https://www.mapbox.com/.
 Internet access from mobile phone (tethering) is required.</source>
@@ -1427,22 +1222,6 @@ Internet access from mobile phone (tethering) is required.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>عند تمكين هذه الميزة، فإن الضغط على دواسة الوقود سيؤدي إلى فك ارتباط openpilot.</translation>
-    </message>
-    <message>
-        <source>Show ETA in 24h Format</source>
-        <translation>إظهار الوقت المقدر للوصول بصيغة 24 ساعة</translation>
-    </message>
-    <message>
-        <source>Use 24h format instead of am/pm</source>
-        <translation>استخدام صيغة 24 ساعة بدلاً من صباحاً/مساء</translation>
-    </message>
-    <message>
-        <source>Show Map on Left Side of UI</source>
-        <translation>عرض الخريطة على الجانب الأيسر من واجهة المستخدم</translation>
-    </message>
-    <message>
-        <source>Show map on left side when in split screen view.</source>
-        <translation>عرض الخريطة عل الجانب الأيسر عندما تكون وضعية العرض بطريقة الشاشة المنقسمة.</translation>
     </message>
     <message>
         <source>openpilot Longitudinal Control (Alpha)</source>

@@ -1,9 +1,6 @@
 #include "selfdrive/ui/qt/onroad/buttons.h"
 
-#include <chrono>
-#include <QElapsedTimer>
 #include <QPainter>
-#include <QTimer>
 
 #include "selfdrive/ui/qt/util.h"
 
@@ -50,19 +47,4 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   QPixmap img = experimental_mode ? experimental_img : engage_img;
   drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(25, 120, 150, 0), (isDown() || !engageable) ? 0.6 : 1.0);
-}
-
-// MapSettingsButton
-MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
-  setFixedSize(btn_size, btn_size);
-  settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size, img_size});
-
-  // hidden by default, made visible if map is created (has prime or mapbox token)
-  setVisible(false);
-  setEnabled(false);
-}
-
-void MapSettingsButton::paintEvent(QPaintEvent *event) {
-  QPainter p(this);
-  drawIcon(p, QPoint(btn_size / 2, btn_size / 2), settings_img, QColor(0, 0, 0, 166), isDown() ? 0.6 : 1.0);
 }

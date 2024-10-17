@@ -8,7 +8,6 @@
 #include <string>
 #include <QElapsedTimer>
 #include "common/swaglog.h"
-#include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/onroad/buttons.h"
 #include "selfdrive/ui/qt/util.h"
 
@@ -23,9 +22,6 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
   main_layout->setContentsMargins(0, 60, 0, 0);
-
-  map_settings_btn = new MapSettingsButton(this);
-  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 
   // Driving personalities profiles
   profile_data = {
@@ -127,12 +123,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update DM icon
   dmon.updateState(s);
 
-  // hide map settings button for alerts and flip for right hand DM
-  if (map_settings_btn->isEnabled()) {
-    map_settings_btn->setVisible(!hideBottomIcons);
-    main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
-  }
-
   setProperty("blindSpotLeft", s.scene.blind_spot_left);
   setProperty("blindSpotRight", s.scene.blind_spot_right);
   setProperty("drivingPersonalitiesUIWheel", s.scene.driving_personalities_ui_wheel);
@@ -144,7 +134,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("turnSignalRight", s.scene.turn_signal_right);
 }
 
-extern bool mapVisible;
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.save();
 
@@ -403,9 +392,6 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
 
   //QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}};
   float homebase_h = 12;
-  if (mapVisible){
-    sz *= 0.7; //顯示地圖時將 V 形變小。
-  }
   QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h}, {x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h}, {x, y + sz + homebase_h + g_yo + 10}};
   painter.setBrush(QColor(218, 202, 37, 210));
   painter.drawPolygon(glow, std::size(glow));
