@@ -43,7 +43,7 @@ QMapLibre::CoordinatesCollections model_to_collection(
   Eigen::Vector3d orient(orientationNED.getX(), orientationNED.getY(), orientationNED.getZ());
   Eigen::Matrix3d ned_from_local = euler2rot(orient);
 
-  ECEF ecef = ned2ecef({.x = ned[0], .y = ned[1], .z = ned[2]});
+  ECEF ecef = ned2ecef({ned[0], ned[1], ned[2]});
   Eigen::Vector3d ecef_vec(ecef.x, ecef.y, ecef.z);
 
   QMapLibre::Coordinates coordinates;
