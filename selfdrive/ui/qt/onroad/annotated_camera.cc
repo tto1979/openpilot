@@ -67,6 +67,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
   const auto nav_instruction = sm["navInstruction"].getNavInstruction();
+  hideBottomIcons = (sm["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE);
+  auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
+  rightHandDM = dm_state.getIsRHD();
 
   is_metric = s.scene.is_metric;
 
@@ -873,7 +876,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   qreal imageOpacity = qBound(0.0, (static_cast<qreal>(elapsed - textDuration) / fadeDuration), 1.0);
 
   // Draw the profile text with the calculated opacity
-  if (textOpacity > 0.0) {
+  if (displayText && textOpacity > 0.0) {
     p.setFont(InterFont(40, QFont::Bold));
     p.setPen(QColor(255, 255, 255));
     // Calculate the center position for text
