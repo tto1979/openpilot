@@ -25,13 +25,6 @@ QMapLibre::CoordinatesCollections model_to_collection(
   const cereal::LivePose::XYZMeasurement::Reader &orientationNED,
   const cereal::LivePose::XYZMeasurement::Reader &positionDevice,
   const cereal::XYZTData::Reader &line) {
-
-  Eigen::Vector3d ned(positionDevice.getX(), positionDevice.getY(), positionDevice.getZ());
-  Eigen::Vector3d orient(orientationNED.getX(), orientationNED.getY(), orientationNED.getZ());
-  Eigen::Matrix3d ned_from_local = euler2rot(orient);
-
-  ECEF ecef = ned2ecef({ned[0], ned[1], ned[2]});
-  Eigen::Vector3d ecef_vec(ecef.x, ecef.y, ecef.z);
 QMapLibre::CoordinatesCollections coordinate_to_collection(const QMapLibre::Coordinate &c);
 QMapLibre::CoordinatesCollections capnp_coordinate_list_to_collection(const capnp::List<cereal::NavRoute::Coordinate>::Reader &coordinate_list);
 QMapLibre::CoordinatesCollections coordinate_list_to_collection(const QList<QGeoCoordinate> &coordinate_list);
