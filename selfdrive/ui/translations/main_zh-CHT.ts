@@ -1155,17 +1155,15 @@ Enabled: Short and Long = 5.</source>
         <translation>如果您打算在 Nvidia Jetson NX 上跑 TOP ，請開啟這個選項，但此選項可能造成駕駛監控被關閉，且需重新啟動後生效。</translation>
     </message>
     <message>
-        <source>Enable Local Nav and File Server</source>
-        <translation>開啟免付費導航操控與檔案服務器</translation>
+        <source>Enable Local File Server</source>
+        <translation>開啟檔案服務器</translation>
     </message>
     <message>
         <source>This will allow you to play or download openpilot driving record files through your browser.
 Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
-You will need to apply your own mapbox token at https://www.mapbox.com/.
 Internet access from mobile phone (tethering) is required.</source>
         <translation>這將允許您透過瀏覽器播放或下載 openpilot 駕駛記錄檔案。
 使用瀏覽器的Web界面連結下面網址以操作導航服務： *http://&lt;device_ip&gt;:8082*.
-您需要在 https://www.mapbox.com/ 上申請自己的 Mapbox 身分驗證。
 開啟此服務需要讓機器連接到網際網路才可運作。</translation>
     </message>
 </context>

@@ -1170,13 +1170,12 @@ Enabled: Short and Long = 5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Local Nav and File Server</source>
+        <source>Enable Local File Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>This will allow you to play or download openpilot driving record files through your browser.
 Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
-You will need to apply your own mapbox token at https://www.mapbox.com/.
 Internet access from mobile phone (tethering) is required.</source>
         <translation type="unfinished"></translation>
     </message>

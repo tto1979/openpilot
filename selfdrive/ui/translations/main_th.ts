@@ -1092,17 +1092,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Local Nav and File Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>This will allow you to play or download openpilot driving record files through your browser.
-Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
-You will need to apply your own mapbox token at https://www.mapbox.com/.
-Internet access from mobile phone (tethering) is required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enable Door Auto Lock</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1158,6 +1147,16 @@ Enabled: Short and Long = 5.</source>
     </message>
     <message>
         <source>Enable this option if you intend to run dp on Nvidia Jetson. Reboot required.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable Local File Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This will allow you to play or download openpilot driving record files through your browser.
+Use web interface to control it: *http://&amp;lt;device_ip&amp;gt;:8082*.
+Internet access from mobile phone (tethering) is required.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
