@@ -89,9 +89,14 @@ class RouteEngine:
       return self.mapbox_token
     elif self.api:
       try:
-        return self.api.get_token()
+        token = self.api.get_token()
+        if token:
+          return token
+        else:
+          cloudlog.error("API.get_token() returned None")
       except Exception as e:
         cloudlog.exception(f"Failed to get token from API: {e}")
+    cloudlog.error("No valid token available")
     return None
 
   def update(self):
@@ -160,6 +165,8 @@ class RouteEngine:
     token = self.get_token()
     if token is None:
       cloudlog.error("No valid token available for route calculation")
+      self.clear_route()
+      self.send_route()
       return
 
     params = {
