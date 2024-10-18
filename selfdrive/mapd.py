@@ -37,7 +37,6 @@ def download():
 
 def mapd_thread(sm=None, pm=None):
   rk = Ratekeeper(0.05, print_delay_threshold=None)
-  params = Params()
   mem_params = Params("/dev/shm/params")
 
   while True:

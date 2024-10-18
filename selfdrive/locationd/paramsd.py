@@ -9,7 +9,7 @@ from cereal import car, log
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.numpy_fast import clip
-from openpilot.common.transformations.coordinates import LocalCoord, geodetic2ecef
+from openpilot.common.transformations.coordinates import geodetic2ecef
 from openpilot.common.transformations.orientation import ned_euler_from_ecef
 from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKind, States
 from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
@@ -62,7 +62,7 @@ def handle_live_pose(self, live_pose):
     alt = live_pose.orientationNED.z
 
     ecef = geodetic2ecef(np.array([lat, lon, alt]))
-    coord = LocalCoord.from_ecef(ecef.reshape(3))
+    # coord = LocalCoord.from_ecef(ecef.reshape(3))
 
     ned_orientation = np.array([
       live_pose.orientationNED.x,
