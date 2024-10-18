@@ -2,13 +2,24 @@
 import os
 import subprocess
 import urllib.request
-from openpilot.common.realtime import Ratekeeper
 import stat
+import json
+from openpilot.common.params import Params
+from openpilot.common.realtime import Ratekeeper
 
 VERSION = 'v1.9.0'
 URL = f"https://github.com/pfeiferj/openpilot-mapd/releases/download/{VERSION}/mapd"
 MAPD_PATH = '/data/media/0/osm/mapd'
 VERSION_PATH = '/data/media/0/osm/mapd_version'
+
+def get_gps_data(params):
+  gps_data = params.get("LastGPSPosition")
+  if gps_data:
+    try:
+      return json.loads(gps_data)
+    except json.JSONDecodeError:
+      print("Error decoding GPS data")
+  return None
 
 def download():
   mapd_dir = os.path.dirname(MAPD_PATH)
@@ -26,25 +37,45 @@ def download():
 
 def mapd_thread(sm=None, pm=None):
   rk = Ratekeeper(0.05, print_delay_threshold=None)
+  params = Params()
+  mem_params = Params("/dev/shm/params")
 
   while True:
     try:
-      if not os.path.exists(MAPD_PATH):
+      if not os.path.exists(MAPD_PATH) or not os.path.exists(VERSION_PATH):
         download()
         continue
-      if not os.path.exists(VERSION_PATH):
-        download()
-        continue
+
       with open(VERSION_PATH) as f:
         content = f.read()
         if content != VERSION:
           download()
           continue
 
-      process = subprocess.Popen(MAPD_PATH)
+      gps_info = get_gps_data(mem_params)
+
+      log_level = mem_params.get("MapdLogLevel", encoding='utf8')
+      pretty_log = mem_params.get_bool("MapdPrettyLog")
+      target_lat_accel = mem_params.get("MapTargetLatA", encoding='utf8')
+
+      cmd = [MAPD_PATH]
+      if gps_info:
+        cmd.extend([
+          "--latitude", str(gps_info["latitude"]),
+          "--longitude", str(gps_info["longitude"]),
+          "--bearing", str(gps_info["bearing"])
+        ])
+      if log_level:
+        cmd.extend(["--log-level", log_level])
+      if pretty_log is not None:
+        cmd.append("--pretty-log" if pretty_log else "--no-pretty-log")
+      if target_lat_accel:
+        cmd.extend(["--target-lat-accel", target_lat_accel])
+
+      process = subprocess.Popen(cmd)
       process.wait()
     except Exception as e:
-      print(e)
+      print(f"Error in mapd_thread: {e}")
 
     rk.keep_time()
 

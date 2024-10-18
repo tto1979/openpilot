@@ -9,6 +9,8 @@ from cereal import car, log
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.numpy_fast import clip
+from openpilot.common.transformations.coordinates import LocalCoord, geodetic2ecef
+from openpilot.common.transformations.orientation import ned_euler_from_ecef
 from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKind, States
 from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
@@ -51,6 +53,39 @@ class ParamsLearner:
     self.roll = 0.0
     self.steering_angle = 0.0
     self.roll_valid = False
+    self.params = Params()
+
+def handle_live_pose(self, live_pose):
+  if live_pose.inputsOK and live_pose.orientationNED.valid:
+    lat = live_pose.orientationNED.x
+    lon = live_pose.orientationNED.y
+    alt = live_pose.orientationNED.z
+
+    ecef = geodetic2ecef(np.array([lat, lon, alt]))
+    coord = LocalCoord.from_ecef(ecef.reshape(3))
+
+    ned_orientation = np.array([
+      live_pose.orientationNED.x,
+      live_pose.orientationNED.y,
+      live_pose.orientationNED.z
+    ])
+
+    ecef_euler = ned_euler_from_ecef(ecef, ned_orientation)
+
+    gps_data = {
+      "latitude": float(lat),
+      "longitude": float(lon),
+      "altitude": float(alt),
+      "bearing": float(math.degrees(ecef_euler[2]))
+    }
+    self.params.put("LastGPSPosition", json.dumps(gps_data))
+
+    # Update mem_params as well
+    mem_params.put("LastGPSPosition", json.dumps({
+      "latitude": float(lat),
+      "longitude": float(lon),
+      "bearing": float(math.degrees(ecef_euler[2]))
+    }))
 
   def handle_log(self, t, which, msg):
     if which == 'livePose':
@@ -199,14 +234,8 @@ def main():
           learner.handle_log(t, which, sm[which])
 
     if sm.updated['livePose']:
-      # PFEIFER - MAPD {{
-      live_pose = sm['livePose']
-      if live_pose.inputsOK and live_pose.orientationNED.valid:
-        bearing = math.degrees(live_pose.orientationNED.z)
-        lat = live_pose.orientationNED.x
-        lon = live_pose.orientationNED.y
-        mem_params.put("LastGPSPosition", json.dumps({ "latitude": lat, "longitude": lon, "bearing": bearing }))
-      # }} PFEIFER - MAPD
+      learner.handle_live_pose(sm['livePose'])
+
       x = learner.kf.x
       P = np.sqrt(learner.kf.P.diagonal())
       if not all(map(math.isfinite, x)):
