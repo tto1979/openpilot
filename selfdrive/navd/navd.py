@@ -191,7 +191,7 @@ class RouteEngine:
         return
 
       r = resp.json()
-      
+
       if 'routes' not in r or len(r['routes']) == 0:
         cloudlog.error("No routes found in API response")
         return
@@ -403,7 +403,7 @@ class RouteEngine:
         coords += [c.as_dict() for c in path]
       msg = messaging.new_message('navRoute', valid=True)
       msg.navRoute.coordinates = coords
-    
+
     self.pm.send('navRoute', msg)
 
   def clear_route(self):
