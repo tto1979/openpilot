@@ -75,8 +75,13 @@ class RouteEngine:
       self.mapbox_token = self.params.get("MapboxPublicKey", encoding='utf8')
       self.mapbox_host = "https://api.mapbox.com"
     else:
-      self.api = Api(self.params.get("DongleId", encoding='utf8'))
-      self.mapbox_host = "https://maps.comma.ai"
+      try:
+        self.api = Api(self.params.get("DongleId", encoding='utf8'))
+        self.mapbox_host = "https://maps.comma.ai"
+      except Exception as e:
+        cloudlog.exception(f"Failed to initialize API: {e}")
+        self.api = None
+        self.mapbox_host = None
 
   def update(self):
     self.sm.update(0)
@@ -137,8 +142,16 @@ class RouteEngine:
       lang = lang.replace('main_', '')
 
     token = self.mapbox_token
+    if token is None and self.api is not None:
+      try:
+        token = self.api.get_token()
+      except Exception as e:
+        cloudlog.exception(f"Failed to get token: {e}")
+        return  # Exit the method if we can't get a token
+
     if token is None:
-      token = self.api.get_token()
+      cloudlog.error("No valid token available for route calculation")
+      return  # Exit the method if we don't have a token
 
     params = {
       'access_token': token,
