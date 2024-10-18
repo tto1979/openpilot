@@ -65,11 +65,12 @@ class RouteEngine:
 
     self.api = None
     self.mapbox_token = None
+    self.mapbox_host = None
+
     if "MAPBOX_TOKEN" in os.environ:
       self.mapbox_token = os.environ["MAPBOX_TOKEN"]
       self.mapbox_host = "https://api.mapbox.com"
       self.params.put("MapboxPublicKey", self.mapbox_token)
-    # NAV
     elif self.params.get_int("PrimeType") == 0:
       self.mapbox_token = self.params.get("MapboxPublicKey", encoding='utf8')
       self.mapbox_host = "https://api.mapbox.com"
@@ -79,8 +80,19 @@ class RouteEngine:
         self.mapbox_host = "https://maps.comma.ai"
       except Exception as e:
         cloudlog.exception(f"Failed to initialize API: {e}")
-        self.api = None
-        self.mapbox_host = None
+
+    if not self.mapbox_token and not self.api:
+      cloudlog.error("No Mapbox token or API available. Navigation may not work.")
+
+  def get_token(self):
+    if self.mapbox_token:
+      return self.mapbox_token
+    elif self.api:
+      try:
+        return self.api.get_token()
+      except Exception as e:
+        cloudlog.exception(f"Failed to get token from API: {e}")
+    return None
 
   def update(self):
     self.sm.update(0)
@@ -144,14 +156,7 @@ class RouteEngine:
     if lang is not None:
       lang = lang.replace('main_', '')
 
-    token = self.mapbox_token
-    if token is None and self.api is not None:
-      try:
-        token = self.api.get_token()
-      except Exception as e:
-        cloudlog.exception(f"Failed to get token: {e}")
-        return
-
+    token = self.get_token()
     if token is None:
       cloudlog.error("No valid token available for route calculation")
       return
