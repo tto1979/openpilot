@@ -150,6 +150,7 @@ class RouteEngine:
 
     if self.last_position is None:
       cloudlog.error("No valid starting position for route calculation")
+      self.send_route()
       return
 
     lang = self.params.get('LanguageSetting', encoding='utf8')
@@ -193,12 +194,16 @@ class RouteEngine:
       resp = requests.get(url, params=params, timeout=10)
       if resp.status_code != 200:
         cloudlog.error(f"API request failed: status_code={resp.status_code}, text={resp.text}")
+        self.clear_route()
+        self.send_route()
         return
 
       r = resp.json()
 
       if 'routes' not in r or len(r['routes']) == 0:
         cloudlog.error("No routes found in API response")
+        self.clear_route()
+        self.send_route()
         return
 
       r1 = resp.json()
@@ -270,8 +275,11 @@ class RouteEngine:
     except requests.exceptions.RequestException as e:
       cloudlog.exception(f"Failed to get route: {e}")
       self.clear_route()
-
-    self.send_route()
+    except Exception as e:
+      cloudlog.exception(f"Unexpected error in calculate_route: {e}")
+      self.clear_route()
+    finally:
+      self.send_route()
 
   def send_instruction(self):
     if self.route is None or self.step_idx is None:
