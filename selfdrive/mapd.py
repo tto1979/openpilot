@@ -53,7 +53,7 @@ def mapd_thread(sm=None, pm=None):
 
       gps_info = get_gps_data(mem_params)
 
-      process = subprocess.Popen(cmd)
+      process = subprocess.Popen(MAPD_PATH)
       process.wait()
     except Exception as e:
       print(f"Error in mapd_thread: {e}")
