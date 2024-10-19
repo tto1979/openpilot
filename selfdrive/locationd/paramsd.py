@@ -54,41 +54,59 @@ class ParamsLearner:
     self.steering_angle = 0.0
     self.roll_valid = False
     self.params = Params()
+    self.last_gps_pos = None
+    self.sensors_valid = False
+    self.input_valid = False
 
-def handle_live_pose(self, live_pose):
-  if live_pose.inputsOK and live_pose.orientationNED.valid:
-    lat = live_pose.orientationNED.x
-    lon = live_pose.orientationNED.y
-    alt = live_pose.orientationNED.z
+  def handle_live_pose(self, live_pose):
+    if live_pose.orientationNED.valid:
+      ned_orientation = np.array([
+        live_pose.orientationNED.x,
+        live_pose.orientationNED.y,
+        live_pose.orientationNED.z
+      ])
 
-    ecef = geodetic2ecef(np.array([lat, lon, alt]))
-    # coord = LocalCoord.from_ecef(ecef.reshape(3))
+      self.last_gps_pos = (live_pose.orientationNED.x, live_pose.orientationNED.y, live_pose.orientationNED.z)
 
-    ned_orientation = np.array([
-      live_pose.orientationNED.x,
-      live_pose.orientationNED.y,
-      live_pose.orientationNED.z
-    ])
+      if self.last_gps_pos is not None:
+        lat, lon, alt = self.last_gps_pos
+        ecef = geodetic2ecef(np.array([lat, lon, alt]))
 
-    ecef_euler = ned_euler_from_ecef(ecef, ned_orientation)
+        ecef_euler = ned_euler_from_ecef(ecef, ned_orientation)
 
-    gps_data = {
-      "latitude": float(lat),
-      "longitude": float(lon),
-      "altitude": float(alt),
-      "bearing": float(math.degrees(ecef_euler[2]))
-    }
-    self.params.put("LastGPSPosition", json.dumps(gps_data))
+        gps_data = {
+          "latitude": float(lat),
+          "longitude": float(lon),
+          "altitude": float(alt),
+          "bearing": float(math.degrees(ecef_euler[2]))
+        }
 
-    # Update mem_params as well
-    mem_params.put("LastGPSPosition", json.dumps({
-      "latitude": float(lat),
-      "longitude": float(lon),
-      "bearing": float(math.degrees(ecef_euler[2]))
-    }))
+        self.params.put("LastGPSPosition", json.dumps(gps_data))
+
+        mem_params.put("LastGPSPosition", json.dumps({
+          "latitude": float(lat),
+          "longitude": float(lon),
+          "bearing": float(math.degrees(ecef_euler[2]))
+        }))
+
+      self.speed = np.linalg.norm(live_pose.velocityDevice.to_array())
+      self.yaw_rate = live_pose.angularVelocityDevice.z
+
+      roll = live_pose.orientationNED.x
+      roll_std = live_pose.orientationNED.xStd
+      self.roll_valid = (roll_std < ROLL_STD_MAX) and (ROLL_MIN < roll < ROLL_MAX)
+      if self.roll_valid:
+        self.roll = roll
+      else:
+        self.roll = 0.0
+
+    self.posenet_valid = live_pose.posenetOK
+    self.sensors_valid = live_pose.sensorsOK
+    self.input_valid = live_pose.inputsOK
 
   def handle_log(self, t, which, msg):
     if which == 'livePose':
+      self.handle_live_pose(msg)
       device_pose = Pose.from_live_pose(msg)
       calibrated_pose = self.calibrator.build_calibrated_pose(device_pose)
       self.yaw_rate, self.yaw_rate_std = calibrated_pose.angular_velocity.z, calibrated_pose.angular_velocity.z_std
