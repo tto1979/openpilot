@@ -53,24 +53,6 @@ def mapd_thread(sm=None, pm=None):
 
       gps_info = get_gps_data(mem_params)
 
-      log_level = mem_params.get("MapdLogLevel", encoding='utf8')
-      pretty_log = mem_params.get_bool("MapdPrettyLog")
-      target_lat_accel = mem_params.get("MapTargetLatA", encoding='utf8')
-
-      cmd = [MAPD_PATH]
-      if gps_info:
-        cmd.extend([
-          "--latitude", str(gps_info["latitude"]),
-          "--longitude", str(gps_info["longitude"]),
-          "--bearing", str(gps_info["bearing"])
-        ])
-      if log_level:
-        cmd.extend(["--log-level", log_level])
-      if pretty_log is not None:
-        cmd.append("--pretty-log" if pretty_log else "--no-pretty-log")
-      if target_lat_accel:
-        cmd.extend(["--target-lat-accel", target_lat_accel])
-
       process = subprocess.Popen(cmd)
       process.wait()
     except Exception as e:
