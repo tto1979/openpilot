@@ -20,10 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-import json
-import math
 import os
-import requests
 import subprocess
 from pathlib import Path
 from openpilot.system.hardware import PC
@@ -33,7 +30,6 @@ from openpilot.tools.lib.route import SegmentName
 
 # otisserv conversion
 from openpilot.common.params import Params
-from urllib.parse import quote
 
 pi = 3.1415926535897932384626
 x_pi = 3.14159265358979324 * 3000.0 / 180.0
