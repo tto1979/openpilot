@@ -862,7 +862,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   qreal imageOpacity = qBound(0.0, (static_cast<qreal>(elapsed - textDuration) / fadeDuration), 1.0);
 
   // Draw the profile text with the calculated opacity
-  if (displayText && textOpacity > 0.0) {
+  if (textOpacity > 0.0) {
     p.setFont(InterFont(40, QFont::Bold));
     p.setPen(QColor(255, 255, 255));
     // Calculate the center position for text
