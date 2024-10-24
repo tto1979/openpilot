@@ -829,7 +829,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   // Declare the variables
   static QElapsedTimer timer;
   static bool displayText = false;
-  static int lastProfile = 0;
+  static int lastProfile = 4;
   constexpr int fadeDuration = 1000; // 1 second
   constexpr int textDuration = 3000; // 3 seconds
   int x = rect().left() + (btn_size - 24) / 2 - (UI_BORDER_SIZE * 2) + 100;
@@ -862,7 +862,7 @@ void AnnotatedCameraWidget::drawDrivingPersonalities(QPainter &p) {
   qreal imageOpacity = qBound(0.0, (static_cast<qreal>(elapsed - textDuration) / fadeDuration), 1.0);
 
   // Draw the profile text with the calculated opacity
-  if (textOpacity > 0.0) {
+  if (displayText && textOpacity > 0.0) {
     p.setFont(InterFont(40, QFont::Bold));
     p.setPen(QColor(255, 255, 255));
     // Calculate the center position for text
