@@ -210,6 +210,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_jetson", PERSISTENT},
     {"DrivingPersonalitiesUIWheel", PERSISTENT},
     {"e2e_link", PERSISTENT},
+    {"fleetmanager", PERSISTENT},
     {"LateralAllowed", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"NNFF", PERSISTENT},
     {"NudgelessLaneChange", PERSISTENT},
