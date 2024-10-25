@@ -44,6 +44,7 @@ private:
   bool is_cruise_set = false;
   bool is_metric = false;
   bool brakeLights = false;
+  bool hideBottomIcons = false;
   bool v_ego_cluster_seen = false;
   bool blindSpotLeft;
   bool blindSpotRight;
