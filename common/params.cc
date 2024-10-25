@@ -159,8 +159,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LiveTorqueParameters", PERSISTENT | DONT_LOG},
     {"LocationFilterInitialState", PERSISTENT},
     {"LongitudinalPersonality", PERSISTENT},
-    {"NavDestination", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
-    {"NavDestinationWaypoints", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"NetworkMetered", PERSISTENT},
     {"ObdMultiplexingChanged", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"ObdMultiplexingEnabled", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
@@ -211,25 +209,10 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"dp_atl", PERSISTENT},
     {"dp_jetson", PERSISTENT},
     {"DrivingPersonalitiesUIWheel", PERSISTENT},
-    {"MapSelected", PERSISTENT},
-    {"OSM", PERSISTENT},
-    {"OSMDownloadLocations", PERSISTENT},
     {"e2e_link", PERSISTENT},
     {"LateralAllowed", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"NNFF", PERSISTENT},
     {"NudgelessLaneChange", PERSISTENT},
-    // PFEIFER - SLC {{
-    {"SpeedLimitControl", PERSISTENT},
-    {"NavSpeedLimitControl", PERSISTENT},
-    {"MapSpeedLimitControl", PERSISTENT},
-    {"CarSpeedLimitControl", PERSISTENT},
-    {"MapSpeedLimit", PERSISTENT},
-    {"NextMapSpeedLimit", PERSISTENT},
-    {"MapAdvisoryLimit", PERSISTENT},
-    {"NavSpeedLimit", PERSISTENT},
-    {"CarSpeedLimit", PERSISTENT},
-    {"SpeedLimitOffset", PERSISTENT},
-    // }} PFEIFER - SLC
     {"OnroadScreenOff", PERSISTENT},
     {"PrimeAd", PERSISTENT},
     {"ReverseAccChange", PERSISTENT},
@@ -241,20 +224,6 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"toyota_bsm", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
     {"QuietDrive", PERSISTENT},
-    {"RoadName", PERSISTENT},
-    // PFEIFER - MTSC {{
-    {"MapTargetVelocities", PERSISTENT},
-    {"MTSCEnabled", PERSISTENT},
-    {"MTSCMaxVDiff", PERSISTENT},
-    // }} PFEIFER - MTSC
-    // NAV
-    {"AMapKey1", PERSISTENT},
-    {"AMapKey2", PERSISTENT},
-    {"fleetmanager", PERSISTENT},
-    {"GMapKey", PERSISTENT},
-    {"MapboxPublicKey", PERSISTENT},
-    {"MapboxSecretKey", PERSISTENT},
-    {"SearchInput", PERSISTENT},
 };
 
 } // namespace

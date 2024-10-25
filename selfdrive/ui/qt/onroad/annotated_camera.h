@@ -36,20 +36,14 @@ private:
 
   QVBoxLayout *main_layout;
   ExperimentalButton *experimental_btn;
-  QPixmap map_img;
   DriverMonitorRenderer dmon;
   float speed;
   const int subsign_img_size = 35;
   QString speedUnit;
   float setSpeed;
-  float speedLimit;
   bool is_cruise_set = false;
   bool is_metric = false;
   bool brakeLights = false;
-  bool hideBottomIcons = false;
-  bool rightHandDM = false;
-  bool has_us_speed_limit = false;
-  bool has_eu_speed_limit = false;
   bool v_ego_cluster_seen = false;
   bool blindSpotLeft;
   bool blindSpotRight;

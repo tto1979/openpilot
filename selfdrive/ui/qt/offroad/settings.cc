@@ -573,12 +573,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/offroad/icon_road.png",
                                   this));
 
-  toggles.append(new ParamControl("MTSCEnabled",
-                                  tr("Map Turn Speed Control"),
-                                  tr("Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2."),
-                                  "../assets/offroad/icon_road.png",
-                                  this));
-
   toggles.append(new ParamControl("fleetmanager",
                                   tr("Enable Local File Server"),
                                   tr("This will allow you to play or download openpilot driving record files through your browser.\nUse web interface to control it: *http://&lt;device_ip&gt;:8082*.\nInternet access from mobile phone (tethering) is required."),
@@ -613,12 +607,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   tr("ACC +/-: Long Press Reverse"),
                                   tr("Change the ACC +/- buttons behavior with cruise speed change in openpilot.\nDisabled (Stock): Short = 1, Long = 5.\nEnabled: Short and Long = 5."),
                                   "../assets/offroad/icon_acc_change.png",
-                                  this));
-
-  toggles.append(new ParamControl("SpeedLimitControl",
-                                  tr("Speed Limit Control"),
-                                  tr("Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed."),
-                                  "../assets/img_experimental_white.svg",
                                   this));
 
   toggles.append(new ParamControl("dp_jetson",

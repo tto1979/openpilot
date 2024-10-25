@@ -101,14 +101,6 @@
         <source>MAX</source>
         <translation type="unfinished">MAX</translation>
     </message>
-    <message>
-        <source>SPEED</source>
-        <translation type="unfinished">HIZ</translation>
-    </message>
-    <message>
-        <source>LIMIT</source>
-        <translation type="unfinished">LİMİT</translation>
-    </message>
 </context>
 <context>
     <name>ConfirmationDialog</name>
@@ -895,14 +887,6 @@ This may take up to a minute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Offline Maps</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select a location to download</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1082,14 +1066,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Map Turn Speed Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enable Door Auto Lock</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1129,14 +1105,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <source>Change the ACC +/- buttons behavior with cruise speed change in openpilot.
 Disabled (Stock): Short = 1, Long = 5.
 Enabled: Short and Long = 5.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Speed Limit Control</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

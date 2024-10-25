@@ -9,16 +9,11 @@ from cereal import car, log
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.numpy_fast import clip
-from openpilot.common.transformations.coordinates import geodetic2ecef
-from openpilot.common.transformations.orientation import ned_euler_from_ecef
 from openpilot.selfdrive.locationd.models.car_kf import CarKalman, ObservationKind, States
 from openpilot.selfdrive.locationd.models.constants import GENERATED_DIR
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 from openpilot.common.swaglog import cloudlog
 
-# PFEIFER - MAPD {{
-mem_params = Params("/dev/shm/params")
-# }} PFEIFER - MAPD
 
 MAX_ANGLE_OFFSET_DELTA = 20 * DT_MDL  # Max 20 deg/s
 ROLL_MAX_DELTA = math.radians(20.0) * DT_MDL  # 20deg in 1 second is well within curvature limits
@@ -53,62 +48,9 @@ class ParamsLearner:
     self.roll = 0.0
     self.steering_angle = 0.0
     self.roll_valid = False
-    self.params = Params()
-    self.last_gps_pos = None
-    self.sensors_valid = False
-    self.input_valid = False
-
-  def handle_live_pose(self, live_pose):
-    if live_pose.orientationNED.valid:
-      ned_orientation = np.array([
-        live_pose.orientationNED.x,
-        live_pose.orientationNED.y,
-        live_pose.orientationNED.z
-      ])
-
-      self.last_gps_pos = (live_pose.orientationNED.x, live_pose.orientationNED.y, live_pose.orientationNED.z)
-
-      if self.last_gps_pos is not None:
-        lat, lon, alt = self.last_gps_pos
-        ecef = geodetic2ecef(np.array([lat, lon, alt]))
-
-        ecef_euler = ned_euler_from_ecef(ecef, ned_orientation)
-
-        gps_data = {
-          "latitude": float(lat),
-          "longitude": float(lon),
-          "altitude": float(alt),
-          "bearing": float(math.degrees(ecef_euler[2]))
-        }
-
-        self.params.put("LastGPSPosition", json.dumps(gps_data))
-
-        mem_params.put("LastGPSPosition", json.dumps({
-          "latitude": float(lat),
-          "longitude": float(lon),
-          "bearing": float(math.degrees(ecef_euler[2]))
-        }))
-
-      velocity = np.array([live_pose.velocityDevice.x, live_pose.velocityDevice.y, live_pose.velocityDevice.z])
-      self.speed = np.linalg.norm(velocity)
-
-      self.yaw_rate = live_pose.angularVelocityDevice.z
-
-      roll = live_pose.orientationNED.x
-      roll_std = live_pose.orientationNED.xStd
-      self.roll_valid = (roll_std < ROLL_STD_MAX) and (ROLL_MIN < roll < ROLL_MAX)
-      if self.roll_valid:
-        self.roll = roll
-      else:
-        self.roll = 0.0
-
-    self.posenet_valid = live_pose.posenetOK
-    self.sensors_valid = live_pose.sensorsOK
-    self.input_valid = live_pose.inputsOK
 
   def handle_log(self, t, which, msg):
     if which == 'livePose':
-      self.handle_live_pose(msg)
       device_pose = Pose.from_live_pose(msg)
       calibrated_pose = self.calibrator.build_calibrated_pose(device_pose)
       self.yaw_rate, self.yaw_rate_std = calibrated_pose.angular_velocity.z, calibrated_pose.angular_velocity.z_std
@@ -254,8 +196,6 @@ def main():
           learner.handle_log(t, which, sm[which])
 
     if sm.updated['livePose']:
-      learner.handle_live_pose(sm['livePose'])
-
       x = learner.kf.x
       P = np.sqrt(learner.kf.P.diagonal())
       if not all(map(math.isfinite, x)):

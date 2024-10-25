@@ -101,14 +101,6 @@
         <source>MAX</source>
         <translation>最高</translation>
     </message>
-    <message>
-        <source>SPEED</source>
-        <translation>速度</translation>
-    </message>
-    <message>
-        <source>LIMIT</source>
-        <translation>速限</translation>
-    </message>
 </context>
 <context>
     <name>ConfirmationDialog</name>
@@ -897,14 +889,6 @@ This may take up to a minute.</source>
         <translation>從未更新</translation>
     </message>
     <message>
-        <source>Offline Maps</source>
-        <translation>離線地圖</translation>
-    </message>
-    <message>
-        <source>Select a location to download</source>
-        <translation>選擇下載地區</translation>
-    </message>
-    <message>
         <source>Error Log</source>
         <translation>錯誤日誌</translation>
     </message>
@@ -1087,14 +1071,6 @@ Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above
         <translation>使用視覺路徑預測來估算適當的速度，可自動降速以順利通過前方的轉彎。</translation>
     </message>
     <message>
-        <source>Map Turn Speed Control</source>
-        <translation>地圖彎道減速</translation>
-    </message>
-    <message>
-        <source>Enables M-TSC. When enabled, the car will slow down when it predicts a lateral acceleration greater than 2.0 m/s^2.</source>
-        <translation>使用地圖資訊預測橫向加速度，當預測大於 2.0 m/s^2 時，汽車將會減速以順利通過前方的轉彎。</translation>
-    </message>
-    <message>
         <source>Enable Door Auto Lock</source>
         <translation>開啟車門自動上鎖</translation>
     </message>
@@ -1137,14 +1113,6 @@ Enabled: Short and Long = 5.</source>
         <translation>在openpilot中更改ACC +/- 按鈕的行為與巡航速度變化。
 關閉選項 (原廠設定): 短按 = 1, 長按 = 5。
 開啟選項: 短按及長按 = 5。</translation>
-    </message>
-    <message>
-        <source>Speed Limit Control</source>
-        <translation>導航地圖速限控制</translation>
-    </message>
-    <message>
-        <source>Enables Speed Limit Control. When enabled openpilot will adjust to the speed limit supplied by nav and mapd information. If you press the pedal when the speed limit is activated, the max speed will increase to the manual set speed.</source>
-        <translation>啟用導航地圖速限控制。啟用後，openpilot 的速度上限將調整至導航地圖資訊所提供的速度上限+5公里行駛。如果在速度限制啟動時踩下油門踏板，最高車速將回復到手動設定的速度。</translation>
     </message>
     <message>
         <source>Enable Jetson Support</source>
