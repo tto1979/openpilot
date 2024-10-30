@@ -307,7 +307,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50;
-  bool is_wide_cam = CameraWidget::activeStreamType() == VISION_STREAM_WIDE_ROAD;
+  bool is_wide_cam = active_stream_type == VISION_STREAM_WIDE_ROAD;
   if (!is_wide_cam) {
     float dd = d;
     dd -= 25; //dd=0〜75
@@ -619,4 +619,8 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 
   ui_update_params(uiState());
   prev_draw_t = millis_since_boot();
+}
+
+QColor AnnotatedCameraWidget::redColor(int alpha) {
+  return QColor(201, 34, 49, alpha);
 }

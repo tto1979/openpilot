@@ -1,7 +1,7 @@
 #include "selfdrive/ui/qt/onroad/hud.h"
 
 #include <cmath>
-
+#include <QElapsedTimer>
 #include "selfdrive/ui/qt/util.h"
 
 constexpr int SET_SPEED_NA = 255;
