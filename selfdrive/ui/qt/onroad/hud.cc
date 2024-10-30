@@ -6,11 +6,46 @@
 
 constexpr int SET_SPEED_NA = 255;
 
-HudRenderer::HudRenderer() {}
+HudRenderer::HudRenderer() {
+  profile_data = {
+    {QPixmap("../assets/aggressive.png"), "Aggressive"},
+    {QPixmap("../assets/standard.png"), "Standard"},
+    {QPixmap("../assets/relaxed.png"), "Relaxed"}
+  };
+
+  const QStringList imagePaths = {
+    "../assets/images/tim_turn_signal_1.png",
+    "../assets/images/tim_turn_signal_2.png"
+  };
+  signalImgVector.reserve(2 * imagePaths.size() + 1);
+  for (int i = 0; i < 2; ++i) {
+    for (const QString& path : imagePaths) {
+      signalImgVector.push_back(QPixmap(path));
+    }
+  }
+  signalImgVector.push_back(QPixmap("../assets/images/tim_turn_signal_1_red.png"));
+  animation_timer = new QTimer(this);
+  connect(animation_timer, &QTimer::timeout, this, [this] {
+    animationFrameIndex = (animationFrameIndex + 1) % totalFrames;
+  });
+  animation_timer->start(totalFrames * 100);
+
+}
 
 void HudRenderer::updateState(const UIState &s) {
   is_metric = s.scene.is_metric;
   status = s.status;
+  brakeLights = s.scene.car_state.getBrakeLights();
+  hideBottomIcons = (s.sm->data["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE);
+
+  blindSpotLeft = s.scene.blind_spot_left;
+  blindSpotRight = s.scene.blind_spot_right;
+  drivingPersonalitiesUIWheel = s.scene.driving_personalities_ui_wheel;
+  timSignals = s.scene.tim_signals;
+  muteDM = s.scene.mute_dm;
+  personalityProfile = s.scene.personality_profile;
+  turnSignalLeft = s.scene.turn_signal_left;
+  turnSignalRight = s.scene.turn_signal_right;
 
   const SubMaster &sm = *(s.sm);
   if (!sm.alive("carState")) {
@@ -24,6 +59,7 @@ void HudRenderer::updateState(const UIState &s) {
   const auto &car_state = sm["carState"].getCarState();
 
   // Handle older routes where vCruiseCluster is not set
+  brakeLights = car_state.getBrakeLights();
   set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
   is_cruise_set = set_speed > 0 && set_speed != SET_SPEED_NA;
 
@@ -42,13 +78,20 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
   // Draw header gradient
   QLinearGradient bg(0, UI_HEADER_HEIGHT - (UI_HEADER_HEIGHT / 2.5), 0, UI_HEADER_HEIGHT);
-  bg.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.45));
+  bg.setColorAt(0, brakeLights ? QColor::fromRgbF(1.0, 0.48, 0.5, 0.45) : QColor::fromRgbF(0, 0, 0, 0.45));
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT, bg);
 
-
   drawSetSpeed(p, surface_rect);
   drawCurrentSpeed(p, surface_rect);
+
+  if (drivingPersonalitiesUIWheel && !hideBottomIcons) {
+    drawDrivingPersonalities(p, surface_rect);
+  }
+
+  if (timSignals && (turnSignalLeft || turnSignalRight)) {
+    drawTimSignals(p, surface_rect);
+  }
 
   p.restore();
 }
@@ -106,4 +149,111 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
 
   p.setPen(QColor(0xff, 0xff, 0xff, alpha));
   p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+void HudRenderer::drawIcon(QPainter &p, QPoint pos, const QPixmap &img, 
+                         QColor bg_color, qreal opacity) {
+  p.setOpacity(opacity);
+  
+  // Draw background circle
+  if (bg_color.alpha() > 0) {
+    p.setPen(Qt::NoPen);
+    p.setBrush(bg_color);
+    p.drawEllipse(pos, btn_size/2, btn_size/2);
+  }
+
+  p.drawPixmap(pos.x() - img.width()/2, pos.y() - img.height()/2, img);
+  p.setOpacity(1.0);
+}
+
+void HudRenderer::drawDrivingPersonalities(QPainter &p, const QRect &rect) {
+  // Declare the variables
+  static QElapsedTimer timer;
+  static bool displayText = false;
+  static int lastProfile = 4;
+  constexpr int fadeDuration = 1000; // 1 second
+  constexpr int textDuration = 3000; // 3 seconds
+  
+  int x = rect.left() + (btn_size - 24) / 2 - (UI_BORDER_SIZE * 2) + 100;
+  const int y = rect.bottom() - (muteDM ? 70 : 300);
+
+  // Enable Antialiasing
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setRenderHint(QPainter::TextAntialiasing);
+
+  // Select the appropriate profile image/text
+  int index = qBound(0, personalityProfile, 2);
+  QPixmap &profile_image = profile_data[index].first;
+  QString profile_text = profile_data[index].second;
+
+  // Display the profile text when the user changes profiles
+  if (lastProfile != personalityProfile) {
+    displayText = true;
+    lastProfile = personalityProfile;
+    timer.restart();
+  }
+
+  // Set the text display
+  displayText = !timer.hasExpired(textDuration);
+
+  // Set the elapsed time since the profile switch
+  int elapsed = timer.elapsed();
+
+  // Calculate the opacity for the text and image based on the elapsed time
+  qreal textOpacity = qBound(0.0, (1.0 - static_cast<qreal>(elapsed - textDuration) / fadeDuration), 1.0);
+  qreal imageOpacity = qBound(0.0, (static_cast<qreal>(elapsed - textDuration) / fadeDuration), 1.0);
+
+  // Draw the profile text with the calculated opacity
+  if (displayText && textOpacity > 0.0) {
+    p.setFont(InterFont(40, QFont::Bold));
+    p.setPen(QColor(255, 255, 255));
+    // Calculate the center position for text
+    QFontMetrics fontMetrics(p.font());
+    int textWidth = fontMetrics.horizontalAdvance(profile_text);
+    // Apply opacity to the text
+    p.setOpacity(textOpacity);
+    p.drawText(x - textWidth / 2, y + fontMetrics.height() / 2, profile_text);
+  }
+
+  // Draw the profile image with the calculated opacity
+  if (imageOpacity > 0.0) {
+    drawIcon(p, QPoint(x, y), profile_image, blackColor(0), imageOpacity);
+  }
+}
+
+void HudRenderer::drawTimSignals(QPainter &p, const QRect &rect) {
+  // Declare the turn signal size
+  constexpr int signalHeight = 142;
+  constexpr int signalWidth = 142;
+
+  // Calculate the vertical position for the turn signals
+  const int baseYPosition = (blindSpotLeft || blindSpotRight ? 
+                           (rect.height() - signalHeight) / 2 : 350);
+                           
+  // Calculate the x-coordinates for the turn signals
+  int leftSignalXPosition = rect.width() / 2 - 50 - 360 * (blindSpotLeft ? 2 : 0);
+  int rightSignalXPosition = rect.width() / 2 - 50 + 360 * (blindSpotRight ? 2 : 0);
+
+  // Enable Antialiasing
+  p.setRenderHint(QPainter::Antialiasing);
+
+  // Draw the turn signals
+  if (animationFrameIndex < static_cast<int>(signalImgVector.size())) {
+    const auto drawSignal = [&](const bool signalActivated, const int xPosition, 
+                               const bool flip, const bool blindspot) {
+      if (signalActivated) {
+        // Get the appropriate image from the signalImgVector
+        QPixmap signal = signalImgVector[
+          (blindspot ? signalImgVector.size()-1 : animationFrameIndex % totalFrames)
+        ].transformed(QTransform().scale(flip ? -1 : 1, 1));
+        
+        // Draw the image
+        p.drawPixmap(xPosition, baseYPosition, signalWidth, signalHeight, signal);
+      }
+    };
+
+    // Display the animation based on which signal is activated
+    drawSignal(turnSignalLeft, leftSignalXPosition, false, blindSpotLeft);
+    drawSignal(turnSignalRight, rightSignalXPosition, true, blindSpotRight);
+  }
 }
