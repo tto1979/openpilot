@@ -283,7 +283,6 @@
     </message>
 </context>
 <context>
-    <message>
     <name>ForceCarRecognition</name>
     <message>
         <source>Back</source>
