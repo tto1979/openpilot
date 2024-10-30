@@ -202,7 +202,6 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   // chevron
   //QPointF chevron[] = {{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}};
   QPointF chevron[] = {{x + (sz * 1.25), y + sz + homebase_h}, {x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}, {x - (sz * 1.25), y + sz + homebase_h}, {x, y + sz + homebase_h - 7}};
-  QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   painter.setBrush(redColor(fillAlpha));
   painter.drawPolygon(chevron, std::size(chevron));
 
