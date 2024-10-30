@@ -62,6 +62,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   driving_model_data.frameId = vipc_frame_id
   driving_model_data.frameIdExtra = vipc_frame_id_extra
   driving_model_data.frameDropPerc = frame_drop_perc
+  driving_model_data.modelExecutionTime = model_execution_time
 
   action = driving_model_data.action
   action.desiredCurvature = float(net_output_data['desired_curvature'][0,0])
@@ -85,6 +86,13 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_xyzt(orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
   orientation_rate = modelV2.orientationRate
   fill_xyzt(orientation_rate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
+
+  # temporal pose
+  temporal_pose = modelV2.temporalPose
+  temporal_pose.trans = net_output_data['plan'][0,0,Plan.VELOCITY].tolist()
+  temporal_pose.transStd = net_output_data['plan_stds'][0,0,Plan.VELOCITY].tolist()
+  temporal_pose.rot = net_output_data['plan'][0,0,Plan.ORIENTATION_RATE].tolist()
+  temporal_pose.rotStd = net_output_data['plan_stds'][0,0,Plan.ORIENTATION_RATE].tolist()
 
   # poly path
   poly_path = driving_model_data.path

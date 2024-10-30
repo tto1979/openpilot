@@ -141,6 +141,8 @@ class Alert:
       return False
     return self.priority > alert2.priority
 
+EmptyAlert = Alert("" , "", AlertStatus.normal, AlertSize.none, Priority.LOWEST,
+                   VisualAlert.none, AudibleAlert.none, 0)
 
 class NoEntryAlert(Alert):
   def __init__(self, alert_text_2: str,
@@ -334,10 +336,21 @@ def wrong_car_mode_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubM
 
 
 def joystick_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
-  axes = sm['testJoystick'].axes
-  gb, steer = list(axes)[:2] if len(axes) else (0., 0.)
+  gb = sm['carControl'].actuators.accel / 4.
+  steer = sm['carControl'].actuators.steer
   vals = f"Gas: {round(gb * 100.)}%, Steer: {round(steer * 100.)}%"
   return NormalPermanentAlert("Joystick Mode", vals)
+
+
+def longitudinal_maneuver_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
+  ad = sm['alertDebug']
+  audible_alert = AudibleAlert.prompt if 'Active' in ad.alertText1 else AudibleAlert.none
+  alert_status = AlertStatus.userPrompt if 'Active' in ad.alertText1 else AlertStatus.normal
+  alert_size = AlertSize.mid if ad.alertText2 else AlertSize.small
+  return Alert(ad.alertText1, ad.alertText2,
+               alert_status, alert_size,
+               Priority.LOW, VisualAlert.none, audible_alert, 0.2)
+
 
 def personality_changed_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
   personality = str(personality).title()
@@ -358,33 +371,31 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.PERMANENT: NormalPermanentAlert("搖桿模式"),
   },
 
-  EventName.controlsInitializing: {
+  EventName.longitudinalManeuver: {
+    ET.WARNING: longitudinal_maneuver_alert,
+    ET.PERMANENT: NormalPermanentAlert("縱向機動模式",
+                                       "請確保前方道路暢通"),
+  },
+
+  EventName.selfdriveInitializing: {
     ET.NO_ENTRY: NoEntryAlert("系統初始化中"),
   },
 
   EventName.startup: {
-    ET.PERMANENT: StartupAlert("T.O.P 已啟動"),
-  },
-
-  EventName.startupMaster: {
     ET.PERMANENT: StartupAlert("請隨時準備接控車輛"),
   },
 
-  # Car is recognized, but marked as dashcam only
+  EventName.startupMaster: {
+    ET.PERMANENT: startup_master_alert,
+  },
+
   EventName.startupNoControl: {
     ET.PERMANENT: StartupAlert("行車記錄模式"),
     ET.NO_ENTRY: NoEntryAlert("行車記錄模式"),
   },
 
-  # Car is not recognized
   EventName.startupNoCar: {
     ET.PERMANENT: StartupAlert("未支援的車款，啟動行車記錄模式"),
-  },
-
-  EventName.startupNoFw: {
-    ET.PERMANENT: StartupAlert("車款無法識示",
-                               "請檢查 comma power 的連線狀態",
-                               alert_status=AlertStatus.userPrompt),
   },
 
   EventName.dashcamMode: {
@@ -408,6 +419,15 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.PERMANENT: NormalPermanentAlert("行車記錄模式",
                                        "車款未被支援",
                                        priority=Priority.LOWEST),
+  },
+
+  EventName.aeb: {
+    ET.PERMANENT: Alert(
+      "BRAKE!",
+      "Emergency Braking: Risk of Collision",
+      AlertStatus.critical, AlertSize.full,
+      Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 2.),
+    ET.NO_ENTRY: NoEntryAlert("AEB: Risk of Collision"),
   },
 
   EventName.stockAeb: {
@@ -789,9 +809,9 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("運行中出現通信率過低問題"),
   },
 
-  EventName.controlsdLagging: {
-    ET.SOFT_DISABLE: soft_disable_alert("Controls Lagging"),
-    ET.NO_ENTRY: NoEntryAlert("Controls Process Lagging: Reboot Your Device"),
+  EventName.selfdrivedLagging: {
+    ET.SOFT_DISABLE: soft_disable_alert("System Lagging"),
+    ET.NO_ENTRY: NoEntryAlert("Selfdrive Process Lagging: Reboot Your Device"),
   },
 
   # Thrown when manager detects a service exited unexpectedly while driving
@@ -837,12 +857,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("Low Memory: Reboot Your Device"),
   },
 
-  EventName.highCpuUsage: {
-    #ET.SOFT_DISABLE: soft_disable_alert("System Malfunction: Reboot Your Device"),
-    #ET.PERMANENT: NormalPermanentAlert("System Malfunction", "Reboot your Device"),
-    ET.NO_ENTRY: high_cpu_usage_alert,
-  },
-
   EventName.accFaulted: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Cruise Fault: Restart the Car"),
     ET.PERMANENT: NormalPermanentAlert("Cruise Fault: Restart the car to engage"),
@@ -857,24 +871,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.controlsMismatch: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Controls Mismatch"),
     ET.NO_ENTRY: NoEntryAlert("Controls Mismatch"),
-  },
-
-  EventName.roadCameraError: {
-    ET.PERMANENT: NormalPermanentAlert("Camera CRC Error - Road",
-                                       duration=1.,
-                                       creation_delay=30.),
-  },
-
-  EventName.wideRoadCameraError: {
-    ET.PERMANENT: NormalPermanentAlert("Camera CRC Error - Road Fisheye",
-                                       duration=1.,
-                                       creation_delay=30.),
-  },
-
-  EventName.driverCameraError: {
-    ET.PERMANENT: NormalPermanentAlert("Camera CRC Error - Driver",
-                                       duration=1.,
-                                       creation_delay=30.),
   },
 
   # Sometimes the USB stack on the device can get into a bad state

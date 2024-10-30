@@ -57,6 +57,7 @@ def get_test_cases() -> list[tuple[str, CarTestRoute | None]]:
     segment_list = read_segment_list(os.path.join(BASEDIR, INTERNAL_SEG_LIST))
     segment_list = random.sample(segment_list, INTERNAL_SEG_CNT or len(segment_list))
     for platform, segment in segment_list:
+      platform = MIGRATION.get(platform, platform)
       segment_name = SegmentName(segment)
       test_cases.append((platform, CarTestRoute(segment_name.route_name.canonical_name, platform,
                                                 segment=segment_name.segment_num)))
@@ -448,7 +449,7 @@ class TestCarModelBase(unittest.TestCase):
           checks['cruiseState'] += CS.cruiseState.enabled != self.safety.get_cruise_engaged_prev()
       else:
         # Check for enable events on rising edge of controls allowed
-        card.update_events(CS)
+        card.update_events(CS, None)
         card.CS_prev = CS
         button_enable = (any(evt.enable for evt in CS.events) and
                          not any(evt == EventName.pedalPressed for evt in card.events.names))

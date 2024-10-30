@@ -7,7 +7,7 @@ from opendbc.car.volkswagen.values import CarControllerParams as VWCarController
 from opendbc.car.hyundai.interface import ENABLE_BUTTONS as HYUNDAI_ENABLE_BUTTONS
 from opendbc.car.toyota.values import TSS2_CAR, ToyotaFlags
 
-from openpilot.selfdrive.controls.lib.events import Events
+from openpilot.selfdrive.selfdrived.events import Events
 
 ButtonType = structs.CarState.ButtonEvent.Type
 GearShifter = structs.CarState.GearShifter
