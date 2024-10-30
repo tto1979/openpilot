@@ -286,7 +286,7 @@
     <name>ForceCarRecognition</name>
     <message>
         <source>Back</source>
-        <translation type="unfinished">戻る</translation>
+        <translation>戻る</translation>
     </message>
     <message>
         <source>[-Not selected-]</source>

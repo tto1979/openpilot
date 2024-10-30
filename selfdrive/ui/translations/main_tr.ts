@@ -286,7 +286,7 @@
     <name>ForceCarRecognition</name>
     <message>
         <source>Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Geri</translation>
     </message>
     <message>
         <source>[-Not selected-]</source>

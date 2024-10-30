@@ -286,7 +286,7 @@
     <name>ForceCarRecognition</name>
     <message>
         <source>Back</source>
-        <translation type="unfinished">ย้อนกลับ</translation>
+        <translation>ย้อนกลับ</translation>
     </message>
     <message>
         <source>[-Not selected-]</source>
