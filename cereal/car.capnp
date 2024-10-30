@@ -117,10 +117,10 @@ struct OnroadEvent @0x9b1657f34caf3ad3 {
     espActive @121;
     personalityChanged @122;
     aeb @123;
-    atlEngageSound @124;
-    atlDisengageSound @125;
-    torqueNNLoad @126;
-    automaticBrakehold @127;
+    atlEngageSound @125;
+    atlDisengageSound @126;
+    torqueNNLoad @127;
+    automaticBrakehold @128;
 
     radarCanErrorDEPRECATED @15;
     communityFeatureDisallowedDEPRECATED @62;
