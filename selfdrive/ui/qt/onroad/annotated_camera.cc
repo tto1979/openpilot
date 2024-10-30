@@ -24,6 +24,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   main_layout->setContentsMargins(0, 60, 0, 0);
 }
 
+float vc_speed;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
   experimental_btn->updateState(s);
@@ -208,7 +209,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
     //float dist = d_rel; //lead_data.getT()[0];
     QString dist = QString::number(d_rel, 'f', 0) + "m";
     int str_w = 200;
-    float vc_speed = uiState()->scene.car_state.getVEgo();
+    // float vc_speed = uiState()->scene.car_state.getVEgo();
     QString kmph = QString::number((v_rel + vc_speed)*3.6, 'f', 0) + "k";
     int str_w2 = 200;
 //    dist += "<" + QString::number(rect().height()) + ">"; str_w += 500;c2 和 c3 的屏幕高度均為 1020。
