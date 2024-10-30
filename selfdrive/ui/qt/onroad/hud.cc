@@ -35,8 +35,8 @@ HudRenderer::HudRenderer() {
 void HudRenderer::updateState(const UIState &s) {
   is_metric = s.scene.is_metric;
   status = s.status;
-  brakeLights = s.scene.car_state.getBrakeLights();
-  hideBottomIcons = (s.sm->data["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE);
+  hideBottomIcons = s.sm->rcv_frame("selfdriveState") > s.scene.started_frame && 
+                   (*s.sm)["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE;
 
   blindSpotLeft = s.scene.blind_spot_left;
   blindSpotRight = s.scene.blind_spot_right;
@@ -59,9 +59,9 @@ void HudRenderer::updateState(const UIState &s) {
   const auto &car_state = sm["carState"].getCarState();
 
   // Handle older routes where vCruiseCluster is not set
-  brakeLights = car_state.getBrakeLights();
   set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
   is_cruise_set = set_speed > 0 && set_speed != SET_SPEED_NA;
+  brake_lights = car_state.getBrakeLights();
 
   if (is_cruise_set && !is_metric) {
     set_speed *= KM_TO_MILE;

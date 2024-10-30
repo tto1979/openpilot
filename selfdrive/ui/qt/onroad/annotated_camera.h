@@ -21,6 +21,7 @@ private:
   void drawCenteredText(QPainter &p, int x, int y, const QString &text, QColor color);
 
   QVBoxLayout *main_layout;
+  QColor redColor(int alpha = 255);
   ExperimentalButton *experimental_btn;
   DriverMonitorRenderer dmon;
   HudRenderer hud;

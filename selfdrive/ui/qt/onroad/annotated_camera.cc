@@ -202,6 +202,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   // chevron
   //QPointF chevron[] = {{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}};
   QPointF chevron[] = {{x + (sz * 1.25), y + sz + homebase_h}, {x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}, {x - (sz * 1.25), y + sz + homebase_h}, {x, y + sz + homebase_h - 7}};
+  QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   painter.setBrush(redColor(fillAlpha));
   painter.drawPolygon(chevron, std::size(chevron));
 
@@ -306,7 +307,8 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50;
-  if (uiState()->scene.wide_cam == false) { //反映 dh 中的深度值。
+  bool is_wide_cam = CameraWidget::activeStreamType() == VISION_STREAM_WIDE_ROAD;
+  if (!is_wide_cam) {
     float dd = d;
     dd -= 25; //dd=0〜75
     dd /= (75.0/2); //dd=0〜2
