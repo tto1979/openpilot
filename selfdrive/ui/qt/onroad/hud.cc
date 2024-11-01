@@ -174,7 +174,7 @@ void HudRenderer::drawDrivingPersonalities(QPainter &p, const QRect &rect) {
   constexpr int fadeDuration = 1000; // 1 second
   constexpr int textDuration = 3000; // 3 seconds
 
-  int x = rect.left() + (btn_size - 24) / 2 - (UI_BORDER_SIZE * 2);
+  int x = rect.left() + (btn_size - 24) / 2 - (UI_BORDER_SIZE * 2) + 10;
   const int y = rect.bottom() - (muteDM ? 70 : 300);
 
   // Enable Antialiasing
