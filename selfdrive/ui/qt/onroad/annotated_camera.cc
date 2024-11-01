@@ -21,7 +21,6 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
-  main_layout->setContentsMargins(0, 60, 0, 0);
 }
 
 float vc_speed;
