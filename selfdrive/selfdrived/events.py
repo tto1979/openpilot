@@ -382,11 +382,11 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   EventName.startup: {
-    ET.PERMANENT: StartupAlert("請隨時準備接控車輛"),
+    ET.PERMANENT: StartupAlert("T.O.P 已啟動"),
   },
 
   EventName.startupMaster: {
-    ET.PERMANENT: startup_master_alert,
+    ET.PERMANENT: StartupAlert("請隨時準備接控車輛"),
   },
 
   EventName.startupNoControl: {
