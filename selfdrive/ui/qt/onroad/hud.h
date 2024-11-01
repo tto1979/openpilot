@@ -22,6 +22,8 @@ private:
 
   static constexpr int btn_size = 250;
   static constexpr int UI_BORDER_SIZE = 15;
+  static constexpr int bdr_s = 30;
+  static constexpr int footer_h = 60;
 
   float speed = 0;
   float set_speed = 0;
@@ -39,6 +41,7 @@ private:
   bool hideBottomIcons = false;
   bool turnSignalLeft = false;
   bool turnSignalRight = false;
+  bool rightHandDM = false;
   int personalityProfile = 0;
   int animationFrameIndex = 0;
   static constexpr int totalFrames = 4;
