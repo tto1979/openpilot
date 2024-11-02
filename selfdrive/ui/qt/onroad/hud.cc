@@ -176,7 +176,7 @@ void HudRenderer::drawDrivingPersonalities(QPainter &p, const QRect &rect) {
 
   // Set the x and y coordinates
   int x = rightHandDM ? rect.right() - (btn_size - 24) / 2 - (bdr_s * 2) - (muteDM ? 50 : 250) : (btn_size - 24) / 2 + (bdr_s * 2) + (muteDM ? 50 : 250);
-  const int y = rect.bottom() - footer_h / 2;
+  const int y = rect.bottom() - footer_h / 2 + 40;
 
   // Enable Antialiasing
   p.setRenderHint(QPainter::Antialiasing);
