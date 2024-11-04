@@ -52,7 +52,7 @@ void OnroadWindow::updateState(const UIState &s) {
   nvg->updateState(s);
 
   QColor bgColor = bg_colors[s.status];
-  if (s.status == STATUS_DISENGAGED && Params("/dev/shm/params").getBool("LateralAllowed")){
+  if (s.status == STATUS_DISENGAGED && Params().getBool("LateralAllowed")){
     bgColor = bg_colors[STATUS_LAT_ALLOWED];
   }
 
