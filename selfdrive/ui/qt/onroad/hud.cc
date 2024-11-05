@@ -48,7 +48,7 @@ void HudRenderer::updateState(const UIState &s) {
   turnSignalRight = s.scene.turn_signal_right;
 
   const SubMaster &sm = *(s.sm);
-  if (!sm.alive("carState")) {
+  if (sm.rcv_frame("carState") < s.scene.started_frame) {
     is_cruise_set = false;
     set_speed = SET_SPEED_NA;
     speed = 0.0;

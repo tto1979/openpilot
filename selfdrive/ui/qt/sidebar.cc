@@ -75,9 +75,11 @@ void Sidebar::updateState(const UIState &s) {
 
   auto &sm = *(s.sm);
 
+  networking = networking ? networking : window()->findChild<Networking *>("");
+  bool tethering_on = networking && networking->wifi->tethering_on;
   auto deviceState = sm["deviceState"].getDeviceState();
-  setProperty("netType", network_type[deviceState.getNetworkType()]);
-  int strength = (int)deviceState.getNetworkStrength();
+  setProperty("netType", tethering_on ? "Hotspot": network_type[deviceState.getNetworkType()]);
+  int strength = tethering_on ? 4 : (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
   setProperty("wifiAddr", deviceState.getWifiIpAddress().cStr());
 
@@ -137,11 +139,11 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setFont(InterFont(35));
   p.setPen(QColor(0xff, 0xff, 0xff));
   const QRect r = QRect(0, 247, event->rect().width(), 50);
-  //p.drawText(r, Qt::AlignCenter, net_type);
+  //p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
   if (net_type == network_type[cereal::DeviceState::NetworkType::WIFI])
-    p.drawText(r, Qt::AlignCenter, wifi_addr);
+    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, wifi_addr);
   else
-    p.drawText(r, Qt::AlignCenter, net_type);
+    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
 
   // metrics
   drawMetric(p, temp_status.first, temp_status.second, 338);
