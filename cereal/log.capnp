@@ -126,6 +126,11 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     personalityChanged @91;
     aeb @92;
 
+    # TOP
+    atlEngageSound @93;
+    atlDisengageSound @94;
+    torqueNNLoad @95;
+    automaticBrakehold @96;
     soundsUnavailableDEPRECATED @47;
   }
 }
