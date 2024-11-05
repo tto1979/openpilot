@@ -66,7 +66,7 @@ typedef struct UIScene {
   cereal::LongitudinalPersonality personality;
 
   float light_sensor = -1;
-  bool started, ignition, is_metric;
+  bool started, ignition, is_metric, longitudinal_control;
   uint64_t started_frame;
   bool onroadScreenOff;
   bool blind_spot_left;
@@ -79,6 +79,8 @@ typedef struct UIScene {
   bool steering_wheel_car;
   bool turn_signal_left;
   bool turn_signal_right;
+  bool world_objects_visible;
+  bool wide_cam; 
   int personality_profile;
 } UIScene;
 

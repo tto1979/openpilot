@@ -28,8 +28,8 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
   return max_idx;
 }
 
-void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
-  this->surface_rect = surface_rect;
+void ModelRenderer::draw(QPainter &painter, const QRect &rect_param) {
+  surface_rect = rect_param;
   auto *s = uiState();
   auto &sm = *(s->sm);
 

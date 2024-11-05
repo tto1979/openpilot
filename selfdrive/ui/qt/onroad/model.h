@@ -14,7 +14,7 @@ class ModelRenderer {
 public:
   ModelRenderer();
   void setTransform(const Eigen::Matrix3f &transform) { car_space_transform = transform; }
-  void draw(QPainter &painter, const QRect &surface_rect);
+  void draw(QPainter &painter, const QRect &rect_param);
   void drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd, int num);
 
 private:
