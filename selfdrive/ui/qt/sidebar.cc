@@ -141,9 +141,9 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   const QRect r = QRect(0, 247, event->rect().width(), 50);
   //p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
   if (net_type == network_type[cereal::DeviceState::NetworkType::WIFI])
-    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, wifi_addr);
+    p.drawText(r, Qt::AlignCenter, wifi_addr);
   else
-    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
+    p.drawText(r, Qt::AlignCenter, net_type);
 
   // metrics
   drawMetric(p, temp_status.first, temp_status.second, 338);
