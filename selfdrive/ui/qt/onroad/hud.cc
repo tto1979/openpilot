@@ -57,11 +57,13 @@ void HudRenderer::updateState(const UIState &s) {
 
   const auto &controls_state = sm["controlsState"].getControlsState();
   const auto &car_state = sm["carState"].getCarState();
+  const auto &drivermonitor_state = sm["driverMonitoringState"].getDriverMonitoringState();
 
   // Handle older routes where vCruiseCluster is not set
   set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
   is_cruise_set = set_speed > 0 && set_speed != SET_SPEED_NA;
   brakeLights = car_state.getBrakeLights();
+  rightHandDM = drivermonitor_state.getIsRHD();
 
   if (is_cruise_set && !is_metric) {
     set_speed *= KM_TO_MILE;
