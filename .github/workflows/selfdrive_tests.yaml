@@ -108,7 +108,7 @@ jobs:
       with:
         submodules: true
     - name: Homebrew cache
-      uses: actions/cache@v4
+      uses: ./.github/workflows/auto-cache
       with:
         path: ~/Library/Caches/Homebrew
         key: brew-${{ runner.os }}-${{ hashFiles('tools/mac_setup.sh') }}
@@ -122,7 +122,7 @@ jobs:
     - run: git lfs pull
     - run: echo "CACHE_COMMIT_DATE=$(git log -1 --pretty='format:%cd' --date=format:'%Y-%m-%d-%H:%M')" >> $GITHUB_ENV
     - name: Getting scons cache
-      uses: actions/cache@v4
+      uses: ./.github/workflows/auto-cache
       with:
         path: /tmp/scons_cache
         key: scons-mac-${{ env.CACHE_COMMIT_DATE }}
