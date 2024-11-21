@@ -6,7 +6,7 @@ from cereal import car, log
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
-from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
+from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.swaglog import cloudlog
 
 from opendbc.car.car_helpers import get_car_interface
@@ -43,7 +43,6 @@ class Controls:
     # Initialize attributes
     self.initialized = False
     self.dp_atl = self.params.get_bool("dp_atl")
-    self.use_old_long = False
     self.steer_limited = False
     self.desired_curvature = 0.0
     self.live_torque = False
@@ -61,11 +60,7 @@ class Controls:
     elif self.CP.lateralTuning.which() == 'torque':
       self.LaC = LatControlTorque(self.CP, self.CI)
 
-  def update_use_old_long(self):
-    self.use_old_long = self.params.get_bool("ToyotaTune")  # and not Params().get_bool("ExperimentalMode")
-
   def update(self):
-    self.update_use_old_long()
     self.sm.update(15)
     if self.sm.updated["liveCalibration"]:
       self.pose_calibrator.feed_live_calib(self.sm['liveCalibration'])
@@ -129,18 +124,11 @@ class Controls:
     if not CC.latActive:
       self.LaC.reset()
     if not CC.longActive:
-      if self.use_old_long:
-        self.LoC.reset_old_long(v_pid=CS.vEgo)
-      else:
-        self.LoC.reset()
+      self.LoC.reset()
 
     # accel PID loop
     pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
-    if self.use_old_long:
-      t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
-      actuators.accel = self.LoC.update_old_long(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
-    else:
-      actuators.accel = self.LoC.update(CC.longActive, CS, long_plan.aTarget, long_plan.shouldStop, pid_accel_limits)
+    actuators.accel = self.LoC.update(CC.longActive, CS, long_plan.aTarget, long_plan.shouldStop, pid_accel_limits)
 
     # Steering PID loop and lateral MPC
     self.desired_curvature = clip_curvature(CS.vEgo, self.desired_curvature, model_v2.action.desiredCurvature)
@@ -211,7 +199,6 @@ class Controls:
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - lp.angleOffsetDeg)
     cs.curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo, lp.roll)
 
-    cs.vPid = float(self.LoC.v_pid)
     cs.longitudinalPlanMonoTime = self.sm.logMonoTime['longitudinalPlan']
     cs.lateralPlanMonoTime = self.sm.logMonoTime['modelV2']
     cs.desiredCurvature = self.desired_curvature
@@ -241,7 +228,6 @@ class Controls:
   def run(self):
     rk = Ratekeeper(100, print_delay_threshold=None)
     while True:
-      self.update_use_old_long()
       self.update()
       CC, lac_log = self.state_control()
       self.publish(CC, lac_log)
