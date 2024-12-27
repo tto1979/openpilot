@@ -8,7 +8,6 @@ export VECLIB_MAXIMUM_THREADS=1
 
 if [ -z "$AGNOS_VERSION" ]; then
   export AGNOS_VERSION="11.4"
-  pip install flask
 fi
 
 export STAGING_ROOT="/data/safe_staging"
