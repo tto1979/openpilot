@@ -38,7 +38,7 @@ class TestAlerts:
       cls.CP.lateralTuning.init('torque')
       cls.CP.lateralTuning.torque.nnModelName = ""
       cls.CP.lateralTuning.torque.useSteeringAngle = False
-      cls.CP.lateralTuning.torque.kp = 1.0 
+      cls.CP.lateralTuning.torque.kp = 1.0
       cls.CP.lateralTuning.torque.ki = 0.1
       cls.CP.lateralTuning.torque.kf = 1.0
       cls.CP.lateralTuning.torque.friction = 0.01
