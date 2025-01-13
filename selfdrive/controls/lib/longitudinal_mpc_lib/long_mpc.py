@@ -421,7 +421,6 @@ class LongitudinalMpc:
         distance_factor = max(lead_distance - (v_ego * t_follow), 1)
         standstill_offset = max(stop_distance - v_ego, 1)
         self.braking_offset = clip((v_lead - v_ego) * standstill_offset - COMFORT_BRAKE, 1, distance_factor)
-        jerk_factor /= standstill_offset
         t_follow /= self.braking_offset
       elif v_lead < v_ego and v_ego > CRUISING_SPEED:
         distance_factor = max(lead_distance - (v_lead * t_follow), 1)
