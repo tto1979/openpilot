@@ -421,15 +421,17 @@ class LongitudinalMpc:
         distance_factor = max(lead_distance - (v_ego * t_follow), 1)
         standstill_offset = max(stop_distance - v_ego, 1)
         self.braking_offset = clip((v_lead - v_ego) * standstill_offset - COMFORT_BRAKE, 1, distance_factor)
+        jerk_factor /= standstill_offset
+        t_follow /= self.braking_offset
       elif v_lead < v_ego and v_ego > CRUISING_SPEED:
         distance_factor = max(lead_distance - (v_lead * t_follow), 1)
         far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
         self.braking_offset = clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1, distance_factor)
+        t_follow /= self.braking_offset
+        self.slower_lead = self.braking_offset / far_lead_offset > 1
       else:
         self.braking_offset = 1
-
-      if self.braking_offset != 1:
-        t_follow = t_follow / self.braking_offset
+        self.slower_lead = False
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
