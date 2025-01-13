@@ -7,6 +7,7 @@ from openpilot.common.conversions import Conversions as CV
 from opendbc.car.interfaces import ACCEL_MIN
 from opendbc.car.toyota.values import ToyotaFlags
 from openpilot.common.numpy_fast import clip
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
@@ -76,7 +77,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.875
+    return 0.85
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -123,7 +124,9 @@ def get_stopped_equivalence_factor(v_lead, v_ego):
     v_diff_offset = np.maximum(v_diff_offset * ((speed_to_reach_max_v_diff_offset - v_ego)/speed_to_reach_max_v_diff_offset), 0)
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
 
-def get_safe_obstacle_distance(v_ego, t_follow, stop_distance):
+def get_safe_obstacle_distance(v_ego, t_follow, stop_distance=None):
+  if stop_distance is None:
+    stop_distance = get_STOP_DISTANCE()
   return (v_ego**2) / (2 * COMFORT_BRAKE) + t_follow * v_ego + stop_distance
 
 def desired_follow_distance(v_ego, v_lead, t_follow=None, stop_distance=None):
@@ -397,6 +400,9 @@ class LongitudinalMpc:
     stop_distance = get_STOP_DISTANCE(personality)
     if not (self.CP.flags & ToyotaFlags.SMART_DSU):
       stop_distance += 0.5
+
+    if Params().get_bool("ToyotaTune"):
+      stop_distance += 1
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
