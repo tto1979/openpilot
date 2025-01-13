@@ -46,6 +46,8 @@ CRASH_DISTANCE = .25
 LEAD_DANGER_FACTOR = 0.75
 LIMIT_COST = 1e6
 ACADOS_SOLVER_TYPE = 'SQP_RTI'
+CITY_SPEED_LIMIT = 25  # ~55mph
+CRUISING_SPEED = 5     # ~11mph
 
 
 # Fewer timestamps don't hurt performance and lead to
@@ -410,13 +412,24 @@ class LongitudinalMpc:
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
     lead = radarstate.leadOne
 
-    self.smoother_braking = True if self.mode == 'acc' and v_ego < 16 and lead_xv_0[0,0] < 40 and lead.dRel >= (v_ego - 1) * t_follow else False
+    self.smoother_braking = True if lead.status and self.mode == 'acc' and v_ego < 25 and lead_xv_0[0,0] < 50 else False
     if self.smoother_braking:
-      distance_factor = np.maximum(1, lead_xv_0[:,0] - (lead_xv_0[:,1] * t_follow))
-      self.braking_offset = np.clip((v_ego - lead_xv_0[:,1]) - COMFORT_BRAKE, 1, distance_factor)
-      t_follow = t_follow / self.braking_offset
-    else:
-      self.braking_offset = 1
+      v_lead = lead_xv_0[0,1]
+      lead_distance = lead_xv_0[0,0]
+
+      if v_lead > v_ego:
+        distance_factor = max(lead_distance - (v_ego * t_follow), 1)
+        standstill_offset = max(stop_distance - v_ego, 1)
+        self.braking_offset = clip((v_lead - v_ego) * standstill_offset - COMFORT_BRAKE, 1, distance_factor)
+      elif v_lead < v_ego and v_ego > CRUISING_SPEED:
+        distance_factor = max(lead_distance - (v_lead * t_follow), 1)
+        far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
+        self.braking_offset = clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1, distance_factor)
+      else:
+        self.braking_offset = 1
+
+      if self.braking_offset != 1:
+        t_follow = t_follow / self.braking_offset
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
