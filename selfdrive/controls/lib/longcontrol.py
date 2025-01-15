@@ -4,7 +4,6 @@ from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.common.pid import PIDController
 from openpilot.selfdrive.modeld.constants import ModelConstants
-from openpilot.common.params import Params
 
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
@@ -45,15 +44,6 @@ def long_control_state_trans(CP, active, long_control_state, v_ego,
         long_control_state = LongCtrlState.pid
   return long_control_state
 
-def apply_deadzone(error, deadzone):
-  if error > deadzone:
-    error -= deadzone
-  elif error < - deadzone:
-    error += deadzone
-  else:
-    error = 0.
-  return error
-
 class LongControl:
   def __init__(self, CP):
     self.CP = CP
@@ -91,13 +81,8 @@ class LongControl:
 
     else:  # LongCtrlState.pid
       error = a_target - CS.aEgo
-      # output_accel = self.pid.update(error, speed=CS.vEgo,
-      #                                feedforward=a_target)
-      # TOP apply deadzone to experimental mode
-      error_deadzone = apply_deadzone(error, np.interp(CS.vEgo, [0, 6, 7, 20, 30], [0, 0.001, 0.003, 0.1, 0.15]))
-
-      output_accel = self.pid.update(error_deadzone if Params().get_bool("ExperimentalMode") or Params().get_bool("ToyotaTune") else error, speed=CS.vEgo,
+      output_accel = self.pid.update(error, speed=CS.vEgo,
                                      feedforward=a_target)
 
-    self.last_output_accel = float(np.clip(output_accel, accel_limits[0], accel_limits[1]))
+    self.last_output_accel = np.clip(output_accel, accel_limits[0], accel_limits[1])
     return self.last_output_accel
