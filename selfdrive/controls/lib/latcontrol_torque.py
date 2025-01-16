@@ -277,20 +277,21 @@ class LatControlTorque(LatControl):
             for x in nn_log:
               try:
                 if isinstance(x, (np.floating, float, int)):
-                  filtered_values.append(float(x))
+                        filtered_values.append(float(x))
               except (TypeError, ValueError):
                 continue
-            
             if filtered_values:
-              pid_log.nnLog = float(sum(filtered_values) / len(filtered_values))
+              pid_log.nnLog = filtered_values
             else:
-              pid_log.nnLog = 0.0
+              pid_log.nnLog = [0.0]
           elif isinstance(nn_log, (np.floating, float, int)):
-            pid_log.nnLog = float(nn_log)
+            pid_log.nnLog = [float(nn_log)]
           else:
-            pid_log.nnLog = 0.0
+            pid_log.nnLog = [0.0]
         except Exception:
-          pid_log.nnLog = 0.0
+          pid_log.nnLog = [0.0]
+      else:
+        pid_log.nnLog = [0.0]
 
     # TODO left is positive in this convention
     return -output_torque, 0.0, pid_log
