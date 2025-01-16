@@ -174,8 +174,8 @@ class LatControlTorque(LatControl):
                               [float(x) for x in self.friction_look_ahead_v])
         friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
         predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
-        desired_lateral_jerk = (np.interp(float(self.desired_lat_jerk_time), 
-                                          [float(x) for x in ModelConstants.T_IDXS], 
+        desired_lateral_jerk = (np.interp(float(self.desired_lat_jerk_time),
+                                          [float(x) for x in ModelConstants.T_IDXS],
                                           [float(y) for y in list(model_data.acceleration.y)]) - float(desired_lateral_accel)) / float(self.desired_lat_jerk_time)
         lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk)
         if self.use_steering_angle or lookahead_lateral_jerk == 0.0:
