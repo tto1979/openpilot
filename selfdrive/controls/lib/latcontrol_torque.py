@@ -166,8 +166,8 @@ class LatControlTorque(LatControl):
       lateral_jerk_measurement = 0
       lookahead_lateral_jerk = 0
 
-      model_good = model_data is not None and len(model_data.orientation.x) >= CONTROL_N
-      if model_good and len(list(model_data.orientation.x)) >= CONTROL_N:
+      model_good = model_data is not None and len(list(model_data.orientation.x)) >= CONTROL_N
+      if model_good:
         # prepare "look-ahead" desired lateral jerk
         lookahead = np.interp(float(CS.vEgo),
                               [float(x) for x in self.friction_look_ahead_bp],
@@ -271,7 +271,13 @@ class LatControlTorque(LatControl):
       pid_log.desiredLateralAccel = float(desired_lateral_accel)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited))
       if nn_log is not None:
-        pid_log.nnLog = nn_log
+        if isinstance(nn_log, (list, tuple)):
+          nn_log = [float(x) if isinstance(x, (np.floating, float, int)) else 0.0 for x in nn_log]
+          pid_log.nnLog = float(sum(nn_log)/len(nn_log)) if nn_log else 0.0
+        elif isinstance(nn_log, (np.floating, float, int)):
+          pid_log.nnLog = float(nn_log)
+        else:
+          pid_log.nnLog = 0.0
 
     # TODO left is positive in this convention
     return -output_torque, 0.0, pid_log
