@@ -167,16 +167,16 @@ class LatControlTorque(LatControl):
       lookahead_lateral_jerk = 0
 
       model_good = model_data is not None and len(model_data.orientation.x) >= CONTROL_N
-      if model_good and (self.use_nn or self.use_lateral_jerk):
+      if model_good and len(list(model_data.orientation.x)) >= CONTROL_N:
         # prepare "look-ahead" desired lateral jerk
         lookahead = np.interp(float(CS.vEgo),
                               [float(x) for x in self.friction_look_ahead_bp],
                               [float(x) for x in self.friction_look_ahead_v])
         friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
         predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
-        desired_lateral_jerk = (np.interp(float(self.desired_lat_jerk_time),
-                                          [float(x) for x in ModelConstants.T_IDXS],
-                                          [float(y) for y in model_data.acceleration.y]) - float(desired_lateral_accel)) / float(self.desired_lat_jerk_time)
+        desired_lateral_jerk = (np.interp(float(self.desired_lat_jerk_time), 
+                                          [float(x) for x in ModelConstants.T_IDXS], 
+                                          [float(y) for y in list(model_data.acceleration.y)]) - float(desired_lateral_accel)) / float(self.desired_lat_jerk_time)
         lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk)
         if self.use_steering_angle or lookahead_lateral_jerk == 0.0:
           lookahead_lateral_jerk = 0.0
@@ -204,7 +204,7 @@ class LatControlTorque(LatControl):
         future_rolls = [roll_pitch_adjust(np.interp(t, ModelConstants.T_IDXS, model_data.orientation.x) + roll, np.interp(t, ModelConstants.T_IDXS, model_data.orientation.y) + pitch) for t in adjusted_future_times]
         past_lateral_accels_desired = [self.lateral_accel_desired_deque[min(len(self.lateral_accel_desired_deque)-1, i)] for i in self.history_frame_offsets]
         T_IDXS = [float(x) for x in ModelConstants.T_IDXS[:CONTROL_N]]
-        lateral_accels = [float(y) for y in model_data.acceleration.y[:CONTROL_N]]
+        lateral_accels = [float(y) for y in list(model_data.acceleration.y)[:CONTROL_N]]
         future_planned_lateral_accels = [np.interp(float(t), T_IDXS, lateral_accels) for t in adjusted_future_times]
 
         # compute NNFF error response
