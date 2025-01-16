@@ -271,7 +271,7 @@ class LatControlTorque(LatControl):
       pid_log.desiredLateralAccel = float(desired_lateral_accel)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited))
       if nn_log is not None:
-        pid_log.nnLog = float(nn_log)
+        pid_log.nnLog = nn_log
 
     # TODO left is positive in this convention
     return -output_torque, 0.0, pid_log
