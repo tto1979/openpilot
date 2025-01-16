@@ -224,7 +224,8 @@ class LatControlTorque(LatControl):
           nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0]
           torque_from_error = self.torque_from_nn(nnff_error_input)
           if sign(pid_log.error) == sign(torque_from_error) and abs(pid_log.error) < abs(torque_from_error):
-            pid_log.error = pid_log.error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor
+            error_value = float(pid_log.error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor)
+            pid_log.error = error_value
 
         # compute feedforward (same as nn setpoint output)
         error = setpoint - measurement
