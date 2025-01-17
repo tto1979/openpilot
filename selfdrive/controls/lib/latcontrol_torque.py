@@ -146,8 +146,7 @@ class LatControlTorque(LatControl):
           actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
           actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
       else:
-        assert calibrated_pose is not None
-        actual_curvature_pose = calibrated_pose.angular_velocity.yaw / CS.vEgo
+        actual_curvature_pose = (calibrated_pose.angularVelocityDevice.y / CS.vEgo) if (calibrated_pose is not None and calibrated_pose.angularVelocityDevice.valid) else actual_curvature_vm
         actual_curvature = np.interp(float(CS.vEgo), [2.0, 5.0], [float(actual_curvature_vm), float(actual_curvature_pose)])
         curvature_deadzone = 0.0
       desired_lateral_accel = desired_curvature * CS.vEgo ** 2
@@ -191,12 +190,11 @@ class LatControlTorque(LatControl):
         # update past data
         pitch = 0
         roll = params.roll
-        if calibrated_pose is not None and hasattr(calibrated_pose, 'orientation') and \
-         hasattr(calibrated_pose.orientation, 'xyz') and len(calibrated_pose.orientation.xyz) > 1:
-          pitch = self.pitch.update(calibrated_pose.orientation.pitch)
+        if (calibrated_pose is not None and
+            calibrated_pose.orientationNED is not None and
+            calibrated_pose.orientationNED.valid):
+          pitch = self.pitch.update(calibrated_pose.orientationNED.y)
           roll = roll_pitch_adjust(roll, pitch)
-        self.roll_deque.append(roll)
-        self.lateral_accel_desired_deque.append(desired_lateral_accel)
 
         # prepare past and future values
         # adjust future times to account for longitudinal acceleration
@@ -273,24 +271,11 @@ class LatControlTorque(LatControl):
       pid_log.desiredLateralAccel = float(desired_lateral_accel)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited))
       if nn_log is not None:
-        try:
-          if isinstance(nn_log, (list, tuple)):
-            filtered_values = []
-            for x in nn_log:
-              try:
-                if isinstance(x, (np.floating, float, int)):
-                        filtered_values.append(float(x))
-              except (TypeError, ValueError):
-                continue
-            if filtered_values:
-              pid_log.nnLog = filtered_values
-            else:
-              pid_log.nnLog = [0.0]
-          elif isinstance(nn_log, (np.floating, float, int)):
-            pid_log.nnLog = [float(nn_log)]
-          else:
-            pid_log.nnLog = [0.0]
-        except Exception:
+        if isinstance(nn_log, (list, tuple)):
+          pid_log.nnLog = [float(x) for x in nn_log if isinstance(x, (np.floating, float, int))] or [0.0]
+        elif isinstance(nn_log, (np.floating, float, int)):
+          pid_log.nnLog = [float(nn_log)]
+        else:
           pid_log.nnLog = [0.0]
       else:
         pid_log.nnLog = [0.0]
