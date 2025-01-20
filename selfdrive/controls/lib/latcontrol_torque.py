@@ -188,13 +188,17 @@ class LatControlTorque(LatControl):
 
       if self.use_nn and model_good:
         # update past data
-        pitch = 0
+        pitch = 0.0
         roll = params.roll
         if (calibrated_pose is not None and
             calibrated_pose.orientationNED is not None and
-            calibrated_pose.orientationNED.valid):
-          pitch = self.pitch.update(calibrated_pose.orientationNED.y)
+            calibrated_pose.orientationNED.valid and
+            hasattr(calibrated_pose.orientation, 'xyz') and
+            len(calibrated_pose.orientation.xyz) > 1):
+          pitch = self.pitch.update(calibrated_pose.orientation.pitch)
           roll = roll_pitch_adjust(roll, pitch)
+        self.roll_deque.append(roll)
+        self.lateral_accel_desired_deque.append(desired_lateral_accel)
 
         # prepare past and future values
         # adjust future times to account for longitudinal acceleration
