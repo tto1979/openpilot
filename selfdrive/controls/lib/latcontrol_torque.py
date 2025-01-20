@@ -265,12 +265,7 @@ class LatControlTorque(LatControl):
       pid_log.desiredLateralAccel = float(desired_lateral_accel)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited))
       if nn_log is not None:
-        if isinstance(nn_log, (list, tuple)):
-          pid_log.nnLog = [float(x) for x in nn_log if isinstance(x, (np.floating, float, int))] or [0.0]
-        elif isinstance(nn_log, (np.floating, float, int)):
-          pid_log.nnLog = [float(nn_log)]
-        else:
-          pid_log.nnLog = [0.0]
+        pid_log.nnLog = [float(x) for x in nn_log] if isinstance(nn_log, (list, tuple)) else [float(nn_log)]
       else:
         pid_log.nnLog = [0.0]
 
