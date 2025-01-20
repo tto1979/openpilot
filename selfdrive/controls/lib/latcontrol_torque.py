@@ -166,7 +166,7 @@ class LatControlTorque(LatControl):
       lookahead_lateral_jerk = 0
 
       model_good = model_data is not None and len(list(model_data.orientation.x)) >= CONTROL_N
-      if model_good:
+      if model_good and (self.use_nn or self.use_lateral_jerk):
         # prepare "look-ahead" desired lateral jerk
         lookahead = np.interp(float(CS.vEgo),
                               [float(x) for x in self.friction_look_ahead_bp],
