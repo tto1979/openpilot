@@ -191,10 +191,8 @@ class LatControlTorque(LatControl):
         pitch = 0.0
         roll = params.roll
         if (calibrated_pose is not None and
-            calibrated_pose.orientationNED is not None and
-            calibrated_pose.orientationNED.valid and
-            hasattr(calibrated_pose.orientation, 'xyz') and
-            len(calibrated_pose.orientation.xyz) > 1):
+            calibrated_pose.orientation is not None and
+            calibrated_pose.orientation.valid):
           pitch = self.pitch.update(calibrated_pose.orientation.pitch)
           roll = roll_pitch_adjust(roll, pitch)
         self.roll_deque.append(roll)
