@@ -198,7 +198,9 @@ class LatControlTorque(LatControl):
         past_rolls = [self.roll_deque[min(len(self.roll_deque)-1, i)] for i in self.history_frame_offsets]
         future_rolls = [roll_pitch_adjust(np.interp(t, ModelConstants.T_IDXS, model_data.orientation.x) + roll, np.interp(t, ModelConstants.T_IDXS, model_data.orientation.y) + pitch) for t in adjusted_future_times]
         past_lateral_accels_desired = [self.lateral_accel_desired_deque[min(len(self.lateral_accel_desired_deque)-1, i)] for i in self.history_frame_offsets]
-        future_planned_lateral_accels = [np.interp(t, ModelConstants.T_IDXS[:CONTROL_N], model_data.acceleration.y) for t in adjusted_future_times]
+        T_IDXS = [float(x) for x in ModelConstants.T_IDXS[:CONTROL_N]]
+        lateral_accels = [float(y) for y in list(model_data.acceleration.y)[:CONTROL_N]]
+        future_planned_lateral_accels = [np.interp(float(t), T_IDXS, lateral_accels) for t in adjusted_future_times]
 
         # compute NNFF error response
         nnff_setpoint_input = [CS.vEgo, setpoint, lateral_jerk_setpoint, roll] \
