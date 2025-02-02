@@ -330,7 +330,7 @@ def modeld_lagging_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubM
 
 def wrong_car_mode_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
   text = "開啟 ACC 進行操控操"
-  if CP.carName == "honda":
+  if CP.brand == "honda":
     text = "開啟主開關以進行操控"
   return NoEntryAlert(text)
 
