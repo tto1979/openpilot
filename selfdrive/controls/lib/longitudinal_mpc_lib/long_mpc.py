@@ -3,7 +3,6 @@ import os
 import time
 import numpy as np
 from cereal import log
-from openpilot.common.conversions import Conversions as CV
 from opendbc.car.interfaces import ACCEL_MIN
 from opendbc.car.toyota.values import ToyotaFlags
 from openpilot.common.params import Params
@@ -341,7 +340,7 @@ class LongitudinalMpc:
     a_change_v_ego = 1
     v_ego_bps = [0, 10]
     v_lead_speed = max(v_lead0, v_lead1)  # Get the highest lead speed
-    v_gap = v_lead_speed - v_ego  # Speed difference
+    # v_gap = v_lead_speed - v_ego  # Speed difference
     gap_factor = np.clip(distance_to_lead / 20, 0.5, 1.0)  # Reduce acceleration if too close to lead
     # Prevent ego from accelerating too much if lead is slow
     if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0) and v_lead_speed > 10:
