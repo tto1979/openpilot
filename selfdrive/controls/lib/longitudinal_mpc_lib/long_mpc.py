@@ -430,7 +430,7 @@ class LongitudinalMpc:
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
     lead = radarstate.leadOne
 
-    self.smoother_braking = True if lead.status and self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] < 40 else False
+    self.smoother_braking = False #True if lead.status and self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] < 40 else False
     if self.smoother_braking:
       v_lead = lead_xv_0[0,1]
       lead_distance = lead_xv_0[0,0]
