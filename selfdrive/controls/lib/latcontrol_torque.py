@@ -148,9 +148,9 @@ class LatControlTorque(LatControl):
       else:
         if calibrated_pose is None:
           actual_curvature = actual_curvature_vm
-      else:
-        actual_curvature_pose = calibrated_pose.angular_velocity.yaw / CS.vEgo
-        actual_curvature = np.interp(CS.vEgo, [2.0, 5.0], [actual_curvature_vm, actual_curvature_pose])
+        else:
+          actual_curvature_pose = calibrated_pose.angular_velocity.yaw / CS.vEgo
+          actual_curvature = np.interp(CS.vEgo, [2.0, 5.0], [actual_curvature_vm, actual_curvature_pose])
         curvature_deadzone = 0.0
       desired_lateral_accel = desired_curvature * CS.vEgo ** 2
 
