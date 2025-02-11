@@ -146,7 +146,9 @@ class LatControlTorque(LatControl):
           actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
           actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
       else:
-        assert calibrated_pose is not None
+        if calibrated_pose is None:
+          actual_curvature = actual_curvature_vm
+      else:
         actual_curvature_pose = calibrated_pose.angular_velocity.yaw / CS.vEgo
         actual_curvature = np.interp(CS.vEgo, [2.0, 5.0], [actual_curvature_vm, actual_curvature_pose])
         curvature_deadzone = 0.0
@@ -186,7 +188,7 @@ class LatControlTorque(LatControl):
         # update past data
         pitch = 0.0
         roll = params.roll
-        if len(calibrated_pose.orientation.xyz) > 1:
+        if calibrated_pose is not None and hasattr(calibrated_pose.orientation, 'xyz') and len(calibrated_pose.orientation.xyz) > 1:
           pitch = self.pitch.update(calibrated_pose.orientation.pitch)
           roll = roll_pitch_adjust(roll, pitch)
         self.roll_deque.append(roll)
