@@ -5,7 +5,6 @@ import os
 import signal
 import sys
 import traceback
-import subprocess
 import importlib.util
 
 from cereal import log
