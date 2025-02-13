@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import datetime
 import os
 import signal
@@ -27,10 +28,9 @@ def manager_init() -> None:
   if importlib.util.find_spec("flask") is None:
     print("Flask not found. Installing Flask...")
     try:
-      subprocess.check_call([sys.executable, "-m", "pip", "install", "flask"])
-      print("Flask successfully installed.")
-    except subprocess.CalledProcessError:
-      print("Failed to install Flask.")
+      asyncio.run(install_flask())
+    except Exception as e:
+      print(f"Error occurred while installing Flask: {e}")
       return
   else:
     print("Flask is already installed.")
@@ -137,6 +137,23 @@ def manager_init() -> None:
   # preimport all processes
   for p in managed_processes.values():
     p.prepare()
+
+
+async def install_flask():
+  try:
+    process = await asyncio.create_subprocess_exec(
+      sys.executable, "-m", "pip", "install", "flask",
+      stdout=asyncio.subprocess.PIPE,
+      stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    print(f"stdout: {stdout.decode()}")
+    if process.returncode == 0:
+      print("Flask successfully installed.")
+    else:
+      print(f"Failed to install Flask. Error: {stderr.decode()}")
+  except Exception as e:
+    print(f"Error occurred while installing Flask: {e}")
 
 
 def manager_cleanup() -> None:
