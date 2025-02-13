@@ -4,6 +4,8 @@ import os
 import signal
 import sys
 import traceback
+import subprocess
+import importlib.util
 
 from cereal import log
 import cereal.messaging as messaging
@@ -21,6 +23,18 @@ from openpilot.system.hardware.hw import Paths
 
 
 def manager_init() -> None:
+  # Check Flask
+  if importlib.util.find_spec("flask") is None:
+    print("Flask not found. Installing Flask...")
+    try:
+      subprocess.check_call([sys.executable, "-m", "pip", "install", "flask"])
+      print("Flask successfully installed.")
+    except subprocess.CalledProcessError:
+      print("Failed to install Flask.")
+      return
+  else:
+    print("Flask is already installed.")
+
   save_bootlog()
 
   # Clear the error log on boot to prevent old errors from hanging around
