@@ -300,12 +300,6 @@ def flash_agnos_update(manifest_path: str, target_slot_number: int, cloudlog, st
 
   cloudlog.info(f"AGNOS ready on slot {target_slot_number}")
 
-  try:
-    subprocess.check_call(["pip", "install", "flask"])
-    cloudlog.info("Successfully installed flask")
-  except subprocess.CalledProcessError as e:
-    cloudlog.error(f"Failed to install flask: {e}")
-
 
 def verify_agnos_update(manifest_path: str, target_slot_number: int) -> bool:
   update = json.load(open(manifest_path))

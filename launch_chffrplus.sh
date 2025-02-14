@@ -30,10 +30,6 @@ function agnos_init {
     $DIR/system/hardware/tici/updater $AGNOS_PY $MANIFEST
   fi
 
-  if ! python3 -c "import flask" &>/dev/null; then
-    sudo pip3 install flask
-  fi
-
   #top: change splash logo
   if [ -f "/usr/comma/.top_splash" ]; then
       echo "TOP splash exists."
