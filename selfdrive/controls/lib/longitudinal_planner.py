@@ -23,10 +23,10 @@ from openpilot.selfdrive.controls.vtsc import vtsc
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
-A_CRUISE_MIN_VALS =    [-0.7, -0.6, -0.8, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2]
-A_CRUISE_MIN_BP =      [ 0.,  .01,  .02,  .3,    5.,   8.,   11.,  16.,  22.]
-A_CRUISE_MIN_VALS_DF = [-0.2, -0.11, -0.1, -0.15, -0.25, -0.35, -0.55, -0.85, -1.0]
-A_CRUISE_MIN_BP_DF =   [ 0.,  .01,   .02,  .3,     5.,    8.,    11.,   16.,   22.]
+# A_CRUISE_MIN_VALS =    [-0.7, -0.6, -0.8, -1.2, -1.2, -1.2, -1.2, -1.2, -1.2]
+# A_CRUISE_MIN_BP =      [ 0.,  .01,  .02,  .3,    5.,   8.,   11.,  16.,  22.]
+# A_CRUISE_MIN_VALS_DF = [-0.2, -0.11, -0.1, -0.15, -0.25, -0.35, -0.55, -0.85, -1.0]
+# A_CRUISE_MIN_BP_DF =   [ 0.,  .01,   .02,  .3,     5.,    8.,    11.,   16.,   22.]
 A_CRUISE_MAX_VALS_DF =       [3.0, 2.4, 2.0,  1.15, .85, .75, .65, .45, .32, .20, .085]  # Sets the limits of the planner accel, PID may exceed
 A_CRUISE_MAX_BP_DF =         [0.,  1,   3.,   6.,    8.,  11., 15., 20., 25., 30., 55.]
 # A_CRUISE_MAX_VALS_TOYOTA = [2.0, 1.7, 1.3,  .95,  .75, .70, .65, .45, .32, .20, .085]  # Sets the limits of the planner accel, PID may exceed
@@ -44,12 +44,6 @@ _A_TOTAL_MAX_BP = [20., 40.]
 
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
-
-def get_min_accel(v_ego):
-  return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
-
-def get_min_accel_df(v_ego):
-  return np.interp(v_ego, A_CRUISE_MIN_BP_DF, A_CRUISE_MIN_VALS_DF)
 
 def get_max_accel_df(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP_DF, A_CRUISE_MAX_VALS_DF)
@@ -161,9 +155,9 @@ class LongitudinalPlanner:
 
     if self.mpc.mode == 'acc':
       if self.CP.brand == "toyota":
-        accel_clip = [get_min_accel(v_ego), get_max_accel_toyota(v_ego)]
+        accel_clip = [ACCEL_MIN, get_max_accel_toyota(v_ego)]
       elif self.dynamic_follow:
-        accel_clip = [get_min_accel_df(v_ego), get_max_accel_df(v_ego)]
+        accel_clip = [ACCEL_MIN, get_max_accel_df(v_ego)]
       else:
         accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
       steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
