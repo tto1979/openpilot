@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-import asyncio
 import datetime
 import os
 import signal
 import sys
 import traceback
-import importlib.util
 
 from cereal import log
 import cereal.messaging as messaging
@@ -23,17 +21,6 @@ from openpilot.system.hardware.hw import Paths
 
 
 def manager_init() -> None:
-  # Check Flask
-  if importlib.util.find_spec("flask") is None:
-    print("Flask not found. Installing Flask...")
-    try:
-      asyncio.run(install_flask())
-    except Exception as e:
-      print(f"Error occurred while installing Flask: {e}")
-      return
-  else:
-    print("Flask is already installed.")
-
   save_bootlog()
 
   # Clear the error log on boot to prevent old errors from hanging around
@@ -50,6 +37,7 @@ def manager_init() -> None:
     params.clear_all(ParamKeyType.DEVELOPMENT_ONLY)
 
   default_params: list[tuple[str, str | bytes]] = [
+    ("SecondBoot", "0"),
     ("CompletedTrainingVersion", "0"),
     ("DisengageOnAccelerator", "0"),
     ("GsmMetered", "1"),
@@ -136,23 +124,6 @@ def manager_init() -> None:
   # preimport all processes
   for p in managed_processes.values():
     p.prepare()
-
-
-async def install_flask():
-  try:
-    process = await asyncio.create_subprocess_exec(
-      sys.executable, "-m", "pip", "install", "flask",
-      stdout=asyncio.subprocess.PIPE,
-      stderr=asyncio.subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
-    print(f"stdout: {stdout.decode()}")
-    if process.returncode == 0:
-      print("Flask successfully installed.")
-    else:
-      print(f"Failed to install Flask. Error: {stderr.decode()}")
-  except Exception as e:
-    print(f"Error occurred while installing Flask: {e}")
 
 
 def manager_cleanup() -> None:
