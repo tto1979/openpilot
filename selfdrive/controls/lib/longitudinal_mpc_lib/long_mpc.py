@@ -87,7 +87,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.85
+    return 0.9
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -440,7 +440,7 @@ class LongitudinalMpc:
         distance_factor = max(max(lead_distance, MIN_LEAD_DISTANCE) - (v_ego * t_follow), 1)
         standstill_offset = max(stop_distance - v_ego, 1)
         self.braking_offset = np.clip((v_lead - v_ego) * standstill_offset - COMFORT_BRAKE, 1, distance_factor)
-        t_follow = max(t_follow / self.braking_offset, np.clip(v_ego / 20, 0.6, 1.45))
+        t_follow = max(t_follow / self.braking_offset, np.clip(v_ego / 20, 0.7, 1.45))
 
       elif v_lead < v_ego:
         if v_ego <= CRUISING_SPEED:
