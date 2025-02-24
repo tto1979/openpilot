@@ -429,7 +429,7 @@ class LongitudinalMpc:
     if self.smoother_braking:
       v_lead = lead_xv_0[0, 1]
       lead_distance = lead_xv_0[0, 0]
-      COMFORT_BRAKE = np.interp(v_ego, [0, 20, 40], [1.5, 2.5, 3.0])
+      COMFORT_BRAKE = np.interp(v_ego, [0, 20, 40], [2.0, 2.5, 3.0])
       safe_distance = get_safe_obstacle_distance(v_ego, t_follow, stop_distance)
 
       distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
