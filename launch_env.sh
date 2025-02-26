@@ -12,8 +12,16 @@ fi
 
 export STAGING_ROOT="/data/safe_staging"
 
-# SatoPilot require flask
-if [ -z "$AGNOS_VERSION" ]; then
-  pip install flask
+# TOP require flask
+
+if ! python3 -c "import flask" &> /dev/null; then
+  echo "Flask is not installed, installing..."
+  sudo apt update
+  sudo apt install python3-pip
+  sudo apt install python3-venv
+  sudo -H python3 -m pip install flask
+  read -n 1 -s
+else
+  echo "Flask is already installed"
   echo -en "1" > /data/params/d/SecondBoot
 fi
