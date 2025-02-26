@@ -97,7 +97,7 @@ class LongControl:
       # output_accel = self.pid.update(error, speed=CS.vEgo,
       #                                feedforward=a_target)
       # TOP apply deadzone to experimental mode
-      error_deadzone = apply_deadzone(error, np.interp(CS.vEgo, [0, 6, 7, 20, 30], [0, 0.001, 0.003, 0.1, 0.15]))
+      error_deadzone = apply_deadzone(error, np.interp(CS.vEgo, [0, 4, 9], [0, 0.22, 0.30]))
 
       output_accel = self.pid.update(error_deadzone if Params().get_bool("ExperimentalMode") else error, speed=CS.vEgo,
                                      feedforward=a_target)
