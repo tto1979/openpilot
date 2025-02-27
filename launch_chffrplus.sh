@@ -97,6 +97,22 @@ function launch {
 
   python ./force_car_recognition.py
 
+  # TOP require flask
+  if ! python3 -c "import flask" &> /dev/null; then
+    echo "Flask is not installed, installing..."
+    cat /etc/resolv.conf
+    echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+    echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+    sudo systemctl restart network-manager
+    sudo apt update
+    sudo $(which pip3) install --upgrade pip
+    sudo $(which pip3) install flask
+    # read -n 1 -s
+  else
+    echo "Flask is already installed"
+    echo -en "1" > /data/params/d/SecondBoot
+  fi
+
   # start manager
   cd system/manager
   if [ ! -f $DIR/prebuilt ]; then
