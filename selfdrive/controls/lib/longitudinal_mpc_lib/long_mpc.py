@@ -64,8 +64,8 @@ COMFORT_BRAKE = 2.5
 # CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 2.0
 
-A_CRUISE_MIN_VALS = [-0.2, -0.11, -0.1, -0.15, -1.2, -1.2, -1.2, -1.2, -1.2]
-A_CRUISE_MIN_BP =   [ 0.,   .01,   .02,  .3,    5.,   8.,   11.,  16.,  22.]
+A_CRUISE_MIN_VALS = [-0.4, -0.22, -0.2, -0.3, -1.2]
+A_CRUISE_MIN_BP =   [ 0.,   .01,   .02,  .3,    5.]
 
 def get_cruise_min_accel(v_ego):
     return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
@@ -87,7 +87,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.9
+    return 1.0
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
