@@ -430,7 +430,6 @@ class LongitudinalMpc:
       v_lead = lead_xv_0[0, 1]
       lead_distance = lead_xv_0[0, 0]
       COMFORT_BRAKE = np.interp(v_ego, [0, 20, 40], [2.0, 2.5, 3.0])
-      safe_distance = get_safe_obstacle_distance(v_ego, t_follow, stop_distance)
 
       distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
       standstill_offset = max(stop_distance - v_ego, 1.0)
@@ -444,21 +443,13 @@ class LongitudinalMpc:
 
       elif v_lead < v_ego:
         if v_ego <= CRUISING_SPEED:
-          t_follow = np.clip(v_ego / 10, 0.6, 1.2)
+          t_follow = np.clip(v_ego / 10, 0.7, 1.2)
         else:
           distance_factor = max(lead_distance - (v_lead * t_follow), 1)
           far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
           self.braking_offset = np.clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1.5, distance_factor)
-
-          if v_lead < 1 and v_ego > CRUISING_SPEED:
-            if lead_distance > safe_distance:
-              emergency_braking_factor = np.clip((v_ego - v_lead) / 10, 1, 3)
-            else:
-              emergency_braking_factor = np.clip((v_ego - v_lead) / 10, 1, np.clip((v_ego - v_lead) / 5, 5, 10))
-            t_follow = max(t_follow / emergency_braking_factor, np.clip(v_ego / 20, 1.3, 1.8))
-          else:
-            min_t_follow = np.clip(v_ego / 25, 0.8, 1.8)
-            t_follow = max(t_follow / (self.braking_offset * np.clip((v_ego - v_lead) / 5, 1, 3)), min_t_follow)
+          min_t_follow = np.clip(v_ego / 25, 0.8, 1.8)
+          t_follow = max(t_follow / (self.braking_offset * np.clip((v_ego - v_lead) / 5, 1, 3)), min_t_follow)
 
     else:
       self.braking_offset = 1
