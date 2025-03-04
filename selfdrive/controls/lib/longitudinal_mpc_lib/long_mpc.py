@@ -64,8 +64,8 @@ COMFORT_BRAKE = 2.5
 # CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 2.0
 
-A_CRUISE_MIN_VALS = [-0.01, -0.01, -0.05, -0.3, -1.2]
-A_CRUISE_MIN_BP =   [ 0.,   .01,   .02,  .3,    5.]
+A_CRUISE_MIN_VALS = [-0.01, -0.01, -0.05, -0.1, -0.3, -0.5, -0.8, -1.2]
+A_CRUISE_MIN_BP =   [ 0.,   .01,   .02,   .3,    1.,   2.,   3.,   5.]
 
 def get_cruise_min_accel(v_ego):
     return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
@@ -429,7 +429,7 @@ class LongitudinalMpc:
     if self.smoother_braking:
       v_lead = lead_xv_0[0, 1]
       lead_distance = lead_xv_0[0, 0]
-      COMFORT_BRAKE = np.interp(v_ego, [0, 20, 40], [2.0, 2.5, 3.0])
+      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20, 40], [1.5, 2.0, 2.5, 3.0])
 
       distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
       standstill_offset = max(stop_distance - v_ego, 1.0)
