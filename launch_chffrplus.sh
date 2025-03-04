@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 if [ -z "$BASEDIR" ]; then
   BASEDIR="/data/openpilot"
@@ -28,6 +28,18 @@ function agnos_init {
       sudo reboot
     fi
     $DIR/system/hardware/tici/updater $AGNOS_PY $MANIFEST
+  fi
+
+  #top: change splash logo
+  if [ -f "/usr/comma/.top_splash" ]; then
+      echo "TOP splash exists."
+  else
+      echo "TOP splash not deployed yet"
+      sudo mount -o rw,remount /
+      sudo cp /data/openpilot/selfdrive/assets/bg.jpg /usr/comma/bg.jpg
+      sudo touch /usr/comma/.top_splash
+      sudo mount -o ro,remount /
+      sudo reboot
   fi
 }
 
@@ -81,9 +93,25 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
-  python ./selfdrive/car/fingerprints.py > /data/openpilot/selfdrive/car/top_tmp/AllCars
+  python ./opendbc_repo/opendbc/car/fingerprints.py > /data/openpilot/selfdrive/car/top_tmp/AllCars
 
   python ./force_car_recognition.py
+
+  # TOP require flask
+  if ! python3 -c "import flask" &> /dev/null; then
+    echo "Flask is not installed, installing..."
+    cat /etc/resolv.conf
+    echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+    echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+    sudo systemctl restart network-manager
+    sudo apt update
+    sudo $(which pip3) install --upgrade pip
+    sudo $(which pip3) install flask
+    # read -n 1 -s
+  else
+    echo "Flask is already installed"
+    echo -en "1" > /data/params/d/SecondBoot
+  fi
 
   # start manager
   cd system/manager

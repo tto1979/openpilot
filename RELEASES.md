@@ -1,13 +1,31 @@
-Version 0.9.7 (2024-06-11)
+Version 0.9.8 (2025-02-28)
+========================
+* New driving model
+  * Model now gates applying positive acceleration in Chill mode
+* New driving monitoring model
+  * Reduced false positives related to passengers
+* Image processing pipeline moved to the ISP
+  * More GPU time for bigger driving models
+  * Power draw reduced 0.5W, which means your device runs cooler
+* Added toggle to enable driver monitoring even when openpilot is not engaged
+* Firehose Mode for maximizing your training data uploads
+* Enable openpilot longitudinal control for Ford Q3 vehicles
+* New Toyota TSS2 longitudinal tune
+* Rivian R1S and R1T support thanks to lukasloetkolben!
+* Ford F-150, F-150 Hybrid, Mach-E, and Ranger support
+
+Version 0.9.7 (2024-06-13)
 ========================
 * New driving model
   * Inputs the past curvature for smoother and more accurate lateral control
   * Simplified neural network architecture in the model's last layers
   * Minor fixes to desire augmentation and weight decay
+* New driver monitoring model
+  * Improved end-to-end bit for phone detection
 * Adjust driving personality with the follow distance button
-* Added toggle to enable driver monitoring even when openpilot is not engaged
 * Support for hybrid variants of supported Ford models
 * Fingerprinting without the OBD-II port on all cars
+* Improved fuzzy fingerprinting for Ford and Volkswagen
 
 Version 0.9.6 (2024-02-27)
 ========================

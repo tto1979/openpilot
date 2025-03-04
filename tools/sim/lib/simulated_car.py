@@ -1,11 +1,12 @@
+import traceback
 import cereal.messaging as messaging
 
 from opendbc.can.packer import CANPacker
 from opendbc.can.parser import CANParser
+from opendbc.car.honda.values import HondaSafetyFlags
 from openpilot.common.params import Params
 from openpilot.selfdrive.pandad.pandad_api_impl import can_list_to_can_capnp
 from openpilot.tools.sim.lib.common import SimulatorState
-from panda.python import Panda
 
 
 class SimulatedCar:
@@ -14,7 +15,7 @@ class SimulatedCar:
 
   def __init__(self):
     self.pm = messaging.PubMaster(['can', 'pandaStates'])
-    self.sm = messaging.SubMaster(['carControl', 'controlsState', 'carParams'])
+    self.sm = messaging.SubMaster(['carControl', 'controlsState', 'carParams', 'selfdriveState'])
     self.cp = self.get_car_can_parser()
     self.idx = 0
     self.params = Params()
@@ -23,8 +24,7 @@ class SimulatedCar:
   @staticmethod
   def get_car_can_parser():
     dbc_f = 'honda_civic_ex_2022_can_generated'
-    checks = [
-    ]
+    checks = []
     return CANParser(dbc_f, checks, 0)
 
   def send_can_messages(self, simulator_state: SimulatorState):
@@ -95,14 +95,18 @@ class SimulatedCar:
       'controlsAllowed': True,
       'safetyModel': 'hondaBosch',
       'alternativeExperience': self.sm["carParams"].alternativeExperience,
-      'safetyParam': Panda.FLAG_HONDA_RADARLESS | Panda.FLAG_HONDA_BOSCH_LONG,
+      'safetyParam': HondaSafetyFlags.RADARLESS.value | HondaSafetyFlags.BOSCH_LONG.value,
     }
     self.pm.send('pandaStates', dat)
 
   def update(self, simulator_state: SimulatorState):
-    self.send_can_messages(simulator_state)
+    try:
+      self.send_can_messages(simulator_state)
 
-    if self.idx % 50 == 0: # only send panda states at 2hz
-      self.send_panda_state(simulator_state)
+      if self.idx % 50 == 0: # only send panda states at 2hz
+        self.send_panda_state(simulator_state)
 
-    self.idx += 1
+      self.idx += 1
+    except Exception:
+      traceback.print_exc()
+      raise

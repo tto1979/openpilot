@@ -4,12 +4,12 @@ from collections import deque, defaultdict
 
 import cereal.messaging as messaging
 from cereal import car, log
+from opendbc.car.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.swaglog import cloudlog
-from openpilot.selfdrive.controls.lib.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
-from openpilot.selfdrive.locationd.helpers import PointBuckets, ParameterEstimator
+from openpilot.selfdrive.locationd.helpers import PointBuckets, ParameterEstimator, PoseCalibrator, Pose
 
 HISTORY = 5  # secs
 POINTS_PER_BUCKET = 1500
@@ -71,11 +71,13 @@ class TorqueEstimator(ParameterEstimator):
     self.offline_friction = 0.0
     self.offline_latAccelFactor = 0.0
     self.resets = 0.0
-    self.use_params = CP.carName in ALLOWED_CARS and CP.lateralTuning.which() == 'torque'
+    self.use_params = CP.brand in ALLOWED_CARS and CP.lateralTuning.which() == 'torque'
 
     if CP.lateralTuning.which() == 'torque':
       self.offline_friction = CP.lateralTuning.torque.friction
       self.offline_latAccelFactor = CP.lateralTuning.torque.latAccelFactor
+
+    self.calibrator = PoseCalibrator()
 
     self.reset()
 
@@ -165,18 +167,24 @@ class TorqueEstimator(ParameterEstimator):
       self.raw_points["lat_active"].append(msg.latActive)
     elif which == "carOutput":
       self.raw_points["carOutput_t"].append(t + self.lag)
-      self.raw_points["steer_torque"].append(-msg.actuatorsOutput.steer)
+      self.raw_points["steer_torque"].append(-msg.actuatorsOutput.torque)
     elif which == "carState":
       self.raw_points["carState_t"].append(t + self.lag)
       # TODO: check if high aEgo affects resulting lateral accel
       self.raw_points["vego"].append(msg.vEgo)
       self.raw_points["steer_override"].append(msg.steeringPressed)
+    elif which == "liveCalibration":
+      self.calibrator.feed_live_calib(msg)
 
     # calculate lateral accel from past steering torque
-    elif which == "liveLocationKalman":
+    elif which == "livePose":
       if len(self.raw_points['steer_torque']) == self.hist_len:
-        yaw_rate = msg.angularVelocityCalibrated.value[2]
-        roll = msg.orientationNED.value[0]
+        device_pose = Pose.from_live_pose(msg)
+        calibrated_pose = self.calibrator.build_calibrated_pose(device_pose)
+        angular_velocity_calibrated = calibrated_pose.angular_velocity
+
+        yaw_rate = angular_velocity_calibrated.yaw
+        roll = device_pose.orientation.roll
         # check lat active up to now (without lag compensation)
         lat_active = np.interp(np.arange(t - MIN_ENGAGE_BUFFER, t + self.lag, DT_MDL),
                                self.raw_points['carControl_t'], self.raw_points['lat_active']).astype(bool)
@@ -233,11 +241,10 @@ def main(demo=False):
   config_realtime_process([0, 1, 2, 3], 5)
 
   pm = messaging.PubMaster(['liveTorqueParameters'])
-  sm = messaging.SubMaster(['carControl', 'carOutput', 'carState', 'liveLocationKalman'], poll='liveLocationKalman')
+  sm = messaging.SubMaster(['carControl', 'carOutput', 'carState', 'liveCalibration', 'livePose'], poll='livePose')
 
   params = Params()
-  with car.CarParams.from_bytes(params.get("CarParams", block=True)) as CP:
-    estimator = TorqueEstimator(CP)
+  estimator = TorqueEstimator(messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams))
 
   while True:
     sm.update()
@@ -247,7 +254,7 @@ def main(demo=False):
           t = sm.logMonoTime[which] * 1e-9
           estimator.handle_log(t, which, sm[which])
 
-    # 4Hz driven by liveLocationKalman
+    # 4Hz driven by livePose
     if sm.frame % 5 == 0:
       pm.send('liveTorqueParameters', estimator.get_msg(valid=sm.all_checks()))
 

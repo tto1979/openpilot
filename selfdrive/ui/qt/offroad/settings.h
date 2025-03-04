@@ -47,7 +47,6 @@ class DevicePanel : public ListWidget {
   Q_OBJECT
 public:
   explicit DevicePanel(SettingsWindow *parent);
-  void showEvent(QShowEvent *event) override;
 
 signals:
   void reviewTrainingGuide();
@@ -100,13 +99,15 @@ private:
   ButtonControl *errorLogBtn;
   ButtonControl *installBtn;
   ButtonControl *downloadBtn;
-  ButtonControl *mapsBtn;
   ButtonControl *targetBranchBtn;
   ButtonControl *onOffBtn;
 
   Params params;
   ParamWatcher *fs_watch;
 };
+
+// Forward declaration
+class FirehosePanel;
 
 class TimpilotPanel : public QWidget {
   Q_OBJECT

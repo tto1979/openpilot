@@ -3,14 +3,14 @@ import os
 import time
 import numpy as np
 from cereal import log
+from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
+from opendbc.car.toyota.values import ToyotaFlags
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.numpy_fast import clip
-from openpilot.selfdrive.car.toyota.values import ToyotaFlags
+from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
 from openpilot.selfdrive.modeld.constants import index_function
-from openpilot.selfdrive.car.interfaces import ACCEL_MIN
 from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
 
 if __name__ == '__main__':  # generating code
@@ -45,6 +45,9 @@ CRASH_DISTANCE = .25
 LEAD_DANGER_FACTOR = 0.75
 LIMIT_COST = 1e6
 ACADOS_SOLVER_TYPE = 'SQP_RTI'
+CITY_SPEED_LIMIT = 20  # ~70 km/h
+CRUISING_SPEED = 5     # ~18 km/h
+MIN_LEAD_DISTANCE = 5
 
 
 # Fewer timestamps don't hurt performance and lead to
@@ -58,14 +61,22 @@ FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
 # STOP_DISTANCE = 6.0
+# CRUISE_MIN_ACCEL = -1.2
+CRUISE_MAX_ACCEL = 2.0
+
+A_CRUISE_MIN_VALS = [-0.01, -0.01, -0.05, -0.1, -0.3, -0.5, -0.8, -1.2]
+A_CRUISE_MIN_BP =   [ 0.,   .01,   .02,   .3,    1.,   2.,   3.,   5.]
+
+def get_cruise_min_accel(v_ego):
+    return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
     return 1.0
   elif personality==log.LongitudinalPersonality.standard:
-    return 0.5
+    return 1.0
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.22
+    return 0.3
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -76,7 +87,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.9
+    return 1.0
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -84,14 +95,14 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
 def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
   # The Dynamic follow function is adjusted by Marc(cgw1968-5779)
   if personality==log.LongitudinalPersonality.relaxed:
-    x_vel =  [0.0,  5.0,   13.90,  20,    25,    40]
-    y_dist = [1.2,  1.2,   1.5,   1.8,   2.2,  2.2]
+    x_vel =  [0.,  3.0, 3.01, 10., 10.01, 15., 27.7]
+    y_dist = [1.0, 1.0, 1.2,  1.2, 1.45,  1.6, 1.80]
   elif personality==log.LongitudinalPersonality.standard:
-    x_vel =  [0.0,  5.0,   13.90,  20,    25,    40]
-    y_dist = [1.1,  1.1,   1.3,    1.45,  1.6,  1.6]
+    x_vel =  [0.,  3.0, 3.01, 10., 10.01, 15., 27.7]
+    y_dist = [0.8, 0.8, 1.0,  1.0, 1.2,   1.4, 1.45]
   elif personality==log.LongitudinalPersonality.aggressive:
-    x_vel =  [0.0,  5.0,   12.00,  15.,   20,    25,    40]
-    y_dist = [1.05, 1.10,  1.20,   1.20,  1.25,  1.25,   1.3]
+    x_vel =  [0.,   3.0, 3.01, 10., 10.01, 15., 27.7]
+    y_dist = [0.75, 0.75, 0.8, 0.8, 0.9,   0.9, 1.05]
   else:
     raise NotImplementedError("Dynamic Follow personality not supported")
   return np.interp(v_ego, x_vel, y_dist)
@@ -99,11 +110,11 @@ def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
 
 def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
-    return 5.0
-  elif personality==log.LongitudinalPersonality.standard:
     return 4.5
-  elif personality==log.LongitudinalPersonality.aggressive:
+  elif personality==log.LongitudinalPersonality.standard:
     return 4.0
+  elif personality==log.LongitudinalPersonality.aggressive:
+    return 3.5
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -123,7 +134,9 @@ def get_stopped_equivalence_factor(v_lead, v_ego):
     v_diff_offset = np.maximum(v_diff_offset * ((speed_to_reach_max_v_diff_offset - v_ego)/speed_to_reach_max_v_diff_offset), 0)
   return (v_lead**2) / (2 * COMFORT_BRAKE) + v_diff_offset
 
-def get_safe_obstacle_distance(v_ego, t_follow, stop_distance):
+def get_safe_obstacle_distance(v_ego, t_follow, stop_distance=None):
+  if stop_distance is None:
+    stop_distance = get_STOP_DISTANCE()
   return (v_ego**2) / (2 * COMFORT_BRAKE) + t_follow * v_ego + stop_distance
 
 def desired_follow_distance(v_ego, v_lead, t_follow=None, stop_distance=None):
@@ -323,7 +336,12 @@ class LongitudinalMpc:
 
   def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0):
     jerk_factor = get_jerk_factor(personality)
-    jerk_factor /= np.mean(self.braking_offset)
+    if isinstance(self.braking_offset, (list, np.ndarray)) and len(self.braking_offset) == 0:
+      mean_braking_offset = 1.0
+    else:
+      mean_braking_offset = np.clip(np.mean(self.braking_offset), 1, 2.5)
+
+    jerk_factor = max(jerk_factor / mean_braking_offset, 0.3)
     v_ego = self.x0[1]
     v_ego_bps = [0, 10]
     # KRKeegan adjustments to improve sluggish acceleration
@@ -331,8 +349,8 @@ class LongitudinalMpc:
     j_ego_v_ego = 1
     a_change_v_ego = 1
     if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
-      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.05, 1.])
-      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.05, 1.])
+      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.10, 1.])
+      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.10, 1.])
     if self.mode == 'acc':
       a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
       cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego]
@@ -340,7 +358,7 @@ class LongitudinalMpc:
     elif self.mode == 'blended':
       a_change_cost = 40.0 if prev_accel_constraint else 0
       cost_weights = [0., 0.1, 0.2, 5.0, a_change_cost * a_change_v_ego, 1.0]
-      constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, 50.0]
+      constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
     else:
       raise NotImplementedError(f'Planner mode {self.mode} not recognized in planner cost set')
     self.set_cost_weights(cost_weights, constraint_cost_weights)
@@ -378,37 +396,61 @@ class LongitudinalMpc:
     # MPC will not converge if immediate crash is expected
     # Clip lead distance to what is still possible to brake for
     min_x_lead = ((v_ego + v_lead)/2) * (v_ego - v_lead) / (-ACCEL_MIN * 2)
-    x_lead = clip(x_lead, min_x_lead, 1e8)
-    v_lead = clip(v_lead, 0.0, 1e8)
-    a_lead = clip(a_lead, -10., 5.)
+    x_lead = np.clip(x_lead, min_x_lead, 1e8)
+    v_lead = np.clip(v_lead, 0.0, 1e8)
+    a_lead = np.clip(a_lead, -10., 5.)
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def set_accel_limits(self, min_a, max_a):
-    # TODO this sets a max accel limit, but the minimum limit is only for cruise decel
-    # needs refactor
-    self.cruise_min_a = min_a
-    self.max_a = max_a
-
   def update(self, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard, dynamic_follow=False):
-    # t_follow = get_T_FOLLOW(personality)
+    t_follow = get_T_FOLLOW(personality)
     v_ego = self.x0[1]
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
-    if not (self.CP.flags & ToyotaFlags.SMART_DSU) or dynamic_follow:
-      stop_distance += 1.5
+    if not (self.CP.flags & ToyotaFlags.SMART_DSU):
+      stop_distance += 0.5
+
+    if Params().get_bool("ToyotaTune"):
+      stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
     lead = radarstate.leadOne
+    lead_prob = getattr(lead, "modelProb", 1.0)
 
-    self.smoother_braking = True if self.mode == 'acc' and np.any(v_ego < 16) and np.any(lead_xv_0[:,0] < 40) and not np.any(lead.dRel < (v_ego - 1) * t_follow) else False
+    self.smoother_braking = (lead.status and
+                            self.mode == 'acc' and
+                            v_ego < 20 and
+                            lead_xv_0[0,0] < 40 and
+                            lead_prob > 0.9)
+
     if self.smoother_braking:
-      distance_factor = np.maximum(1, lead_xv_0[:,0] - (lead_xv_0[:,1] * t_follow))
-      self.braking_offset = np.clip((v_ego - lead_xv_0[:,1]) - COMFORT_BRAKE, 1, distance_factor)
-      t_follow = t_follow / self.braking_offset
+      v_lead = lead_xv_0[0, 1]
+      lead_distance = lead_xv_0[0, 0]
+      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20, 40], [1.5, 2.0, 2.5, 3.0])
+
+      distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
+      standstill_offset = max(stop_distance - v_ego, 1.0)
+      far_lead_offset = max(v_ego - CITY_SPEED_LIMIT, 1.0)
+      self.braking_offset = max((v_ego - v_lead) * 0.5, 1.0)
+      if v_lead > v_ego:
+        distance_factor = max(max(lead_distance, MIN_LEAD_DISTANCE) - (v_ego * t_follow), 1)
+        standstill_offset = max(stop_distance - v_ego, 1)
+        self.braking_offset = np.clip((v_lead - v_ego) * standstill_offset - COMFORT_BRAKE, 1, distance_factor)
+        t_follow = max(t_follow / self.braking_offset, np.clip(v_ego / 20, 0.7, 1.45))
+
+      elif v_lead < v_ego:
+        if v_ego <= CRUISING_SPEED:
+          t_follow = np.clip(v_ego / 10, 0.7, 1.2)
+        else:
+          distance_factor = max(lead_distance - (v_lead * t_follow), 1)
+          far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
+          self.braking_offset = np.clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1.5, distance_factor)
+          min_t_follow = np.clip(v_ego / 25, 0.8, 1.8)
+          t_follow = max(t_follow / (self.braking_offset * np.clip((v_ego - v_lead) / 5, 1, 3)), min_t_follow)
+
     else:
       self.braking_offset = 1
 
@@ -419,7 +461,7 @@ class LongitudinalMpc:
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1], v_ego)
 
     self.params[:,0] = ACCEL_MIN
-    self.params[:,1] = self.max_a
+    self.params[:,1] = ACCEL_MAX
 
     # Update in ACC mode or ACC/e2e blend
     if self.mode == 'acc':
@@ -427,8 +469,11 @@ class LongitudinalMpc:
 
       # Fake an obstacle for cruise, this ensures smooth acceleration to set speed
       # when the leads are no factor.
-      v_lower = v_ego + (T_IDXS * self.cruise_min_a * 1.05)
-      v_upper = v_ego + (T_IDXS * self.max_a * 1.05)
+      cruise_min_accel_val = get_cruise_min_accel(v_ego)
+      v_lower = v_ego + (T_IDXS * cruise_min_accel_val * 1.05)
+      # TODO does this make sense when max_a is negative?
+      cruise_max_accel_val = CRUISE_MAX_ACCEL
+      v_upper = v_ego + (T_IDXS * cruise_max_accel_val * 1.05)
       v_cruise_clipped = np.clip(v_cruise * np.ones(N+1),
                                  v_lower,
                                  v_upper)
