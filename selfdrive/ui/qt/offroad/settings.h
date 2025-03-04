@@ -106,6 +106,9 @@ private:
   ParamWatcher *fs_watch;
 };
 
+// Forward declaration
+class FirehosePanel;
+
 class TimpilotPanel : public QWidget {
   Q_OBJECT
 
