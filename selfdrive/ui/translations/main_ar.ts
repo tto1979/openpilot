@@ -347,6 +347,7 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>[-Not selected-]</source>
         <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>HudRenderer</name>
