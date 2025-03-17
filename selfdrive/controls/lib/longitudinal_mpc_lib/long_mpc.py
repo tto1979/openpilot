@@ -110,7 +110,7 @@ def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
 
 def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
-    return 5.0
+    return 4.5
   elif personality==log.LongitudinalPersonality.standard:
     return 4.5
   elif personality==log.LongitudinalPersonality.aggressive:
@@ -411,7 +411,7 @@ class LongitudinalMpc:
       stop_distance += 0.5
 
     if Params().get_bool("ToyotaTune"):
-      stop_distance += 1
+      stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
