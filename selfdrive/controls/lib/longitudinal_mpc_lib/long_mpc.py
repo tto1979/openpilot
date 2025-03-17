@@ -64,8 +64,8 @@ COMFORT_BRAKE = 2.5
 # CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 2.0
 
-A_CRUISE_MIN_VALS = [-0.3, -0.2, -0.1, -0.2, -0.3, -0.4, -0.5, -0.7, -0.8, -1.0, -1.2]
-A_CRUISE_MIN_BP =   [ 0.,  .01,  .02,   .3,   1.,   2.,   3.,   5.,   8.,   10.,  20.]
+A_CRUISE_MIN_VALS = [-0.3, -0.2, -0.1, -0.2, -0.3, -0.6, -0.8, -1.0, -1.2]
+A_CRUISE_MIN_BP =   [ 0.,  .01,  .02,   .3,   1.,   2.,   3.,   5.,   8.]
 
 def get_cruise_min_accel(v_ego):
     return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
@@ -437,12 +437,12 @@ class LongitudinalMpc:
 
       elif v_lead < v_ego:
         if v_ego <= CRUISING_SPEED:
-          t_follow = np.clip(v_ego / 10, 0.7, 1.2)
+          t_follow = np.clip(v_ego / 10, 0.8, 1.2)
         else:
           distance_factor = max(lead_distance - (v_lead * t_follow), 1)
           far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
           self.braking_offset = np.clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1.5, distance_factor)
-          min_t_follow = np.clip(v_ego / 25, 0.8, 1.45)
+          min_t_follow = np.clip(v_ego / 25, 0.9, 1.45)
           t_follow = max(t_follow / (self.braking_offset * np.clip((v_ego - v_lead) / 5, 1, 3)), min_t_follow)
 
     else:
