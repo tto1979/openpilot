@@ -64,8 +64,8 @@ COMFORT_BRAKE = 2.5
 # CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 2.0
 
-A_CRUISE_MIN_VALS = [-0.2, -0.1, -0.05, -0.1, -0.2, -0.3, -0.4, -0.6, -0.7, -0.8, -1.2]
-A_CRUISE_MIN_BP =   [ 0.,  .01,  .02,   .3,    1.,   2.,   3.,   5.,   8.,   10.,  20.]
+A_CRUISE_MIN_VALS = [-0.3, -0.2, -0.1, -0.2, -0.3, -0.4, -0.5, -0.7, -0.8, -1.0, -1.2]
+A_CRUISE_MIN_BP =   [ 0.,  .01,  .02,   .3,   1.,   2.,   3.,   5.,   8.,   10.,  20.]
 
 def get_cruise_min_accel(v_ego):
     return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
@@ -110,11 +110,11 @@ def get_dynamic_follow(v_ego, personality=log.LongitudinalPersonality.standard):
 
 def get_STOP_DISTANCE(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
-    return 4.5
+    return 5.0
   elif personality==log.LongitudinalPersonality.standard:
-    return 4.0
+    return 4.5
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 3.5
+    return 4.0
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -411,7 +411,7 @@ class LongitudinalMpc:
       stop_distance += 0.5
 
     if Params().get_bool("ToyotaTune"):
-      stop_distance += 0.5
+      stop_distance += 1
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
@@ -423,7 +423,7 @@ class LongitudinalMpc:
     if self.smoother_braking:
       v_lead = lead_xv_0[0, 1]
       lead_distance = lead_xv_0[0, 0]
-      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20], [2.0, 2.2, 2.5])
+      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20], [2.2, 2.3, 2.5])
 
       distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
       standstill_offset = max(stop_distance - v_ego, 1.0)
