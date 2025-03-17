@@ -418,12 +418,12 @@ class LongitudinalMpc:
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
-    self.smoother_braking = (self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] > 10 and lead_xv_0[0,0] < 50)
+    self.smoother_braking = (self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] > 13 and lead_xv_0[0,0] < 50)
 
     if self.smoother_braking:
       v_lead = lead_xv_0[0, 1]
       lead_distance = lead_xv_0[0, 0]
-      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20], [2.2, 2.3, 2.5])
+      COMFORT_BRAKE = np.interp(v_ego, [0, 3, 20], [2.0, 2.3, 2.5])
 
       distance_factor = max(MIN_LEAD_DISTANCE, 1.0)
       standstill_offset = max(stop_distance - v_ego, 1.0)
@@ -442,7 +442,7 @@ class LongitudinalMpc:
           distance_factor = max(lead_distance - (v_lead * t_follow), 1)
           far_lead_offset = max(v_lead - CITY_SPEED_LIMIT, 1)
           self.braking_offset = np.clip(min(v_ego - v_lead, v_lead) * far_lead_offset - COMFORT_BRAKE, 1.5, distance_factor)
-          min_t_follow = np.clip(v_ego / 25, 0.9, 1.45)
+          min_t_follow = np.clip(v_ego / 25, 0.85, 1.45)
           t_follow = max(t_follow / (self.braking_offset * np.clip((v_ego - v_lead) / 5, 1, 3)), min_t_follow)
 
     else:
