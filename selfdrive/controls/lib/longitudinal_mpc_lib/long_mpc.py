@@ -6,7 +6,6 @@ from cereal import log
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from opendbc.car.toyota.values import ToyotaFlags
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
@@ -408,9 +407,6 @@ class LongitudinalMpc:
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
     if not (self.CP.flags & ToyotaFlags.SMART_DSU):
-      stop_distance += 0.5
-
-    if Params().get_bool("ToyotaTune"):
       stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
