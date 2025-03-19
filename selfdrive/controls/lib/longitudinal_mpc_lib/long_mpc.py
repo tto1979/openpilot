@@ -87,7 +87,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.9
+    return 0.85
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -418,7 +418,7 @@ class LongitudinalMpc:
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
-    self.smoother_braking = (self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] > 13 and lead_xv_0[0,0] < 40)
+    self.smoother_braking = False #(self.mode == 'acc' and v_ego < 20 and lead_xv_0[0,0] > 13 and lead_xv_0[0,0] < 40)
 
     if self.smoother_braking:
       v_lead = lead_xv_0[0, 1]
