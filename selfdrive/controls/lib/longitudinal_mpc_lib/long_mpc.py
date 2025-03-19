@@ -87,7 +87,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.85
+    return 0.9
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -408,9 +408,6 @@ class LongitudinalMpc:
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
     if not (self.CP.flags & ToyotaFlags.SMART_DSU):
-      stop_distance += 0.5
-
-    if Params().get_bool("ToyotaTune"):
       stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
