@@ -60,14 +60,8 @@ FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
 # STOP_DISTANCE = 6.0
-# CRUISE_MIN_ACCEL = -1.2
+CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 2.0
-
-A_CRUISE_MIN_VALS = [-0.3, -0.2, -0.1, -0.2, -0.3, -0.6, -0.8, -1.0, -1.2]
-A_CRUISE_MIN_BP =   [ 0.,  .01,  .02,   .3,   1.,   2.,   3.,   5.,   8.]
-
-def get_cruise_min_accel(v_ego):
-    return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
@@ -458,11 +452,9 @@ class LongitudinalMpc:
 
       # Fake an obstacle for cruise, this ensures smooth acceleration to set speed
       # when the leads are no factor.
-      cruise_min_accel_val = get_cruise_min_accel(v_ego)
-      v_lower = v_ego + (T_IDXS * cruise_min_accel_val * 1.05)
+      v_lower = v_ego + (T_IDXS * CRUISE_MIN_ACCEL * 1.05)
       # TODO does this make sense when max_a is negative?
-      cruise_max_accel_val = CRUISE_MAX_ACCEL
-      v_upper = v_ego + (T_IDXS * cruise_max_accel_val * 1.05)
+      v_upper = v_ego + (T_IDXS * CRUISE_MAX_ACCEL * 1.05)
       v_cruise_clipped = np.clip(v_cruise * np.ones(N+1),
                                  v_lower,
                                  v_upper)
