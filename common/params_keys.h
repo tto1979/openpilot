@@ -138,6 +138,7 @@ inline static std::unordered_map<std::string, uint32_t> keys = {
     {"OnroadScreenOff", PERSISTENT},
     {"PrimeAd", PERSISTENT},
     {"ReverseAccChange", PERSISTENT},
+    {"StandstillMode", PERSISTENT},
     {"TimSignals", PERSISTENT},
     {"TogglesUpdated", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"topsng", PERSISTENT},

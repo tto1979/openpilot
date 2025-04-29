@@ -88,6 +88,16 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.dynamic_follow = False
     self.dynamic_follow = self.params.get_bool("Dynamic_Follow")
 
+    # StandstillMode
+    self.standstill_prev = False
+    self.standstill_current = False
+    self.standstill_transit_counter = 0
+    self.STANDSTILL_TRANSIT_FRAMES = 10
+    self.standstill_mode_active = False
+
+    if self.params.get("StandstillMode") is None:
+      self.params.put_bool("StandstillMode", False)
+
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == ModelConstants.IDX_N and
@@ -111,6 +121,30 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
   def update(self, sm):
     LongitudinalPlannerTOP.update(self, sm)
     self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
+
+    # standstill e2e
+    self.standstill_current = sm['carState'].standstill
+
+    if self.standstill_current != self.standstill_prev:
+      self.standstill_transit_counter = self.STANDSTILL_TRANSIT_FRAMES
+
+    if self.standstill_transit_counter > 0:
+      self.standstill_transit_counter -= 1
+
+      if self.standstill_transit_counter == 0:
+        if self.standstill_current:
+          self.params.put_bool_nonblocking('StandstillMode', True)
+          self.standstill_mode_active = True
+        else:
+          self.params.put_bool_nonblocking('StandstillMode', False)
+          self.standstill_mode_active = False
+
+    if self.standstill_mode_active:
+      self.mode = 'blended'
+    else:
+      self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
+
+    self.standstill_prev = self.standstill_current
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
