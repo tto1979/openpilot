@@ -69,6 +69,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.mpc = LongitudinalMpc(CP, dt=dt)
     LongitudinalPlannerTOP.__init__(self)
     self.mpc.mode = 'acc'
+    self.mode = 'acc'
     self.fcw = False
     self.dt = dt
     self.allow_throttle = True
