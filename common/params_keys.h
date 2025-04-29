@@ -137,6 +137,7 @@ inline static std::unordered_map<std::string, uint32_t> keys = {
     {"NudgelessLaneChange", PERSISTENT},
     {"OnroadScreenOff", PERSISTENT},
     {"PrimeAd", PERSISTENT},
+    {"QuietDrive", PERSISTENT},
     {"ReverseAccChange", PERSISTENT},
     {"StandstillMode", PERSISTENT},
     {"TimSignals", PERSISTENT},
@@ -147,5 +148,5 @@ inline static std::unordered_map<std::string, uint32_t> keys = {
     {"toyota_bsm", PERSISTENT},
     {"ToyotaDriveMode", PERSISTENT},
     {"TurnVisionControl", PERSISTENT},
-    {"QuietDrive", PERSISTENT},
+    {"UserExperimentalMode", PERSISTENT},
 };

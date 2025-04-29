@@ -95,8 +95,9 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.STANDSTILL_TRANSIT_FRAMES = 10
     self.standstill_mode_active = False
 
-    if self.params.get("StandstillMode") is None:
-      self.params.put_bool("StandstillMode", False)
+    if self.params.get("UserExperimentalMode") is None:
+      user_exp_mode = self.params.get_bool("ExperimentalMode")
+      self.params.put_bool("UserExperimentalMode", user_exp_mode)
 
   @staticmethod
   def parse_model(model_msg, model_error):
@@ -120,32 +121,33 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
   def update(self, sm):
     LongitudinalPlannerTOP.update(self, sm)
-    self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     # standstill e2e
+    prev_mode = self.mode
     self.standstill_current = sm['carState'].standstill
 
     if self.standstill_current != self.standstill_prev:
       self.standstill_transit_counter = self.STANDSTILL_TRANSIT_FRAMES
+      print(f"Standstill state change: {self.standstill_prev} -> {self.standstill_current}")
 
     if self.standstill_transit_counter > 0:
       self.standstill_transit_counter -= 1
 
       if self.standstill_transit_counter == 0:
         if self.standstill_current:
-          self.params.put_bool_nonblocking('StandstillMode', True)
-          self.standstill_mode_active = True
+          current_exp_mode = self.params.get_bool("ExperimentalMode")
+          self.params.put_bool_nonblocking("UserExperimentalMode", current_exp_mode)
+          self.params.put_bool_nonblocking("ExperimentalMode", True)
+          print(f"Entering standstill: Saved user setting {current_exp_mode}, set ExperimentalMode=True")
         else:
-          self.params.put_bool_nonblocking('StandstillMode', False)
-          self.standstill_mode_active = False
+          user_exp_mode = self.params.get_bool("UserExperimentalMode")
+          self.params.put_bool_nonblocking("ExperimentalMode", user_exp_mode)
+          print(f"Leaving standstill: Restored user setting ExperimentalMode={user_exp_mode}")
 
-    if self.standstill_mode_active:
-      self.mode = 'blended'
-    else:
-      self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
+    self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
-    # Print current mode for monitoring
-    print(f"LongitudinalPlanner mode: {self.mode}, standstill: {self.standstill_current}, standstill_mode_active: {self.standstill_mode_active}")
+    if self.mode != prev_mode:
+      print(f"Mode changed: {prev_mode} -> {self.mode}")
 
     self.standstill_prev = self.standstill_current
 
