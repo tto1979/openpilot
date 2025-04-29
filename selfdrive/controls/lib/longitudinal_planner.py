@@ -144,6 +144,9 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     else:
       self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
+    # Print current mode for monitoring
+    print(f"LongitudinalPlanner mode: {self.mode}, standstill: {self.standstill_current}, standstill_mode_active: {self.standstill_mode_active}")
+
     self.standstill_prev = self.standstill_current
 
     if len(sm['carControl'].orientationNED) == 3:
