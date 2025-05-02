@@ -132,8 +132,6 @@ class SelfdriveD:
     self.ignored_processes = set()
     if HARDWARE.get_device_type() == 'tici' and os.path.exists('/dev/nvme0'):
       self.ignored_processes = {'loggerd', }
-    if self.dp_jetson:
-      self.ignored_processes = {'dmonitoringd', 'dmonitoringmodeld', 'logcatd', 'logmessaged', 'loggerd', 'tombstoned', 'uploader'}
 
     # Determine startup event
     self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster

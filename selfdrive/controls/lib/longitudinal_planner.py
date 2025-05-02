@@ -96,14 +96,9 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       self.standstill_current = False
       self.standstill_transit_counter = 0
       self.STANDSTILL_TRANSIT_FRAMES = 10
-      self.standstill_mode_active = False
-      self.experimental_mode_override_active = False
-      self.LEAD_DISTANCE_THRESHOLD = 8.0
-      self.LEAD_SPEED_THRESHOLD = 10.0 * CV.KPH_TO_MS
-
-      if self.params.get("UserExperimentalMode") is None:
-        user_exp_mode = self.params.get_bool("ExperimentalMode")
-        self.params.put_bool("UserExperimentalMode", user_exp_mode)
+      self.experimental_mode_active_by_standstill = False
+      self.LEAD_DISTANCE_THRESHOLD = 5.0
+      self.LEAD_SPEED_THRESHOLD = 3.0 * CV.KPH_TO_MS
 
   @staticmethod
   def parse_model(model_msg, model_error):
@@ -140,11 +135,10 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       lead_speed = lead_one.vRel + sm['carState'].vEgo if has_lead else 0.0
       lead_moving_away = has_lead and lead_dist > self.LEAD_DISTANCE_THRESHOLD and lead_speed > self.LEAD_SPEED_THRESHOLD
 
-      if lead_moving_away and self.experimental_mode_override_active:
-        user_exp_mode = self.params.get_bool("UserExperimentalMode")
-        self.params.put_bool_nonblocking("ExperimentalMode", user_exp_mode)
-        self.experimental_mode_override_active = False
-        print(f"Lead vehicle moving away: dist={lead_dist:.1f}m, speed={lead_speed*3.6:.1f}km/h, disabling ExperimentalMode override")
+      if lead_moving_away and self.experimental_mode_active_by_standstill:
+        self.params.put_bool_nonblocking("ExperimentalMode", False)
+        self.experimental_mode_active_by_standstill = False
+        print(f"Lead vehicle moving away: dist={lead_dist:.1f}m, speed={lead_speed*3.6:.1f}km/h, disabling ExperimentalMode")
 
       if self.standstill_current != self.standstill_prev:
         self.standstill_transit_counter = self.STANDSTILL_TRANSIT_FRAMES
@@ -155,17 +149,14 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
         if self.standstill_transit_counter == 0:
           if self.standstill_current:
-            current_exp_mode = self.params.get_bool("ExperimentalMode")
-            self.params.put_bool_nonblocking("UserExperimentalMode", current_exp_mode)
             self.params.put_bool_nonblocking("ExperimentalMode", True)
-            self.experimental_mode_override_active = True
-            print(f"Entering standstill: Saved user setting {current_exp_mode}, set ExperimentalMode=True")
+            self.experimental_mode_active_by_standstill = True
+            print("Entering standstill: Enabling ExperimentalMode")
           else:
-            if self.experimental_mode_override_active:
-              user_exp_mode = self.params.get_bool("UserExperimentalMode")
-              self.params.put_bool_nonblocking("ExperimentalMode", user_exp_mode)
-              self.experimental_mode_override_active = False
-              print(f"Leaving standstill: Restored user setting ExperimentalMode={user_exp_mode}")
+            if self.experimental_mode_active_by_standstill:
+              self.params.put_bool_nonblocking("ExperimentalMode", False)
+              self.experimental_mode_active_by_standstill = False
+              print("Leaving standstill: Disabling ExperimentalMode")
 
       self.standstill_prev = self.standstill_current
 
@@ -173,6 +164,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     if self.mode != prev_mode:
       print(f"Mode changed: {prev_mode} -> {self.mode}")
+    self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
