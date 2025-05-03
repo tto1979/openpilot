@@ -90,7 +90,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     # StandstillMode
     self.sng_e2e = self.params.get_bool("sng_e2e")
-    self.mode = 'acc'
     if self.sng_e2e:
       self.standstill_prev = False
       self.standstill_current = False
@@ -124,7 +123,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     LongitudinalPlannerTOP.update(self, sm)
 
     # standstill e2e
-    prev_mode = self.mode
+    prev_mode = self.mpc.mode
 
     if self.sng_e2e:
       self.standstill_current = sm['carState'].standstill
@@ -160,10 +159,9 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
       self.standstill_prev = self.standstill_current
 
-    self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
+    if self.mpc.mode != prev_mode:
+      print(f"Mode changed: {prev_mode} -> {self.mpc.mode}")
 
-    if self.mode != prev_mode:
-      print(f"Mode changed: {prev_mode} -> {self.mode}")
     self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
@@ -187,7 +185,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    if self.mode == 'acc':
+    if self.mpc.mode == 'acc':
       if self.CP.brand == "toyota":
         accel_clip = [ACCEL_MIN, get_max_accel_toyota(v_ego)]
       else:
@@ -211,7 +209,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     if self.accel_controller.is_enabled(accel_personality):
       _, max_limit = self.accel_controller.get_accel_limits(v_ego, accel_clip)
 
-      if self.mode == 'acc':
+      if self.mpc.mode == 'acc':
         # Use the accel controller limits directly
         accel_clip = [ACCEL_MIN, max_limit]
         # Recalculate limit turn according to the new max limit
@@ -270,17 +268,8 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
-    output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
+    output_a_target, self.output_should_stop = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
                                                                         action_t=action_t, vEgoStopping=self.CP.vEgoStopping)
-    output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
-    output_should_stop_e2e = sm['modelV2'].action.shouldStop
-
-    if self.mode == 'acc':
-      output_a_target = output_a_target_mpc
-      self.output_should_stop = output_should_stop_mpc
-    else:
-      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
-      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
     for idx in range(2):
       accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
