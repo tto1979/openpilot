@@ -162,10 +162,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
-    if self.mode != prev_mode:
-      print(f"Mode changed: {prev_mode} -> {self.mode}")
-    self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
-
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
     else:
