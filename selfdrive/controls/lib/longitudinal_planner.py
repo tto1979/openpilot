@@ -90,7 +90,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     # StandstillMode
     self.sng_e2e = self.params.get_bool("sng_e2e")
-    self.mode = 'acc'
     if self.sng_e2e:
       self.standstill_prev = False
       self.standstill_current = False
@@ -124,7 +123,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     LongitudinalPlannerTOP.update(self, sm)
 
     # standstill e2e
-    prev_mode = self.mode
 
     if self.sng_e2e:
       self.standstill_current = sm['carState'].standstill
@@ -161,9 +159,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       self.standstill_prev = self.standstill_current
 
     self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
-
-    if self.mode != prev_mode:
-      print(f"Mode changed: {prev_mode} -> {self.mode}")
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
