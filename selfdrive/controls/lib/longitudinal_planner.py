@@ -67,8 +67,8 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
     self.mpc = LongitudinalMpc(CP, dt=dt)
-    LongitudinalPlannerTOP.__init__(self)
     self.mpc.mode = 'acc'
+    LongitudinalPlannerTOP.__init__(self)
     self.fcw = False
     self.dt = dt
     self.allow_throttle = True
@@ -191,18 +191,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     else:
       accel_clip = [ACCEL_MIN, ACCEL_MAX]
 
-    accel_personality = AccelPersonality.normal
-    if hasattr(sm, 'longitudinalPlanTOP') and sm['longitudinalPlanTOP'].valid:
-      accel_personality = sm['longitudinalPlanTOP'].accelPersonality
-    else:
-      params_personality = self.params.get("AccelPersonality", encoding='utf-8')
-      if params_personality is not None:
-        try:
-          accel_personality = int(params_personality)
-        except ValueError:
-          accel_personality = AccelPersonality.stock
-
-    if self.accel_controller.is_enabled(accel_personality):
+    if self.accel_controller.is_enabled:
       _, max_limit = self.accel_controller.get_accel_limits(v_ego, accel_clip)
 
       if self.mode == 'acc':
