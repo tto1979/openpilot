@@ -38,6 +38,9 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
+THRESHOLD = 0.7
+CRUISING_SPEED = 5.0  # m/s
+PLANNER_TIME = 10.0  # s
 
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
@@ -96,8 +99,65 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       self.standstill_transit_counter = 0
       self.STANDSTILL_TRANSIT_FRAMES = 10
       self.experimental_mode_active_by_standstill = False
+      self.experimental_mode_active_by_traffic_light = False
       self.LEAD_DISTANCE_THRESHOLD = 5.0
       self.LEAD_SPEED_THRESHOLD = 3.0 * CV.KPH_TO_MS
+      self.red_light_filter = FirstOrderFilter(0, 1, self.dt)
+      self.red_light_detected = False
+      self.model_length = 0
+      self.tracking_lead = False
+      self.lead_distance = float('inf')
+      self.lead_moving = False
+      self.lead_velocity = 0.0
+
+  def detect_traffic_light(self, sm, v_ego):
+    if len(sm['modelV2'].position.x) > 0:
+      self.model_length = sm['modelV2'].position.x[-1]
+
+    model_stopped = self.model_length < CRUISING_SPEED * PLANNER_TIME
+    lead_one = sm['radarState'].leadOne
+    lead_two = sm['radarState'].leadTwo
+    has_lead_primary = lead_one.status
+    has_lead_secondary = lead_two.status
+    self.tracking_lead = has_lead_primary or has_lead_secondary
+    active_lead = lead_one if has_lead_primary else (lead_two if has_lead_secondary else None)
+
+    if active_lead is not None:
+      self.lead_distance = active_lead.dRel
+      self.lead_moving = active_lead.vRel > -0.5  # Consider vehicle moving if relative velocity > -0.5 m/s
+      self.lead_velocity = active_lead.vLead
+    else:
+      self.lead_distance = float('inf')
+      self.lead_moving = False
+      self.lead_velocity = 0.0
+
+    # Update red light filter
+    # Only consider red light detection when no lead vehicle or lead vehicle is beyond model path length
+    prev_red_light_detected = self.red_light_detected
+
+    consider_red_light = not self.tracking_lead or self.lead_distance > self.model_length
+    if consider_red_light:
+      self.red_light_filter.update(model_stopped)
+      self.red_light_detected = self.red_light_filter.x >= THRESHOLD
+    else:
+      self.red_light_filter.x = 0
+      self.red_light_detected = False
+
+    if self.red_light_detected != prev_red_light_detected:
+      light_status = "RED LIGHT" if self.red_light_detected else "GREEN LIGHT"
+      print(f"Traffic light status changed: {light_status}, filter value: {self.red_light_filter.x:.2f}, model length: {self.model_length:.2f}m")
+
+    if hasattr(self, 'update_counter'):
+      self.update_counter += 1
+      if self.update_counter >= 10:
+        light_status = "RED LIGHT" if self.red_light_detected else "GREEN LIGHT"
+        lead_info = f"(dist: {self.lead_distance:.1f}m, v: {self.lead_velocity:.1f}m/s, moving: {self.lead_moving})" if self.tracking_lead else "(no lead)"
+        print(f"Traffic light status: {light_status}, filter: {self.red_light_filter.x:.2f}, model length: {self.model_length:.2f}m, lead: {lead_info}")
+        self.update_counter = 0
+    else:
+      self.update_counter = 0
+
+    return self.red_light_detected
 
   @staticmethod
   def parse_model(model_msg, model_error):
@@ -123,6 +183,8 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     LongitudinalPlannerTOP.update(self, sm)
 
     # standstill e2e
+    v_ego = sm['carState'].vEgo
+    red_light_detected = self.detect_traffic_light(sm, v_ego) if self.sng_e2e else False
 
     if self.sng_e2e:
       self.standstill_current = sm['carState'].standstill
@@ -138,6 +200,11 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
         self.experimental_mode_active_by_standstill = False
         print(f"Lead vehicle moving away: dist={lead_dist:.1f}m, speed={lead_speed*3.6:.1f}km/h, disabling ExperimentalMode")
 
+      elif not red_light_detected and self.experimental_mode_active_by_traffic_light:
+        self.params.put_bool_nonblocking("ExperimentalMode", False)
+        self.experimental_mode_active_by_traffic_light = False
+        print("Traffic light turned green: disabling ExperimentalMode")
+
       if self.standstill_current != self.standstill_prev:
         self.standstill_transit_counter = self.STANDSTILL_TRANSIT_FRAMES
         print(f"Standstill state change: {self.standstill_prev} -> {self.standstill_current}")
@@ -147,13 +214,26 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
         if self.standstill_transit_counter == 0:
           if self.standstill_current:
-            self.params.put_bool_nonblocking("ExperimentalMode", True)
-            self.experimental_mode_active_by_standstill = True
-            print("Entering standstill: Enabling ExperimentalMode")
+            should_enable_experimental = False
+
+            if has_lead:
+              should_enable_experimental = True
+              self.experimental_mode_active_by_standstill = True
+              self.experimental_mode_active_by_traffic_light = False
+              print("Entering standstill with lead vehicle: Enabling ExperimentalMode")
+            elif red_light_detected:
+              should_enable_experimental = True
+              self.experimental_mode_active_by_standstill = False
+              self.experimental_mode_active_by_traffic_light = True
+              print("Entering standstill at red light: Enabling ExperimentalMode")
+
+            if should_enable_experimental:
+              self.params.put_bool_nonblocking("ExperimentalMode", True)
           else:
-            if self.experimental_mode_active_by_standstill:
+            if self.experimental_mode_active_by_standstill or self.experimental_mode_active_by_traffic_light:
               self.params.put_bool_nonblocking("ExperimentalMode", False)
               self.experimental_mode_active_by_standstill = False
+              self.experimental_mode_active_by_traffic_light = False
               print("Leaving standstill: Disabling ExperimentalMode")
 
       self.standstill_prev = self.standstill_current
