@@ -58,7 +58,7 @@ FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
 # STOP_DISTANCE = 6.0
-# CRUISE_MIN_ACCEL = -1.2
+CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 1.6
 
 A_CRUISE_MIN_VALS = [-1.2, -1.0, -0.7, -0.6, -0.7, -0.8, -1.0, -1.2]
@@ -391,11 +391,12 @@ class LongitudinalMpc:
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def update(self, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard, dynamic_follow=False):
+  def update(self, radarstate, v_cruise, x, v, a, j, personality=log.LongitudinalPersonality.standard, dynamic_follow=False, pitch_rad=0.0):
     t_follow = get_T_FOLLOW(personality)
     v_ego = self.x0[1]
     t_follow = get_T_FOLLOW(personality) if not dynamic_follow else get_dynamic_follow(v_ego, personality)
     stop_distance = get_STOP_DISTANCE(personality)
+    self.downhill = np.sin(pitch_rad) < -0.04
 
     if Params().get_bool("ToyotaTune") and not (self.CP.flags & ToyotaFlags.SMART_DSU):
       stop_distance += 1
@@ -420,7 +421,7 @@ class LongitudinalMpc:
 
       # Fake an obstacle for cruise, this ensures smooth acceleration to set speed
       # when the leads are no factor.
-      cruise_min_accel_val = get_cruise_min_accel(v_ego)
+      cruise_min_accel_val = CRUISE_MIN_ACCEL if self.downhill else get_cruise_min_accel(v_ego)
       v_lower = v_ego + (T_IDXS * cruise_min_accel_val * 1.05)
       # TODO does this make sense when max_a is negative?
       v_upper = v_ego + (T_IDXS * CRUISE_MAX_ACCEL * 1.05)
