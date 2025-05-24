@@ -45,8 +45,68 @@ PLANNER_TIME = 10.0  # s
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
 
+# Add Hermite interpolation functions here
+def compute_symmetric_slopes(x, y):
+  n = len(x)
+  if n < 2:
+    raise ValueError("At least two points are required to compute slopes")
+
+  if len(x) != len(y):
+    raise ValueError(f"x and y must have same length, got x:{len(x)}, y:{len(y)}")
+
+  m = np.zeros(n)
+  for i in range(n):
+    if i == 0:
+      m[i] = (y[i+1] - y[i]) / (x[i+1] - x[i])
+    elif i == n-1:
+      m[i] = (y[i] - y[i-1]) / (x[i] - x[i-1])
+    else:
+      m[i] = ((y[i+1] - y[i]) / (x[i+1] - x[i]) + (y[i] - y[i-1]) / (x[i] - x[i-1])) / 2
+  return m
+
+def hermite_interpolate(x, xp, yp, slopes):
+  if len(xp) != len(yp) or len(xp) != len(slopes):
+    raise ValueError("xp, yp and slopes must have same length")
+
+  if len(xp) < 2:
+    raise ValueError("At least two points are required for interpolation")
+
+  x = np.clip(x, xp[0], xp[-1])
+
+  idx = np.searchsorted(xp, x) - 1
+  idx = np.clip(idx, 0, len(slopes) - 2)
+
+  x0, x1 = xp[idx], xp[idx+1]
+  y0, y1 = yp[idx], yp[idx+1]
+  m0, m1 = slopes[idx], slopes[idx+1]
+
+  if x1 - x0 == 0:
+    return float(y0)
+
+  t = (x - x0) / (x1 - x0)
+  h00 = 2*t**3 - 3*t**2 + 1
+  h10 = t**3 - 2*t**2 + t
+  h01 = -2*t**3 + 3*t**2
+  h11 = t**3 - t**2
+
+  interpolated = (h00 * y0) + (h10 * (x1 - x0) * m0) + (h01 * y1) + (h11 * (x1 - x0) * m1)
+  return float(interpolated)
+
+# Pre-compute slopes for Toyota
+try:
+  A_CRUISE_MAX_SLOPES_TOYOTA = compute_symmetric_slopes(A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
+  USE_HERMITE_TOYOTA = True
+except ValueError:
+  USE_HERMITE_TOYOTA = False
+
 def get_max_accel_toyota(v_ego):
-  return np.interp(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
+  if USE_HERMITE_TOYOTA:
+    try:
+      return hermite_interpolate(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA, A_CRUISE_MAX_SLOPES_TOYOTA)
+    except Exception:
+      return np.interp(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
+  else:
+    return np.interp(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
 
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py

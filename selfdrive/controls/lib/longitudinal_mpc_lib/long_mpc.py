@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import time
+import math
 import numpy as np
 from cereal import log
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
@@ -61,10 +62,74 @@ COMFORT_BRAKE = 2.5
 CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 1.6
 
+# Hermite interpolation functions
+def compute_symmetric_slopes(x, y):
+  n = len(x)
+  if n < 2:
+    raise ValueError("At least two points are required to compute slopes")
+
+  if len(x) != len(y):
+    raise ValueError(f"x and y must have same length, got x:{len(x)}, y:{len(y)}")
+
+  m = np.zeros(n)
+  for i in range(n):
+    if i == 0:
+      m[i] = (y[i+1] - y[i]) / (x[i+1] - x[i])
+    elif i == n-1:
+      m[i] = (y[i] - y[i-1]) / (x[i] - x[i-1])
+    else:
+      m[i] = ((y[i+1] - y[i]) / (x[i+1] - x[i]) + (y[i] - y[i-1]) / (x[i] - x[i-1])) / 2
+  return m
+
+def hermite_interpolate(x, xp, yp, slopes):
+  if len(xp) != len(yp) or len(xp) != len(slopes):
+    raise ValueError("xp, yp and slopes must have same length")
+
+  if len(xp) < 2:
+    raise ValueError("At least two points are required for interpolation")
+
+  x = np.clip(x, xp[0], xp[-1])
+
+  idx = np.searchsorted(xp, x) - 1
+  idx = np.clip(idx, 0, len(slopes) - 2)
+
+  x0, x1 = xp[idx], xp[idx+1]
+  y0, y1 = yp[idx], yp[idx+1]
+  m0, m1 = slopes[idx], slopes[idx+1]
+
+  if x1 - x0 == 0:
+    return float(y0)
+
+  t = (x - x0) / (x1 - x0)
+  h00 = 2*t**3 - 3*t**2 + 1
+  h10 = t**3 - 2*t**2 + t
+  h01 = -2*t**3 + 3*t**2
+  h11 = t**3 - t**2
+
+  interpolated = (h00 * y0) + (h10 * (x1 - x0) * m0) + (h01 * y1) + (h11 * (x1 - x0) * m1)
+  return float(interpolated)
+
+# Modify A_CRUISE_MIN related definitions
 A_CRUISE_MIN_VALS = [-1.01, -1.0, -1.05, -1.1, -1.15, -1.2]
 A_CRUISE_MIN_BP =   [ 0.,    .3,   1.,    3.,   8.,    10.]
 
+# Pre-compute slopes
+try:
+  A_CRUISE_MIN_SLOPES = compute_symmetric_slopes(A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
+  USE_HERMITE_MIN = True
+except ValueError as e:
+  print(f"Warning: Cannot compute Hermite slopes for cruise min accel: {e}")
+  USE_HERMITE_MIN = False
+
 def get_cruise_min_accel(v_ego):
+  if USE_HERMITE_MIN:
+    try:
+      return hermite_interpolate(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS, A_CRUISE_MIN_SLOPES)
+    except Exception as e:
+      # Fall back to linear interpolation if Hermite fails
+      cloudlog.warning(f"Hermite interpolation failed, using linear: {e}")
+      return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
+  else:
     return np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
