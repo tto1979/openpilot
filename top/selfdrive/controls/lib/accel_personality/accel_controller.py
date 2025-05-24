@@ -30,7 +30,7 @@ from openpilot.common.params import Params
 AccelPersonality = custom.LongitudinalPlanTOP.AccelerationPersonality
 
 # Hermite interpolation functions
-def compute_symmetric_slopes(x: list[float], y: list[float]) -> list[float]:
+def compute_symmetric_slopes(x, y):
   n = len(x)
   if n < 2:
     raise ValueError("At least two points are required to compute slopes")
@@ -147,12 +147,12 @@ class AccelController:
     # Fall back to linear interpolation if Hermite fails
     if USE_HERMITE:
       try:
-        a_cruise_max = hermite_interpolate(
+        a_cruise_max = float(hermite_interpolate(
           v_ego,
           _DP_CRUISE_MAX_BP,
           max_v,
           _DP_CRUISE_MAX_SLOPES[mode]
-        )
+        ))
       except Exception as e:
         print(f"Hermite interpolation failed, using linear: {e}")
         a_cruise_max = float(interp(v_ego, _DP_CRUISE_MAX_BP, max_v))
