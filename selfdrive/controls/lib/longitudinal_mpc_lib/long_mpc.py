@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import time
-import math
 import numpy as np
 from cereal import log
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX

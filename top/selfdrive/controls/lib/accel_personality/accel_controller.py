@@ -30,7 +30,7 @@ from openpilot.common.params import Params
 AccelPersonality = custom.LongitudinalPlanTOP.AccelerationPersonality
 
 # Hermite interpolation functions
-def compute_symmetric_slopes(x, y):
+def compute_symmetric_slopes(x: list[float], y: list[float]) -> list[float]:
   n = len(x)
   if n < 2:
     raise ValueError("At least two points are required to compute slopes")
@@ -48,7 +48,7 @@ def compute_symmetric_slopes(x, y):
       m[i] = ((y[i+1] - y[i]) / (x[i+1] - x[i]) + (y[i] - y[i-1]) / (x[i] - x[i-1])) / 2
   return m
 
-def hermite_interpolate(x, xp, yp, slopes):
+def hermite_interpolate(x: float, xp: list[float], yp: list[float], slopes: list[float]) -> float:
   # Safety checks
   if len(xp) != len(yp) or len(xp) != len(slopes):
     raise ValueError("xp, yp and slopes must have same length")
@@ -120,7 +120,7 @@ class AccelController:
       if personality_str is not None:
         try:
           personality_int = int(personality_str)
-          if personality_int in [AccelPersonality.stock, AccelPersonality.normal, 
+          if personality_int in [AccelPersonality.stock, AccelPersonality.normal,
                                AccelPersonality.eco, AccelPersonality.sport]:
             self._personality = personality_int
         except ValueError:
@@ -148,7 +148,7 @@ class AccelController:
     if USE_HERMITE:
       try:
         a_cruise_max = hermite_interpolate(
-          v_ego, 
+          v_ego,
           _DP_CRUISE_MAX_BP,
           max_v,
           _DP_CRUISE_MAX_SLOPES[mode]
