@@ -7,6 +7,7 @@ import cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.hermite_utils import create_hermite_interpolator
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
@@ -42,11 +43,16 @@ THRESHOLD = 0.7
 CRUISING_SPEED = 5.0  # m/s
 PLANNER_TIME = 10.0  # s
 
+# Pre-create interpolators for Toyota
+_get_max_accel_toyota_hermite, _USE_HERMITE_TOYOTA = create_hermite_interpolator(
+  A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA
+)
+
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
 
 def get_max_accel_toyota(v_ego):
-  return np.interp(v_ego, A_CRUISE_MAX_BP_TOYOTA, A_CRUISE_MAX_VALS_TOYOTA)
+  return _get_max_accel_toyota_hermite(v_ego)
 
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
