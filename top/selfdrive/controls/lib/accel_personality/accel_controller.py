@@ -21,12 +21,12 @@
 # THE SOFTWARE.
 
 # Last updated: February 20, 2025
-import numpy as np
 from cereal import custom
 from numpy import interp
 from openpilot.common.realtime import DT_MDL
 from openpilot.common.params import Params
 from openpilot.common.hermite_utils import create_hermite_interpolator
+from openpilot.common.swaglog import cloudlog
 
 AccelPersonality = custom.LongitudinalPlanTOP.AccelerationPersonality
 
@@ -52,6 +52,7 @@ class AccelController:
     self._params = Params()
     self._personality = AccelPersonality.stock
     self._frame = 0
+    self._last_error_log = 0
 
   def _read_params(self):
     if self._frame % int(1. / DT_MDL) == 0:

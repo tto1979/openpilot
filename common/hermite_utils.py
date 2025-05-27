@@ -3,7 +3,6 @@ Hermite interpolation utilities for smooth acceleration/deceleration curves
 """
 
 import numpy as np
-from typing import Callable, Tuple, Optional
 from openpilot.common.swaglog import cloudlog
 
 
@@ -59,44 +58,29 @@ def hermite_interpolate(x, xp, yp, slopes):
   if len(xp) < 2:
     raise ValueError("At least two points are required for interpolation")
 
-  # Handle scalar and array inputs
-  x_scalar = np.isscalar(x)
-  x = np.atleast_1d(x)
-
-  # Clip x to domain
   x = np.clip(x, xp[0], xp[-1])
 
-  # Initialize output
-  result = np.zeros_like(x, dtype=float)
+  idx = np.searchsorted(xp, x) - 1
+  idx = np.clip(idx, 0, len(slopes) - 2)
 
-  # Vectorized interpolation
-  for j, x_val in enumerate(x):
-    # Find interval
-    idx = np.searchsorted(xp, x_val) - 1
-    idx = np.clip(idx, 0, len(slopes) - 2)
+  x0, x1 = xp[idx], xp[idx+1]
+  y0, y1 = yp[idx], yp[idx+1]
+  m0, m1 = slopes[idx], slopes[idx+1]
 
-    x0, x1 = xp[idx], xp[idx+1]
-    y0, y1 = yp[idx], yp[idx+1]
-    m0, m1 = slopes[idx], slopes[idx+1]
+  if x1 - x0 == 0:
+    return float(y0)
 
-    # Avoid division by zero
-    if x1 - x0 == 0:
-      result[j] = y0
-      continue
+  t = (x - x0) / (x1 - x0)
+  h00 = 2*t**3 - 3*t**2 + 1
+  h10 = t**3 - 2*t**2 + t
+  h01 = -2*t**3 + 3*t**2
+  h11 = t**3 - t**2
 
-    # Hermite basis functions
-    t = (x_val - x0) / (x1 - x0)
-    h00 = 2*t**3 - 3*t**2 + 1
-    h10 = t**3 - 2*t**2 + t
-    h01 = -2*t**3 + 3*t**2
-    h11 = t**3 - t**2
-
-    result[j] = (h00 * y0) + (h10 * (x1 - x0) * m0) + (h01 * y1) + (h11 * (x1 - x0) * m1)
-
-  return float(result[0]) if x_scalar else result
+  interpolated = (h00 * y0) + (h10 * (x1 - x0) * m0) + (h01 * y1) + (h11 * (x1 - x0) * m1)
+  return float(interpolated)
 
 
-def create_hermite_interpolator(xp, yp, name: Optional[str] = None) -> Tuple[Callable, bool]:
+def create_hermite_interpolator(xp, yp, name=None):
   """
   Create a Hermite interpolator function with pre-computed slopes
 
@@ -118,7 +102,7 @@ def create_hermite_interpolator(xp, yp, name: Optional[str] = None) -> Tuple[Cal
     def hermite_interpolator(x):
       try:
         return hermite_interpolate(x, xp, yp, slopes)
-      except Exception as e:
+      except Exception:
         # Silent fallback to linear interpolation
         return np.interp(x, xp, yp)
 
@@ -133,8 +117,7 @@ def create_hermite_interpolator(xp, yp, name: Optional[str] = None) -> Tuple[Cal
     return linear_interpolator, False
 
 
-def create_safe_interpolator(xp, yp, name: Optional[str] = None,
-                           prefer_hermite: bool = True) -> Callable:
+def create_safe_interpolator(xp, yp, name=None, prefer_hermite=True):
   """
   Create a safe interpolator that never fails
 
