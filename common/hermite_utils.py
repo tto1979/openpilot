@@ -1,10 +1,9 @@
 """
 Hermite interpolation utilities for smooth acceleration/deceleration curves
 """
-Hermite interpolation utilities for smooth acceleration/deceleration curves
-"""
-Hermite interpolation utilities for smooth acceleration/deceleration curves
+
 import numpy as np
+from typing import Callable, Tuple, Optional
 from openpilot.common.swaglog import cloudlog
 
 
@@ -97,28 +96,59 @@ def hermite_interpolate(x, xp, yp, slopes):
   return float(result[0]) if x_scalar else result
 
 
-def create_hermite_interpolator(xp, yp):
+def create_hermite_interpolator(xp, yp, name: Optional[str] = None) -> Tuple[Callable, bool]:
   """
   Create a Hermite interpolator function with pre-computed slopes
 
   Args:
     xp: Array of x coordinates of known points
     yp: Array of y values at known points
+    name: Optional name for logging purposes
 
   Returns:
-    Interpolator function that takes x and returns interpolated y
+    Tuple of (interpolator_function, success_flag)
+    The interpolator function will always return valid values,
+    using linear interpolation as fallback if Hermite fails
   """
+  name_str = f" for {name}" if name else ""
+
   try:
     slopes = compute_symmetric_slopes(xp, yp)
 
-    def interpolator(x):
+    def hermite_interpolator(x):
       try:
         return hermite_interpolate(x, xp, yp, slopes)
       except Exception as e:
-        cloudlog.warning(f"Hermite interpolation failed: {e}, falling back to linear")
+        # Silent fallback to linear interpolation
         return np.interp(x, xp, yp)
 
-    return interpolator, True
-  except ValueError as e:
-    cloudlog.warning(f"Cannot create Hermite interpolator: {e}, using linear interpolation")
-    return lambda x: np.interp(x, xp, yp), False
+    return hermite_interpolator, True
+
+  except Exception as e:
+    cloudlog.warning(f"Cannot create Hermite interpolator{name_str}: {e}, using linear interpolation")
+
+    def linear_interpolator(x):
+      return np.interp(x, xp, yp)
+
+    return linear_interpolator, False
+
+
+def create_safe_interpolator(xp, yp, name: Optional[str] = None,
+                           prefer_hermite: bool = True) -> Callable:
+  """
+  Create a safe interpolator that never fails
+
+  Args:
+    xp: Array of x coordinates of known points
+    yp: Array of y values at known points
+    name: Optional name for logging purposes
+    prefer_hermite: If True, try Hermite first, otherwise use linear
+
+  Returns:
+    Interpolator function that always returns valid values
+  """
+  if prefer_hermite:
+    interpolator, _ = create_hermite_interpolator(xp, yp, name)
+    return interpolator
+  else:
+    return lambda x: np.interp(x, xp, yp)
