@@ -27,6 +27,7 @@ LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
 LAT_PLAN_MIN_IDX = 5
+LATERAL_LAG_MOD = 0.3
 
 def get_predicted_lateral_jerk(lat_accels, t_diffs):
   # compute finite difference between subsequent model_data.acceleration.y values
@@ -89,7 +90,7 @@ class LatControlTorque(LatControl):
     self.friction_look_ahead_bp = [9.0, 30.0]  # corresponding speeds in m/s in [0, ~40] in 1.0 increments
     # precompute time differences between ModelConstants.T_IDXS
     self.t_diffs = np.diff(ModelConstants.T_IDXS)
-    self.desired_lat_jerk_time = CP.steerActuatorDelay + 0.3
+    self.desired_lat_jerk_time = CP.steerActuatorDelay + LATERAL_LAG_MOD
 
     if self.use_nn or self.use_lateral_jerk:
       # Scaling the lateral acceleration "friction response" could be helpful for some.
@@ -109,9 +110,8 @@ class LatControlTorque(LatControl):
       self.nn_friction_override = CI.lat_torque_nn_model.friction_override
 
       # setup future time offsets
-      self.nn_time_offset = CP.steerActuatorDelay + 0.2
-      future_times = [0.3, 0.6, 1.0, 1.5] # seconds in the future
-      self.nn_future_times = [i + self.nn_time_offset for i in future_times]
+      self.future_times = [0.3, 0.6, 1.0, 1.5]  # seconds in the future
+      self.nn_future_times = [i + self.desired_lat_jerk_time for i in self.future_times]
       self.nn_future_times_np = np.array(self.nn_future_times)
 
       # setup past time offsets
@@ -122,6 +122,13 @@ class LatControlTorque(LatControl):
       self.roll_deque = deque(maxlen=history_check_frames[0])
       self.error_deque = deque(maxlen=history_check_frames[0])
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
+
+  def update_lateral_lag(self, lag):
+    self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+    
+    if self.use_nn:
+      self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
+      self.nn_future_times_np = np.array(self.nn_future_times)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor

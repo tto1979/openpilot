@@ -37,7 +37,7 @@ class Controls:
 
     self.sm = messaging.SubMaster(['liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
-                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance'], poll='selfdriveState')
+                                   'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'liveDelay'], poll='selfdriveState')
     self.pm = messaging.PubMaster(['carControl', 'controlsState', 'topControlsState'])
 
     self.steer_limited_by_controls = False
@@ -89,6 +89,8 @@ class Controls:
         self.LaC.update_live_torque_params(torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered,
                                            torque_params.frictionCoefficientFiltered)
 
+      if self.sm.all_checks(['liveDelay']):
+        self.LaC.update_lateral_lag(self.sm['liveDelay'].lateralDelay)
     long_plan = self.sm['longitudinalPlan']
     model_v2 = self.sm['modelV2']
 
