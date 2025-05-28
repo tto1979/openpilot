@@ -125,7 +125,7 @@ class LatControlTorque(LatControl):
 
   def update_lateral_lag(self, lag):
     self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
-    
+
     if self.use_nn:
       self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
       self.nn_future_times_np = np.array(self.nn_future_times)
