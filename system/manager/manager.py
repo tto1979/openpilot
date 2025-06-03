@@ -58,6 +58,7 @@ def manager_init() -> None:
     ("NNFF", "0"),
     ("NudgelessLaneChange", "0"),
     ("ReverseAccChange", "1"),
+    ("SecondBoot", "0"),
     ("sng_e2e", "1"),
     ("TimSignals", "1"),
     ("toyotaautolock", "1"),
