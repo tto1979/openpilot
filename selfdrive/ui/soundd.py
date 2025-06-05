@@ -64,6 +64,10 @@ class Soundd:
 
     self.selfdrive_timeout_alert = False
 
+    # ADD simple QuietDrive cache
+    self.quiet_drive = False
+    self.quiet_drive_last_update = 0
+
     self.spl_filter_weighted = FirstOrderFilter(0, 2.5, FILTER_DT, initialized=False)
 
   def load_sounds(self):
@@ -108,8 +112,7 @@ class Soundd:
     data_out[:frames, 0] = self.get_sound_data(frames)
 
   def update_alert(self, new_alert):
-    quiet_drive = self.params.get_bool("QuietDrive")
-    if quiet_drive and new_alert not in [AudibleAlert.warningSoft, AudibleAlert.warningImmediate, AudibleAlert.none]:
+    if self.quiet_drive and new_alert not in [AudibleAlert.warningSoft, AudibleAlert.warningImmediate, AudibleAlert.none]:
       new_alert = AudibleAlert.none
 
     current_alert_played_once = self.current_alert == AudibleAlert.none or self.current_sound_frame > len(self.loaded_sounds[self.current_alert])
@@ -152,7 +155,15 @@ class Soundd:
       while True:
         sm.update(0)
 
-        if sm.updated['microphone'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
+        current_time = time.monotonic()
+        if current_time - self.quiet_drive_last_update > 1.0:
+          try:
+            self.quiet_drive = self.params.get_bool("QuietDrive")
+            self.quiet_drive_last_update = current_time
+          except:
+            pass
+
+        if sm.updated['microphone'] and self.current_alert == AudibleAlert.none:
           self.spl_filter_weighted.update(sm["microphone"].soundPressureWeightedDb)
           self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
 
