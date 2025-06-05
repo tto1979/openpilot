@@ -160,7 +160,7 @@ class Soundd:
           try:
             self.quiet_drive = self.params.get_bool("QuietDrive")
             self.quiet_drive_last_update = current_time
-          except:
+          except Exception:
             pass
 
         if sm.updated['microphone'] and self.current_alert == AudibleAlert.none:
