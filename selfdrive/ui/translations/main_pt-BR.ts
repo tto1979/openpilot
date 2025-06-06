@@ -84,7 +84,7 @@
     </message>
     <message>
         <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Previna o envio de grandes volumes de dados em conexões de celular com franquia de limite de dados</translation>
     </message>
     <message>
         <source>default</source>
@@ -104,7 +104,7 @@
     </message>
     <message>
         <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Previna o envio de grandes volumes de dados em conexões Wi-Fi com franquia de limite de dados</translation>
     </message>
 </context>
 <context>
@@ -313,6 +313,14 @@
     <message>
         <source>Watch and/or download recordings from comma device cameras</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disengage to Reset Calibration</source>
+        <translation>Desacione para Resetar a Calibração</translation>
+    </message>
+    <message>
+        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation> Resetar a calibração fará com que o openpilot reinicie se o carro estiver ligado.</translation>
     </message>
 </context>
 <context>
@@ -1246,10 +1254,6 @@ Reboot Required.</source>
         <translation>Ativar openpilot</translation>
     </message>
     <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
-        <translation>Use o sistema openpilot para controle de cruzeiro adaptativo e assistência ao motorista de manutenção de faixa. Sua atenção é necessária o tempo todo para usar esse recurso. A alteração desta configuração tem efeito quando o carro é desligado.</translation>
-    </message>
-    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>Ativar Avisos de Saída de Faixa</translation>
     </message>
@@ -1372,6 +1376,14 @@ Reboot Required.</source>
     <message>
         <source>Normal is recommended. In sport mode, TOP will provide aggressive acceleration for a dynamic driving experience. In eco mode, TOP will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these acceleration personality within Onroad Settings on the driving screen.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
+        <translation>Use o sistema openpilot para controle de cruzeiro adaptativo e assistência ao motorista de manutenção de faixa. Sua atenção é necessária o tempo todo para usar esse recurso.</translation>
+    </message>
+    <message>
+        <source> Changing this setting will restart openpilot if the car is powered on.</source>
+        <translation> Alterar esta configuração fará com que o openpilot reinicie se o carro estiver ligado.</translation>
     </message>
 </context>
 <context>

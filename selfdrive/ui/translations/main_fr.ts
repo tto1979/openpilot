@@ -314,6 +314,14 @@
         <source>Watch and/or download recordings from comma device cameras</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Disengage to Reset Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -1244,10 +1252,6 @@ Reboot Required.</source>
         <translation>Activer openpilot</translation>
     </message>
     <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
-        <translation>Utilisez le système openpilot pour le régulateur de vitesse adaptatif et l&apos;assistance au maintien de voie. Votre attention est requise en permanence pour utiliser cette fonctionnalité. La modification de ce paramètre prend effet lorsque la voiture est éteinte.</translation>
-    </message>
-    <message>
         <source>Experimental Mode</source>
         <translation>Mode expérimental</translation>
     </message>
@@ -1369,6 +1373,14 @@ Reboot Required.</source>
     </message>
     <message>
         <source>Normal is recommended. In sport mode, TOP will provide aggressive acceleration for a dynamic driving experience. In eco mode, TOP will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these acceleration personality within Onroad Settings on the driving screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Changing this setting will restart openpilot if the car is powered on.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

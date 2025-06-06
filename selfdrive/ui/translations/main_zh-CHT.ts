@@ -314,6 +314,14 @@
         <source>Watch and/or download recordings from comma device cameras</source>
         <translation>觀看或下載comma設備的行車記錄影像</translation>
     </message>
+    <message>
+        <source>Disengage to Reset Calibration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -1249,10 +1257,6 @@ Reboot Required.</source>
         <translation>啟用 openpilot</translation>
     </message>
     <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
-        <translation>使用 openpilot 的主動式巡航和車道保持功能，開啟後您需要持續集中注意力，設定變更在重新啟動車輛後生效。</translation>
-    </message>
-    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>啟用車道偏離警告</translation>
     </message>
@@ -1375,6 +1379,14 @@ Reboot Required.</source>
     <message>
         <source>Normal is recommended. In sport mode, TOP will provide aggressive acceleration for a dynamic driving experience. In eco mode, TOP will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these acceleration personality within Onroad Settings on the driving screen.</source>
         <translation>普通模式是建議的選擇。Sport模式，TOP將會採用較積極的油門加速，提供動力較充足的跟車節奏。Eco模式，TOP將會採用較為平順的油門加速，以提供舒適的乘坐感。</translation>
+    </message>
+    <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Changing this setting will restart openpilot if the car is powered on.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
