@@ -1,7 +1,6 @@
 import os
 import operator
 import subprocess
-import time
 import importlib.util
 import platform
 
@@ -58,80 +57,41 @@ def only_onroad(started: bool, params: Params, CP: car.CarParams) -> bool:
 def only_offroad(started: bool, params: Params, CP: car.CarParams) -> bool:
   return not started
 
-def install_flask() -> bool:
-  max_attempts = 3
-
-  for attempt in range(1, max_attempts + 1):
-    print(f"Attempting to install Flask (attempt {attempt}/{max_attempts})")
-
-    try:
-      result = subprocess.run(['ping', '-c', '1', '8.8.8.8'],
-                            capture_output=True, timeout=10)
-      if result.returncode != 0:
-        print("Network connection failed, retrying...")
-        time.sleep(5)
-        continue
-
-      subprocess.run(['sudo', 'tee', '/etc/resolv.conf'],
-                    input="nameserver 8.8.8.8\nnameserver 8.8.4.4\n",
-                    text=True, check=True)
-
-      subprocess.run(['sudo', 'systemctl', 'restart', 'network-manager'],
-                    check=True)
-      time.sleep(3)
-
-      subprocess.run(['sudo', 'apt', 'update'], check=True)
-      subprocess.run(['sudo', 'pip3', 'install', '--upgrade', 'pip'], check=True)
-
-      subprocess.run(['sudo', 'pip3', 'install', 'flask'], check=True)
-
-      if importlib.util.find_spec("flask") is not None:
-        try:
-          flask_module = importlib.import_module("flask")
-          version = getattr(flask_module, '__version__', 'unknown')
-          print(f"Flask installed successfully, version: {version}")
-          return True
-        except Exception as e:
-          print(f"Flask import failed after installation: {e}")
-          continue
-      else:
-        print("Flask module not found after installation")
-        continue
-
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-      print(f"Flask installation attempt {attempt} failed: {e}")
-      if attempt < max_attempts:
-        time.sleep(5)
-      continue
-
-  print(f"Flask installation failed after {max_attempts} attempts")
-  return False
-
 def flask_ready_and_second_boot(started: bool, params: Params, CP: car.CarParams) -> bool:
-  flask_available = False
-  if importlib.util.find_spec("flask") is not None:
-    try:
-      importlib.import_module("flask")
-      flask_available = True
-    except ImportError:
-      print("Flask module found but import failed")
-  else:
-    print("Flask not found")
-
-  if not flask_available:
-    flask_available = install_flask()
+  # Quick check if Flask is installed
+  flask_available = importlib.util.find_spec("flask") is not None
 
   if flask_available:
-    current_second_boot = Params().get_bool("SecondBoot", "0")
+    # Flask exists - enable fleetmanager and set SecondBoot to 1
+    current_second_boot = params.get("SecondBoot", encoding='utf8')
     if current_second_boot != "1":
-      Params().put_nonblocking("SecondBoot", "1")
+      params.put_nonblocking("SecondBoot", "1")
     return True
   else:
-    current_second_boot = Params().get_bool("SecondBoot", "0")
+    # Flask doesn't exist - set SecondBoot to 0 and start installation
+    current_second_boot = params.get("SecondBoot", encoding='utf8')
     if current_second_boot != "0":
-      Params().put_nonblocking("SecondBoot", "0")
+      params.put_nonblocking("SecondBoot", "0")
+
+    # Start installation only once
+    install_requested = params.get_bool("FlaskInstallRequested")
+    if not install_requested:
+      params.put_nonblocking("FlaskInstallRequested", "1")
+
+      # Start independent installation process (not managed by Manager)
+      try:
+        subprocess.Popen([
+          'python3', '-m', 'system.flask_installer'
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print("Flask installation process started")
+      except Exception as e:
+        print(f"Failed to start Flask installation: {e}")
+
     return False
 
+def flask_simple_check(started: bool, params: Params, CP: car.CarParams) -> bool:
+  """Simple Flask check for fleetmanager startup condition"""
+  return importlib.util.find_spec("flask") is not None
 
 def or_(*fns):
   return lambda *args: operator.or_(*(fn(*args) for fn in fns))
@@ -185,7 +145,7 @@ procs = [
   PythonProcess("uploader", "system.loggerd.uploader", always_run),
   PythonProcess("statsd", "system.statsd", always_run),
 
-  NativeProcess("fleetmanager", "system/fleetmanager", ["./fleet_manager.py"], flask_ready_and_second_boot, enabled=flask_ready_and_second_boot),
+  NativeProcess("fleetmanager", "system/fleetmanager", ["./fleet_manager.py"], flask_ready_and_second_boot),
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
