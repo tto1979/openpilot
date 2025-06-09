@@ -7,7 +7,7 @@ from openpilot.selfdrive.ui.layouts.settings.developer import DeveloperLayout
 from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
 from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
-from openpilot.system.ui.lib.application import gui_app, FontWeight
+from openpilot.system.ui.lib.application import gui_app, FontWeight, Widget
 from openpilot.system.ui.lib.label import gui_text_box
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.selfdrive.ui.layouts.network import NetworkLayout
@@ -48,8 +48,9 @@ class PanelInfo:
   button_rect: rl.Rectangle
 
 
-class SettingsLayout:
+class SettingsLayout(Widget):
   def __init__(self):
+    super().__init__()
     self._params = Params()
     self._current_panel = PanelType.DEVICE
     self._max_scroll = 0.0
@@ -57,10 +58,10 @@ class SettingsLayout:
     # Panel configuration
     self._panels = {
       PanelType.DEVICE: PanelInfo("Device", DeviceLayout(), rl.Rectangle(0, 0, 0, 0)),
+      PanelType.NETWORK: PanelInfo("Network", NetworkLayout(), rl.Rectangle(0, 0, 0, 0)),
       PanelType.TOGGLES: PanelInfo("Toggles", TogglesLayout(), rl.Rectangle(0, 0, 0, 0)),
       PanelType.SOFTWARE: PanelInfo("Software", SoftwareLayout(), rl.Rectangle(0, 0, 0, 0)),
       PanelType.FIREHOSE: PanelInfo("Firehose", None, rl.Rectangle(0, 0, 0, 0)),
-      PanelType.NETWORK: PanelInfo("Network", NetworkLayout(), rl.Rectangle(0, 0, 0, 0)),
       PanelType.DEVELOPER: PanelInfo("Developer", DeveloperLayout(), rl.Rectangle(0, 0, 0, 0)),
     }
 
@@ -73,7 +74,7 @@ class SettingsLayout:
   def set_callbacks(self, on_close: Callable):
     self._close_callback = on_close
 
-  def render(self, rect: rl.Rectangle):
+  def _render(self, rect: rl.Rectangle):
     # Calculate layout
     sidebar_rect = rl.Rectangle(rect.x, rect.y, SIDEBAR_WIDTH, rect.height)
     panel_rect = rl.Rectangle(rect.x + SIDEBAR_WIDTH, rect.y, rect.width - SIDEBAR_WIDTH, rect.height)
@@ -81,9 +82,6 @@ class SettingsLayout:
     # Draw components
     self._draw_sidebar(sidebar_rect)
     self._draw_current_panel(panel_rect)
-
-    if rl.is_mouse_button_released(rl.MouseButton.MOUSE_BUTTON_LEFT):
-      self.handle_mouse_release(rl.get_mouse_position())
 
   def _draw_sidebar(self, rect: rl.Rectangle):
     rl.draw_rectangle_rec(rect, SIDEBAR_COLOR)
@@ -154,7 +152,7 @@ class SettingsLayout:
         alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE,
       )
 
-  def handle_mouse_release(self, mouse_pos: rl.Vector2) -> bool:
+  def _handle_mouse_release(self, mouse_pos: rl.Vector2) -> bool:
     # Check close button
     if rl.check_collision_point_rec(mouse_pos, self._close_btn_rect):
       if self._close_callback:
