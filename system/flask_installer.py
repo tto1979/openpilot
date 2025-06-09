@@ -5,12 +5,12 @@ import importlib.util
 def main():
   """Simple Flask installer - no retries, no complex logic"""
   print("Flask installer started")
-  
+
   # Quick check if Flask already available
   if importlib.util.find_spec("flask") is not None:
     print("Flask already available")
     return
-  
+
   # Try with dist-packages path
   import sys
   dist_packages_path = '/usr/lib/python3/dist-packages'
@@ -19,7 +19,7 @@ def main():
     if importlib.util.find_spec("flask") is not None:
       print("Flask found in dist-packages")
       return
-  
+
   # Install Flask via pip
   try:
     print("Installing Flask...")
