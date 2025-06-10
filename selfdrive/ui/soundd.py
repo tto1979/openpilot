@@ -64,11 +64,12 @@ class Soundd:
 
     self.selfdrive_timeout_alert = False
 
-    # ADD simple QuietDrive cache
-    self.quiet_drive = False
-    self.quiet_drive_last_update = 0
-
     self.spl_filter_weighted = FirstOrderFilter(0, 2.5, FILTER_DT, initialized=False)
+
+    try:
+      self.quiet_drive = self.params.get_bool("QuietDrive")
+    except:
+      self.quiet_drive = 0
 
   def load_sounds(self):
     self.loaded_sounds: dict[int, np.ndarray] = {}
@@ -104,6 +105,8 @@ class Soundd:
         written_frames += frames_to_write
         self.current_sound_frame += frames_to_write
 
+      if self.quiet_drive and self.current_alert in [AudibleAlert.engage, AudibleAlert.disengage]:
+        self.current_volume = 0
     return ret * self.current_volume
 
   def callback(self, data_out: np.ndarray, frames: int, time, status) -> None:
@@ -112,9 +115,6 @@ class Soundd:
     data_out[:frames, 0] = self.get_sound_data(frames)
 
   def update_alert(self, new_alert):
-    if self.quiet_drive and new_alert not in [AudibleAlert.warningSoft, AudibleAlert.warningImmediate, AudibleAlert.none]:
-      new_alert = AudibleAlert.none
-
     current_alert_played_once = self.current_alert == AudibleAlert.none or self.current_sound_frame > len(self.loaded_sounds[self.current_alert])
     if self.current_alert != new_alert and (new_alert != AudibleAlert.none or current_alert_played_once):
       self.current_alert = new_alert
@@ -155,15 +155,7 @@ class Soundd:
       while True:
         sm.update(0)
 
-        current_time = time.monotonic()
-        if current_time - self.quiet_drive_last_update > 1.0:
-          try:
-            self.quiet_drive = self.params.get_bool("QuietDrive")
-            self.quiet_drive_last_update = current_time
-          except Exception:
-            pass
-
-        if sm.updated['microphone'] and self.current_alert == AudibleAlert.none:
+        if sm.updated['microphone'] and self.current_alert == AudibleAlert.none: # only update volume filter when not playing alert
           self.spl_filter_weighted.update(sm["microphone"].soundPressureWeightedDb)
           self.current_volume = self.calculate_volume(float(self.spl_filter_weighted.x))
 
