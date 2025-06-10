@@ -68,7 +68,7 @@ class Soundd:
 
     try:
       self.quiet_drive = self.params.get_bool("QuietDrive")
-    except:
+    except Exception:
       self.quiet_drive = 0
 
   def load_sounds(self):
