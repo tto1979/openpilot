@@ -106,6 +106,9 @@ class CarSpecificEvents:
           Params().put_bool("LateralAllowed", False)
         self.prev_atl = CS_prev.cruiseState.available
 
+      if CS.brakeholdGovernor:
+        events.add(EventName.automaticBrakehold)
+
     elif self.CP.brand == 'gm':
       events = self.create_common_events(CS, CS_prev, extra_gears=[GearShifter.sport, GearShifter.low,
                                                                    GearShifter.eco, GearShifter.manumatic],
