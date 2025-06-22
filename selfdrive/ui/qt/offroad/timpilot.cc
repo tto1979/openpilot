@@ -10,6 +10,8 @@
 #include <QScroller>
 #include <QListView>
 #include <QListWidget>
+#include <QProcess>
+#include <QDir>
 
 #include "common/params.h"
 #include "selfdrive/ui/qt/api.h"
@@ -21,17 +23,60 @@ static QStringList get_list(const char* path)
 {
   QStringList stringList;
   QFile textFile(path);
-  if (textFile.open(QIODevice::ReadOnly))
-  {
-      QTextStream textStream(&textFile);
-      while (true)
-      {
-        QString line = textStream.readLine();
-        if (line.isNull())
-            break;
-        else
-            stringList.append(line);
+  if (!textFile.exists()) {
+    qDebug() << "Cars file not found, generating...";
+
+    QFile allCarsCheck("/data/openpilot/selfdrive/car/top_tmp/AllCars");
+    if (!allCarsCheck.exists()) {
+      qDebug() << "AllCars file not found, generating AllCars first...";
+
+      QProcess process;
+      process.setWorkingDirectory("/data/openpilot");
+      process.start("python3", QStringList() << "opendbc_repo/opendbc/car/fingerprints.py");
+      process.waitForFinished(8000);
+
+      if (process.exitCode() == 0) {
+        QString output = process.readAllStandardOutput();
+
+        QFile allCarsFile("/data/openpilot/selfdrive/car/top_tmp/AllCars");
+        if (allCarsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+          QTextStream out(&allCarsFile);
+          out << output;
+          allCarsFile.close();
+          qDebug() << "AllCars file generated successfully";
+        } else {
+          qDebug() << "Failed to write AllCars file";
+          return stringList;
+        }
+      } else {
+        qDebug() << "fingerprints.py failed with exit code:" << process.exitCode();
+        return stringList;
       }
+    } else {
+      qDebug() << "AllCars file exists, skipping generation";
+    }
+    qDebug() << "Generating Cars file from AllCars...";
+    QProcess forceProcess;
+    forceProcess.setWorkingDirectory("/data/openpilot");
+    forceProcess.start("python3", QStringList() << "force_car_recognition.py");
+    forceProcess.waitForFinished(2000);
+
+    if (forceProcess.exitCode() != 0) {
+      qDebug() << "force_car_recognition.py failed";
+    } else {
+      qDebug() << "Cars file generated successfully";
+    }
+  }
+
+  if (textFile.open(QIODevice::ReadOnly)) {
+    QTextStream textStream(&textFile);
+    while (true) {
+      QString line = textStream.readLine();
+      if (line.isNull())
+        break;
+      else
+        stringList.append(line);
+    }
   }
 
   return stringList;
