@@ -75,9 +75,6 @@ _services: dict[str, tuple] = {
   "userFlag": (True, 0., 1),
   "microphone": (True, 10., 10),
 
-  # TOP
-  "longitudinalPlanTOP": (True, 20., 10),
-  "topControlsState": (True, 100., 10),
   # debug
   "uiDebug": (True, 0., 1),
   "testJoystick": (True, 0.),
@@ -95,6 +92,10 @@ _services: dict[str, tuple] = {
   "customReservedRawData0": (True, 0.),
   "customReservedRawData1": (True, 0.),
   "customReservedRawData2": (True, 0.),
+  # TOP
+  "longitudinalPlanTOP": (True, 20., 10),
+  "topControlsState": (True, 100., 10),
+  "modelExt": (True, 20.),
 }
 SERVICE_LIST = {name: Service(*vals) for
                 idx, (name, vals) in enumerate(_services.items())}

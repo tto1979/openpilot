@@ -2615,7 +2615,7 @@ struct Event {
     # DON'T change which struct it points to
     topControlsState @107 :Custom.TopControlsState;
     longitudinalPlanTOP @108 :Custom.LongitudinalPlanTOP;
-    customReserved2 @109 :Custom.CustomReserved2;
+    modelExt @109 :Custom.ModelExt;
     customReserved3 @110 :Custom.CustomReserved3;
     customReserved4 @111 :Custom.CustomReserved4;
     customReserved5 @112 :Custom.CustomReserved5;

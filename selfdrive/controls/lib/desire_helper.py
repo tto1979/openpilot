@@ -2,7 +2,7 @@ from cereal import log
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_MDL
-import numpy as np
+import time
 
 LaneChangeState = log.LaneChangeState
 LaneChangeDirection = log.LaneChangeDirection
@@ -42,45 +42,18 @@ class DesireHelper:
     self.keep_pulse_timer = 0.0
     self.prev_one_blinker = False
     self.desire = log.Desire.none
-    self.lane_available = True
-    self.lane_change_completed = False
+    self.lat_lca_auto_sec = 0.5
+    self.lat_lca_auto_sec_start = 0.
     self.params = Params()
     self.nudgeless = self.params.get_bool("NudgelessLaneChange")
-    self.lane_detection = self.nudgeless
     self.one_lane_change = self.nudgeless
+    self.lane_change_completed = False
     self.atl_enabled = self.params.get_bool("dp_atl")
 
-  def update(self, carstate, lateral_active, lane_change_prob, md):
+  def update(self, carstate, lateral_active, lane_change_prob, left_edge_detected, right_edge_detected):
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
     below_lane_change_speed = v_ego < LANE_CHANGE_ATL_SPEED_MIN if self.atl_enabled else v_ego < LANE_CHANGE_SPEED_MIN
-
-    # Lane detection
-    if self.lane_detection and one_blinker:
-      # Set the minimum lane threshold to 2.5 meters
-      min_lane_threshold = 2.5
-      # Set the blinker index based on which signal is on
-      blinker_index = 0 if carstate.leftBlinker else 1
-      if len(md.roadEdges) > blinker_index and len(md.laneLines) > (blinker_index + 1):
-        desired_edge = md.roadEdges[blinker_index]
-        current_lane = md.laneLines[blinker_index + 1]
-        # Check if both the desired lane and the current lane have valid x and y values
-        if all([desired_edge.x, desired_edge.y, current_lane.x, current_lane.y]) and len(desired_edge.x) == len(current_lane.x):
-          # Interpolate the x and y values to the same length
-          x = np.linspace(desired_edge.x[0], desired_edge.x[-1], num=len(desired_edge.x))
-          lane_y = np.interp(x, current_lane.x, current_lane.y)
-          desired_y = np.interp(x, desired_edge.x, desired_edge.y)
-          # Calculate the width of the lane we're wanting to change into
-          lane_width = np.abs(desired_y - lane_y)
-          # Set lane_available to True if the lane width is larger than the threshold
-          self.lane_available = np.amax(lane_width) >= min_lane_threshold
-        else:
-          self.lane_available = False
-      else:
-        self.lane_available = False
-    else:
-      # Default to setting "lane_available" to True
-      self.lane_available = True
 
     if not lateral_active or self.lane_change_timer > LANE_CHANGE_TIME_MAX:
       self.lane_change_state = LaneChangeState.off
@@ -90,6 +63,8 @@ class DesireHelper:
       if self.lane_change_state == LaneChangeState.off and one_blinker and not self.prev_one_blinker and not below_lane_change_speed and not carstate.brakePressed:
         self.lane_change_state = LaneChangeState.preLaneChange
         self.lane_change_ll_prob = 1.0
+        if self.lat_lca_auto_sec > 0.:
+          self.lat_lca_auto_sec_start = time.time()
 
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
@@ -101,12 +76,16 @@ class DesireHelper:
                          ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                           (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
 
-        # Conduct a nudgeless lane change if all the conditions are in place
-        if self.nudgeless and self.lane_available and not self.lane_change_completed:
-          torque_applied = True
+        blindspot_detected = (((carstate.leftBlindspot or left_edge_detected) and self.lane_change_direction == LaneChangeDirection.left) or
+                              ((carstate.rightBlindspot or right_edge_detected) and self.lane_change_direction == LaneChangeDirection.right))
 
-        blindspot_detected = ((carstate.leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
-                              (carstate.rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+        # reset timer
+        if self.lat_lca_auto_sec > 0.:
+          if blindspot_detected:
+            self.lat_lca_auto_sec_start = time.time()
+          else:
+            if (time.time() - self.lat_lca_auto_sec_start) >= self.lat_lca_auto_sec and self.nudgeless and not self.lane_change_completed:
+              torque_applied = True
 
         if not one_blinker or below_lane_change_speed:
           self.lane_change_state = LaneChangeState.off
