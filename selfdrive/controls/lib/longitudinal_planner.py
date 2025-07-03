@@ -11,7 +11,7 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_speed_error, get_accel_from_plan
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 from openpilot.top.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlannerTOP
@@ -68,6 +68,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
     self.mpc = LongitudinalMpc(CP, dt=dt)
+    # TODO remove mpc modes when TR released
     self.mpc.mode = 'acc'
     LongitudinalPlannerTOP.__init__(self)
     self.fcw = False
@@ -77,7 +78,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.a_desired = init_a
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
     self.prev_accel_clip = [ACCEL_MIN, ACCEL_MAX]
-    self.v_model_error = 0.0
     self.output_a_target = 0.0
     self.output_should_stop = False
 
@@ -158,12 +158,12 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     return self.red_light_detected
 
   @staticmethod
-  def parse_model(model_msg, model_error):
+  def parse_model(model_msg):
     if (len(model_msg.position.x) == ModelConstants.IDX_N and
       len(model_msg.velocity.x) == ModelConstants.IDX_N and
       len(model_msg.acceleration.x) == ModelConstants.IDX_N):
-      x = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.position.x) - model_error * T_IDXS_MPC
-      v = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.velocity.x) - model_error
+      x = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.position.x)
+      v = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.velocity.x)
       a = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.acceleration.x)
       j = np.zeros(len(T_IDXS_MPC))
     else:
@@ -236,7 +236,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
       self.standstill_prev = self.standstill_current
 
-    self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
+    self.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
@@ -261,7 +261,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    if self.mpc.mode == 'acc':
+    if self.mode == 'acc':
       if self.CP.brand == "toyota":
         accel_clip = [ACCEL_MIN, get_max_accel_toyota(v_ego)]
       else:
@@ -274,7 +274,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     if self.accel_controller.is_personality_enabled:
       max_limit = self.accel_controller._get_max_accel_for_speed(v_ego)
 
-      if self.mpc.mode == 'acc':
+      if self.mode == 'acc':
         # Use the accel controller limits directly
         accel_clip = [ACCEL_MIN, max_limit]
         # Recalculate limit turn according to the new max limit
@@ -290,9 +290,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
-    # Compute model v_ego error
-    self.v_model_error = get_speed_error(sm['modelV2'], v_ego)
-    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'], self.v_model_error)
+    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
@@ -333,8 +331,17 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
-    output_a_target, self.output_should_stop = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
+    output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
                                                                         action_t=action_t, vEgoStopping=self.CP.vEgoStopping)
+    output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
+    output_should_stop_e2e = sm['modelV2'].action.shouldStop
+
+    if self.mode == 'acc':
+      output_a_target = output_a_target_mpc
+      self.output_should_stop = output_should_stop_mpc
+    else:
+      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
+      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
     for idx in range(2):
       accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
