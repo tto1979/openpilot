@@ -319,23 +319,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Steering lag calibration is %1% complete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Steering lag calibration is complete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Steering torque response calibration is %1% complete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Steering torque response calibration is complete.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>openpilot is continuously calibrating, resetting is rarely required. Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is %1% complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is %1% complete.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is complete.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1429,6 +1433,14 @@ Reboot Required.</source>
     </message>
     <message>
         <source> Changing this setting will restart openpilot if the car is powered on.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Record and Upload Microphone Audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
