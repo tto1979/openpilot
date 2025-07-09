@@ -174,7 +174,6 @@ class LatControlTorque(LatControl):
         predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
         desired_lateral_jerk = (np.interp(self.desired_lat_jerk_time, ModelConstants.T_IDXS, model_data.acceleration.y) - desired_lateral_accel) / self.desired_lat_jerk_time
         lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk)
-        
         if lookahead_lateral_jerk == 0.0:
           actual_lateral_jerk = 0.0
         lateral_jerk_setpoint = self.lat_jerk_friction_factor * lookahead_lateral_jerk
@@ -217,7 +216,7 @@ class LatControlTorque(LatControl):
         torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
 
         pid_log.error = float(torque_from_setpoint - torque_from_measurement)
-        error_blend_factor = np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0])
+        error_blend_factor = float(np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
         if error_blend_factor > 0.0:  # blend in stronger error response when in high lat accel
           nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0] + \
             [0.0] * len(past_lateral_accels_desired) + [0.0] * len(future_planned_lateral_accels) + \
