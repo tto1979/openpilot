@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.10.0 - 2025.07.08 (TR14 Model)"
+#define COMMA_VERSION "0.10.0 - 2025.07.16 (LeTR14 Model)"
