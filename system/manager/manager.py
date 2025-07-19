@@ -33,6 +33,7 @@ def manager_init() -> None:
   params.clear_all(ParamKeyType.CLEAR_ON_MANAGER_START)
   params.clear_all(ParamKeyType.CLEAR_ON_ONROAD_TRANSITION)
   params.clear_all(ParamKeyType.CLEAR_ON_OFFROAD_TRANSITION)
+  params.clear_all(ParamKeyType.CLEAR_ON_IGNITION_ON)
   if build_metadata.release_channel:
     params.clear_all(ParamKeyType.DEVELOPMENT_ONLY)
 
@@ -161,13 +162,14 @@ def manager_thread() -> None:
   if not params.get_bool("fleetmanager"):
     ignore += ["fleetmanager"]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams'], poll='deviceState')
+  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   write_onroad_params(False, params)
   ensure_running(managed_processes.values(), False, params=params, CP=sm['carParams'], not_run=ignore)
 
   started_prev = False
+  ignition_prev = False
 
   while True:
     sm.update(1000)
@@ -183,11 +185,16 @@ def manager_thread() -> None:
       if os.path.isfile(os.path.join(sentry.CRASHES_DIR, 'error.txt')):
         os.remove(os.path.join(sentry.CRASHES_DIR, 'error.txt'))
 
+    ignition = any(ps.ignitionLine or ps.ignitionCan for ps in sm['pandaStates'] if ps.pandaType != log.PandaState.PandaType.unknown)
+    if ignition and not ignition_prev:
+      params.clear_all(ParamKeyType.CLEAR_ON_IGNITION_ON)
+
     # update onroad params, which drives pandad's safety setter thread
     if started != started_prev:
       write_onroad_params(started, params)
 
     started_prev = started
+    ignition_prev = ignition
 
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
 
