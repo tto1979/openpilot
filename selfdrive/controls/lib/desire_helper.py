@@ -64,7 +64,7 @@ class DesireHelper:
         self.lane_change_state = LaneChangeState.preLaneChange
         self.lane_change_ll_prob = 1.0
         if self.lat_lca_auto_sec > 0.:
-          self.lat_lca_auto_sec_start = time.time()
+          self.lat_lca_auto_sec_start = time.monotonic()
 
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
@@ -82,9 +82,9 @@ class DesireHelper:
         # reset timer
         if self.lat_lca_auto_sec > 0.:
           if blindspot_detected:
-            self.lat_lca_auto_sec_start = time.time()
+            self.lat_lca_auto_sec_start = time.monotonic()
           else:
-            if (time.time() - self.lat_lca_auto_sec_start) >= self.lat_lca_auto_sec and self.nudgeless and not self.lane_change_completed:
+            if (time.monotonic() - self.lat_lca_auto_sec_start) >= self.lat_lca_auto_sec and self.nudgeless and not self.lane_change_completed:
               torque_applied = True
 
         if not one_blinker or below_lane_change_speed:

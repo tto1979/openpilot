@@ -7,7 +7,7 @@
 # (https://github.com/sunnyhaibin/sunnypilot) Big thanks for sunny's amazing work
 
 import numpy as np
-from time import time
+import time
 from openpilot.common.params import Params
 params = Params()
 
@@ -28,7 +28,7 @@ class VisionTurnController:
     return self.op_enabled and not self.gas_pressed and self.enabled
 
   def update_params(self):
-    t = time()
+    t = time.monotonic()
     if t > self.last_params_update + 5.0:
       self.enabled = params.get_bool("TurnVisionControl")
       self.last_params_update = t
