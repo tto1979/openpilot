@@ -44,7 +44,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - name: Getting LFS files
       uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e
       with:
@@ -81,7 +80,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - name: Setup docker push
       if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request' && github.repository == 'commaai/openpilot'
       run: |
@@ -99,7 +97,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - run: echo "CACHE_COMMIT_DATE=$(git log -1 --pretty='format:%cd' --date=format:'%Y-%m-%d-%H:%M')" >> $GITHUB_ENV
     - name: Homebrew cache
       uses: ./.github/workflows/auto-cache
@@ -140,7 +137,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - uses: ./.github/workflows/setup-with-retry
     - name: Static analysis
       timeout-minutes: 10
@@ -158,7 +154,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - uses: ./.github/workflows/setup-with-retry
       id: setup-step
     - name: Build openpilot
@@ -184,7 +179,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - uses: ./.github/workflows/setup-with-retry
       id: setup-step
     - name: Cache test routes
@@ -238,7 +232,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - uses: ./.github/workflows/setup-with-retry
       id: setup-step
     - name: Cache test routes
@@ -267,7 +260,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          token: ${{ secrets.TTO }}
           ref: ${{ github.event.pull_request.base.ref }}
       - run: git lfs pull
       - uses: ./.github/workflows/setup-with-retry
@@ -278,7 +270,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          token: ${{ secrets.TTO }}
           path: current
       - run: cd current && git lfs pull
       - name: Save car docs diff
@@ -328,7 +319,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-        token: ${{ secrets.TTO }}
     - uses: ./.github/workflows/setup-with-retry
       id: setup-step
     - name: Build openpilot
@@ -355,7 +345,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          token: ${{ secrets.TTO }}
       - uses: ./.github/workflows/setup-with-retry
       - name: caching frames
         id: frames-cache
