@@ -237,25 +237,28 @@ class LatControlTorque(LatControl):
 
         # apply friction override for cars with low NN friction response
         if self.nn_friction_override:
-          pid_log.error += self.torque_from_lateral_accel(LatControlInputs(0.0, 0.0, CS.vEgo, CS.aEgo), self.torque_params,
-            friction_input, lateral_accel_deadzone, friction_compensation=True, gravity_adjusted=False)
+          base_torque = self.torque_from_lateral_accel(LatControlInputs(0.0, 0.0, CS.vEgo, CS.aEgo), self.torque_params,
+            friction_input, lateral_accel_deadzone)
+          friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+          ff += base_torque + friction_torque
         nn_log = nn_input + nnff_setpoint_input + nnff_measurement_input
       else:
         gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
         torque_from_setpoint = self.torque_from_lateral_accel(LatControlInputs(setpoint, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params,
-          setpoint, lateral_accel_deadzone, friction_compensation=False, gravity_adjusted=False)
+          lateral_jerk_setpoint, lateral_accel_deadzone)
         torque_from_measurement = self.torque_from_lateral_accel(LatControlInputs(measurement, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params,
-          measurement, lateral_accel_deadzone, friction_compensation=False, gravity_adjusted=False)
+          lateral_jerk_measurement, lateral_accel_deadzone)
         pid_log.error = float(torque_from_setpoint - torque_from_measurement)
         error = desired_lateral_accel - actual_lateral_accel
-
-        ff = self.torque_from_lateral_accel(LatControlInputs(gravity_adjusted_lateral_accel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params,
-          desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, friction_compensation=False, gravity_adjusted=True)
 
         if self.use_lateral_jerk:
           friction_input = lat_accel_friction_factor * error + self.lat_jerk_friction_factor * lookahead_lateral_jerk
         else:
           friction_input = error
+
+        ff = self.torque_from_lateral_accel(LatControlInputs(gravity_adjusted_lateral_accel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params,
+          friction_input, lateral_accel_deadzone)
+
         ff += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
       freeze_integrator = steer_limited_by_controls or CS.steeringPressed or CS.vEgo < 5
