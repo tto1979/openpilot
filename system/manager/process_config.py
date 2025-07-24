@@ -62,21 +62,21 @@ def flask_ready_and_second_boot(started: bool, params: Params, CP: car.CarParams
   flask_available = importlib.util.find_spec("flask") is not None
 
   if flask_available:
-    # Flask exists - enable fleetmanager and set SecondBoot to 1
-    current_second_boot = params.get("SecondBoot", encoding='utf8')
-    if current_second_boot != "1":
-      params.put_nonblocking("SecondBoot", "1")
+    # Flask exists - enable fleetmanager and set SecondBoot to True
+    current_second_boot = params.get_bool("SecondBoot")
+    if not current_second_boot:
+      params.put_bool("SecondBoot", True)
     return True
   else:
-    # Flask doesn't exist - set SecondBoot to 0 and start installation
-    current_second_boot = params.get("SecondBoot", encoding='utf8')
-    if current_second_boot != "0":
-      params.put_nonblocking("SecondBoot", "0")
+    # Flask doesn't exist - set SecondBoot to False and start installation
+    current_second_boot = params.get_bool("SecondBoot")
+    if current_second_boot:
+      params.put_bool("SecondBoot", False)
 
     # Start installation only once
     install_requested = params.get_bool("FlaskInstallRequested")
     if not install_requested:
-      params.put_nonblocking("FlaskInstallRequested", "1")
+      params.put_bool("FlaskInstallRequested", True)
 
       # Start independent installation process (not managed by Manager)
       try:
