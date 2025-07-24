@@ -24,8 +24,9 @@ class AccelController:
 
   def _update_personality_from_param(self):
     if self.frame % int(1. / DT_MDL) == 0:
-      personality_str = self.params.get("AccelPersonality", encoding='utf-8')
-      if personality_str is not None:
+      personality_bytes = self.params.get("AccelPersonality")
+      if personality_bytes is not None:
+        personality_str = personality_bytes.decode('utf-8')
         personality_int = int(personality_str)
         if personality_int in [AccelPersonality.stock, AccelPersonality.normal, AccelPersonality.eco, AccelPersonality.sport]:
           self.personality = personality_int
