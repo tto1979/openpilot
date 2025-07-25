@@ -779,6 +779,11 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("注意力分散程度過高"),
   },
 
+  EventName.excessiveActuation: {
+    ET.SOFT_DISABLE: soft_disable_alert("Excessive Actuation"),
+    ET.NO_ENTRY: NoEntryAlert("Excessive Actuation"),
+  },
+
   EventName.overheat: {
     ET.PERMANENT: overheat_alert,
     ET.SOFT_DISABLE: soft_disable_alert("系統過熱"),
