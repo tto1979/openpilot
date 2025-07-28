@@ -677,6 +677,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/lane.png",
                                   this));
 
+  toggles.append(new ParamControl("road_edge_detection",
+                                  tr("Edge Detection During Lane Changes"),
+                                  tr("When the system detects obstacles at the vehicle's edge, lane change assist functionality will be temporarily suspended.\nNOTE: This will show 'Car Detected in Blindspot' warning.")"),
+                                  "../assets/icons/lane.png",
+                                  this));
+
   toggles.append(new ParamControl("TurnVisionControl",
                                   tr("Vision Based Turn Control"),
                                   tr("Use vision path predictions to estimate the appropriate speed to drive through turns ahead."),
