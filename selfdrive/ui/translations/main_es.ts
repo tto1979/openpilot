@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation>Posponer Actualización</translation>
+        <translation type="vanished">Posponer Actualización</translation>
     </message>
     <message>
         <source>Reboot and Update</source>
@@ -530,6 +530,18 @@ El Modo Firehose te permite maximizar las subidas de datos de entrenamiento para
     </message>
     <message>
         <source>Device failed to register with the comma.ai backend. It will not connect or upload to comma.ai servers, and receives no support from comma.ai. If this is a device purchased at comma.ai/shop, open a ticket at https://comma.ai/support.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Acknowledge Excessive Actuation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snooze Update</source>
+        <translation type="unfinished">Posponer Actualización</translation>
+    </message>
+    <message>
+        <source>openpilot has detected excessive %1 actuation. This may be due to a software bug. Please contact support at https://comma.ai/support.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1235,6 +1247,15 @@ Reboot Required.</source>
     </message>
     <message>
         <source>Enable to use Toyota&apos;s stock longitudinal control.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edge Detection During Lane Changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When the system detects obstacles at the vehicle&apos;s edge, lane change assist functionality will be temporarily suspended.
+NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

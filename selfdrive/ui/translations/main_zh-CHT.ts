@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation>暫停更新</translation>
+        <translation type="vanished">暫停更新</translation>
     </message>
     <message>
         <source>Reboot and Update</source>
@@ -529,6 +529,18 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>Device failed to register with the comma.ai backend. It will not connect or upload to comma.ai servers, and receives no support from comma.ai. If this is a device purchased at comma.ai/shop, open a ticket at https://comma.ai/support.</source>
         <translation>裝置註冊 comma.ai 後端失敗。此裝置將無法連線或上傳資料至 comma.ai 伺服器，也無法獲得 comma.ai 的支援。若此裝置購自 comma.ai/shop，請至 https://comma.ai/support 建立支援請求。</translation>
+    </message>
+    <message>
+        <source>Acknowledge Excessive Actuation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snooze Update</source>
+        <translation type="unfinished">暫停更新</translation>
+    </message>
+    <message>
+        <source>openpilot has detected excessive %1 actuation. This may be due to a software bug. Please contact support at https://comma.ai/support.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1239,6 +1251,15 @@ Reboot Required.</source>
     <message>
         <source>Enable to use Toyota&apos;s stock longitudinal control.</source>
         <translation>開啟後將以Toyota原廠的蹤向控制加減速，而openpilot只進行方向盤的橫向車道維持。</translation>
+    </message>
+    <message>
+        <source>Edge Detection During Lane Changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When the system detects obstacles at the vehicle&apos;s edge, lane change assist functionality will be temporarily suspended.
+NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation>Adiar Atualização</translation>
+        <translation type="vanished">Adiar Atualização</translation>
     </message>
     <message>
         <source>Reboot and Update</source>
@@ -531,6 +531,18 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
     <message>
         <source>Device failed to register with the comma.ai backend. It will not connect or upload to comma.ai servers, and receives no support from comma.ai. If this is a device purchased at comma.ai/shop, open a ticket at https://comma.ai/support.</source>
         <translation>O dispositivo não conseguiu se registrar no backend da comma.ai. Ele não se conecta nem faz upload para os servidores da comma.ai e não recebe suporte da comma.ai. Se este for um dispositivo adquirido em comma.ai/shop, abra um ticket em https://comma.ai/support.</translation>
+    </message>
+    <message>
+        <source>Acknowledge Excessive Actuation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snooze Update</source>
+        <translation type="unfinished">Adiar Atualização</translation>
+    </message>
+    <message>
+        <source>openpilot has detected excessive %1 actuation. This may be due to a software bug. Please contact support at https://comma.ai/support.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1235,6 +1247,15 @@ Reboot Required.</source>
     </message>
     <message>
         <source>Enable to use Toyota&apos;s stock longitudinal control.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edge Detection During Lane Changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When the system detects obstacles at the vehicle&apos;s edge, lane change assist functionality will be temporarily suspended.
+NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
