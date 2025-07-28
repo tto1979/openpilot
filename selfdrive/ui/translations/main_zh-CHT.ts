@@ -1254,12 +1254,13 @@ Reboot Required.</source>
     </message>
     <message>
         <source>Edge Detection During Lane Changes</source>
-        <translation type="unfinished"></translation>
+        <translation>變換車道時進行邊緣偵測</translation>
     </message>
     <message>
         <source>When the system detects obstacles at the vehicle&apos;s edge, lane change assist functionality will be temporarily suspended.
 NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
-        <translation type="unfinished"></translation>
+        <translation>當系統偵測到車輛邊緣有障礙物存在時，將暫緩變換車道輔助功能進行。
+注意：這將顯示「盲點偵測到車輛」警告。</translation>
     </message>
 </context>
 <context>
