@@ -1345,7 +1345,7 @@ requires-dist = [
     { name = "pytest-repeat", marker = "extra == 'testing'" },
     { name = "pytest-subtests", marker = "extra == 'testing'" },
     { name = "pytest-timeout", marker = "extra == 'testing'" },
-    { name = "pytest-xdist", marker = "extra == 'testing'", git = "https://github.com/sshane/pytest-xdist?rev=909e97b49d12401c10608f9d777bfc9dab8a4413" },
+    { name = "pytest-xdist", marker = "extra == 'testing'", git = "https://github.com/sshane/pytest-xdist?rev=2b4372bd62699fb412c4fe2f95bf9f01bd2018da" },
     { name = "pytools", marker = "platform_machine != 'aarch64' and extra == 'dev'", specifier = "<2024.1.11" },
     { name = "pywinctl", marker = "extra == 'dev'" },
     { name = "pyzmq" },
@@ -4363,8 +4363,8 @@ wheels = [
 
 [[package]]
 name = "pytest-xdist"
-version = "3.7.1.dev3+g909e97b"
-source = { git = "https://github.com/sshane/pytest-xdist?rev=909e97b49d12401c10608f9d777bfc9dab8a4413#909e97b49d12401c10608f9d777bfc9dab8a4413" }
+version = "3.7.1.dev24+g2b4372b"
+source = { git = "https://github.com/sshane/pytest-xdist?rev=2b4372bd62699fb412c4fe2f95bf9f01bd2018da#2b4372bd62699fb412c4fe2f95bf9f01bd2018da" }
 dependencies = [
     { name = "execnet" },
     { name = "pytest" },
