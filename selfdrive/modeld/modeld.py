@@ -253,7 +253,7 @@ def main(demo=False):
   prev_action = log.ModelDataV2.Action()
 
   DH = DesireHelper()
-  RED = RoadEdgeDetector(params.get_bool("road_edge_detection")
+  RED = RoadEdgeDetector(params.get_bool("road_edge_detection"))
 
   while True:
     # Keep receiving frames until we are at least 1 frame ahead of previous extra frame
