@@ -79,7 +79,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
   elif personality==log.LongitudinalPersonality.standard:
     return 1.3
   elif personality==log.LongitudinalPersonality.aggressive:
-    return 0.9
+    return 0.85
   else:
     raise NotImplementedError("Longitudinal personality not supported")
 
@@ -395,7 +395,7 @@ class LongitudinalMpc:
     self.downhill = np.sin(pitch_rad) < -0.04
 
     if self.downhill:
-      t_follow += 0.3
+      t_follow += 0.5
 
     if Params().get_bool("ToyotaTune") and not (self.CP.flags & ToyotaFlags.SMART_DSU):
       stop_distance += 1
