@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation type="vanished">Adiar Atualização</translation>
+        <translation>Adiar Atualização</translation>
     </message>
     <message>
         <source>Reboot and Update</source>

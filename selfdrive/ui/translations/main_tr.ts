@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation type="vanished">Güncellemeyi sessize al</translation>
+        <translation>Güncellemeyi sessize al</translation>
     </message>
     <message>
         <source>Reboot and Update</source>

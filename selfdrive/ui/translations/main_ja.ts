@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation type="vanished">更新の一時停止</translation>
+        <translation>更新の一時停止</translation>
     </message>
     <message>
         <source>Reboot and Update</source>

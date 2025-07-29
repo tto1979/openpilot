@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation type="vanished">Reporter la mise à jour</translation>
+        <translation>Reporter la mise à jour</translation>
     </message>
     <message>
         <source>Reboot and Update</source>

@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation type="vanished">เลื่อนการอัปเดต</translation>
+        <translation>เลื่อนการอัปเดต</translation>
     </message>
     <message>
         <source>Reboot and Update</source>
