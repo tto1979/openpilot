@@ -8,10 +8,6 @@
         <translation>Kapat</translation>
     </message>
     <message>
-        <source>Snooze Update</source>
-        <translation>Güncellemeyi sessize al</translation>
-    </message>
-    <message>
         <source>Reboot and Update</source>
         <translation>Güncelle ve Yeniden başlat</translation>
     </message>

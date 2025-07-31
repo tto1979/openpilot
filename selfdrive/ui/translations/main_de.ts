@@ -8,10 +8,6 @@
         <translation>Schließen</translation>
     </message>
     <message>
-        <source>Snooze Update</source>
-        <translation>Update pausieren</translation>
-    </message>
-    <message>
         <source>Reboot and Update</source>
         <translation>Aktualisieren und neu starten</translation>
     </message>

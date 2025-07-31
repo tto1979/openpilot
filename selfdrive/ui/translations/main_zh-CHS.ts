@@ -8,10 +8,6 @@
         <translation>关闭</translation>
     </message>
     <message>
-        <source>Snooze Update</source>
-        <translation>暂停更新</translation>
-    </message>
-    <message>
         <source>Reboot and Update</source>
         <translation>重启并更新</translation>
     </message>

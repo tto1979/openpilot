@@ -8,10 +8,6 @@
         <translation>ปิด</translation>
     </message>
     <message>
-        <source>Snooze Update</source>
-        <translation>เลื่อนการอัปเดต</translation>
-    </message>
-    <message>
         <source>Reboot and Update</source>
         <translation>รีบูตและอัปเดต</translation>
     </message>

@@ -8,10 +8,6 @@
         <translation>إغلاق</translation>
     </message>
     <message>
-        <source>Snooze Update</source>
-        <translation>تأخير التحديث</translation>
-    </message>
-    <message>
         <source>Reboot and Update</source>
         <translation>إعادة التشغيل والتحديث</translation>
     </message>
