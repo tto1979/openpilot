@@ -35,8 +35,7 @@ def monitor_drl_signals():
                     timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                     data_hex = message.data.hex().upper()
 
-                    print(f"[{timestamp}] ID: 0x{message.arbitration_id:03X} | "
-                          f"Data: {data_hex} | DRL: {drl_bit}")
+                    print(f"[{timestamp}] ID: 0x{message.arbitration_id:03X} | Data: {data_hex} | DRL: {drl_bit}")
 
                     # 記錄到文件
                     log_file.write(f"{timestamp},0x{message.arbitration_id:03X},{data_hex},{drl_bit}\n")
