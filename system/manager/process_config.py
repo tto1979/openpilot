@@ -144,6 +144,7 @@ procs = [
   PythonProcess("updated", "system.updated.updated", only_offroad, enabled=not PC),
   PythonProcess("uploader", "system.loggerd.uploader", always_run),
   PythonProcess("statsd", "system.statsd", always_run),
+  PythonProcess("feedbackd", "selfdrive.ui.feedback.feedbackd", only_onroad),
 
   NativeProcess("fleetmanager", "system/fleetmanager", ["./fleet_manager.py"], flask_ready_and_second_boot),
 

@@ -29,7 +29,7 @@ A_CRUISE_MAX_VALS_TOYOTA =   [2.0, 1.7, 1.32, 1.22, .95, .82, .68, .53, .32, .20
 # CRUISE_MAX_BP in kmh =     [0.,  3,   10,   20,    30,  40,  53,  72,  90,  107, 150]
 A_CRUISE_MAX_BP_TOYOTA =     [0.,  1,   3.,   6.,    8.,  11., 15., 20., 25., 30., 55.]
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
-ALLOW_THROTTLE_THRESHOLD = 0.5
+ALLOW_THROTTLE_THRESHOLD = 0.4
 MIN_ALLOW_THROTTLE_SPEED = 2.5
 
 # Lookup table for turns
