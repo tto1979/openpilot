@@ -28,7 +28,7 @@ def monitor_with_openpilot_can():
         can_sock = messaging.sub_sock("can")
 
         print("🔍 監聽CAN消息...")
-        print("監聽地址: 0x622 (LIGHT_STALK)")
+        print("監聽地址: 0x750 (LIGHT_STALK)")
         print("按 Ctrl+C 停止監聽\n")
 
         # 創建日誌文件
@@ -44,8 +44,8 @@ def monitor_with_openpilot_can():
 
                 if can_msgs is not None:
                     for msg in can_msgs.can:
-                        # 檢查是否為LIGHT_STALK消息 (0x622 = 1570)
-                        if msg.address == 0x622:
+                        # 檢查是否為LIGHT_STALK消息 (0x750 = 1570)
+                        if msg.address == 0x750:
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                             # 解析數據
@@ -106,7 +106,7 @@ def monitor_with_messaging_bridge():
 
                 if can_data and can_data.can:
                     for msg in can_data.can:
-                        if msg.address == 0x622:  # LIGHT_STALK
+                        if msg.address == 0x750:  # LIGHT_STALK
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                             data_hex = ''.join(f'{b:02X}' for b in msg.dat)
@@ -153,7 +153,7 @@ def monitor_with_direct_cereal():
                     can_msgs = sm['can']
 
                     for msg in can_msgs:
-                        if msg.address == 0x622:
+                        if msg.address == 0x750:
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                             data_hex = ''.join(f'{b:02X}' for b in msg.dat)
