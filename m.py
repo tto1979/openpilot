@@ -19,74 +19,13 @@ def analyze_diagnostic_command(data_bytes):
 
     # 已知的指令模式
     known_commands = {
-        # 門鎖指令 (完整8字節)
-        b'\x40\x05\x30\x11\x00\x40\x00\x00': "解鎖指令",
-        b'\x40\x05\x30\x11\x00\x80\x00\x00': "鎖定指令",
-    }
-
-    # 檢查已知完整指令
-    data_bytes_obj = bytes(data_bytes)
-    if data_bytes_obj in known_commands:
-        return known_commands[data_bytes_obj]
-
-    # 盲點指令檢查（前4字節）
-    if len(data_bytes) >= 4:
-        prefix = bytes(data_bytes[:4])
-        blindspot_commands = {
-            b'\x41\x02\x10\x60': "左盲點啟用調試",
-            b'\x42\x02\x10\x60': "右盲點啟用調試", 
-            b'\x41\x02\x10\x01': "左盲點關閉調試",
-            b'\x42\x02\x10\x01': "右盲點關閉調試",
-            b'\x41\x02\x21\x69': "左盲點狀態查詢",
-            b'\x42\x02\x21\x69': "右盲點狀態查詢",
-        }
-
-        if prefix in blindspot_commands:
-            return blindspot_commands[prefix]
-
-    # 基本UDS分析
-    if len(data_bytes) >= 3:
-        service_id = data_bytes[2] if len(data_bytes) > 2 else 0
-        sub_function = data_bytes[3] if len(data_bytes) > 3 else 0
-
-        uds_services = {
-            0x10: f"診斷會話控制 (子功能:0x{sub_function:02X})",
-            0x21: f"數據讀取 (PID:0x{sub_function:02X})", 
-            0x22: f"數據讀取服務",
-            0x27: f"安全訪問",
-            0x2E: f"數據寫入",
-            0x30: f"輸入輸出控制",
-            0x31: f"例程控制"
-        }
-
-        if service_id in uds_services:
-            return uds_services[service_id]
-
-    # 分析指令結構
-    if len(data_bytes) >= 2:
-        if data_bytes[0] == 0x40:
-            return f"門鎖相關指令 (0x{data_bytes[5]:02X})" if len(data_bytes) > 5 else "門鎖指令"
-        elif data_bytes[0] in [0x41, 0x42]:
-            side = "左" if data_bytes[0] == 0x41 else "右"
-            return f"{side}盲點指令"
-
-    return "未知診斷指令"
-
-def analyze_diagnostic_command(data_bytes):
-    """分析診斷指令內容"""
-
-    if len(data_bytes) < 5:
-        return "數據長度不足"
-
-    # 已知的指令模式
-    known_commands = {
         # 門鎖指令
         (0x40, 0x05, 0x30, 0x11, 0x00, 0x40): "解鎖指令",
         (0x40, 0x05, 0x30, 0x11, 0x00, 0x80): "鎖定指令",
 
         # 盲點指令
         (0x41, 0x02, 0x10, 0x60): "左盲點啟用調試",
-        (0x42, 0x02, 0x10, 0x60): "右盲點啟用調試", 
+        (0x42, 0x02, 0x10, 0x60): "右盲點啟用調試",
         (0x41, 0x02, 0x10, 0x01): "左盲點關閉調試",
         (0x42, 0x02, 0x10, 0x01): "右盲點關閉調試",
         (0x41, 0x02, 0x21, 0x69): "左盲點狀態查詢",
@@ -111,12 +50,12 @@ def analyze_diagnostic_command(data_bytes):
 
         uds_services = {
             0x10: f"診斷會話控制 (子功能:0x{sub_function:02X})",
-            0x21: f"數據讀取 (PID:0x{sub_function:02X})", 
-            0x22: f"數據讀取服務",
-            0x27: f"安全訪問",
-            0x2E: f"數據寫入",
-            0x30: f"輸入輸出控制",
-            0x31: f"例程控制"
+            0x21: f"數據讀取 (PID:0x{sub_function:02X})",
+            0x22: "數據讀取服務",
+            0x27: "安全訪問",
+            0x2E: "數據寫入",
+            0x30: "輸入輸出控制",
+            0x31: "例程控制"
         }
 
         if service_id in uds_services:
