@@ -13,15 +13,13 @@ sys.path.append('/data/openpilot')
 
 def monitor_with_openpilot_can():
     """使用openpilot的CAN系統監聽"""
-    
+
     print("🚗 使用openpilot CAN系統監聽DRL信號")
     print("=" * 60)
 
     try:
         # 導入openpilot的CAN模組
-        from opendbc.can.parser import CANParser
-        from opendbc.can.packer import CANPacker
-        from common.realtime import Ratekeeper
+        from openpilot.common.realtime import Ratekeeper
         from cereal import messaging
 
         print("✅ openpilot CAN模組載入成功")
@@ -69,7 +67,7 @@ def monitor_with_openpilot_can():
                 rk.keep_time()
 
     except KeyboardInterrupt:
-        print(f"\n監聽結束")
+        print("\n監聽結束")
         print(f"數據已保存到: {log_filename}")
 
     except ImportError as e:
@@ -120,7 +118,7 @@ def monitor_with_messaging_bridge():
                             log_file.flush()
 
     except KeyboardInterrupt:
-        print(f"\n監聽結束")
+        print("\n監聽結束")
         print(f"數據已保存到: {log_filename}")
 
     except Exception as e:
@@ -169,7 +167,7 @@ def monitor_with_direct_cereal():
                 time.sleep(0.01)  # 10ms延遲
 
     except KeyboardInterrupt:
-        print(f"\n監聽結束")
+        print("\n監聽結束")
         print(f"數據已保存到: {log_filename}")
 
     except Exception as e:
@@ -279,4 +277,4 @@ def main():
     provide_openpilot_guidance()
 
 if __name__ == "__main__":
-    monitor_drl_signals()
+    main()
