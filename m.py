@@ -28,14 +28,14 @@ def monitor_with_openpilot_can():
         can_sock = messaging.sub_sock("can")
 
         print("🔍 監聽CAN消息...")
-        print("監聽地址: 0x750 (LIGHT_STALK)")
+        print("監聽地址: 0x750 (診斷通道)")
         print("按 Ctrl+C 停止監聽\n")
 
         # 創建日誌文件
         log_filename = f"drl_log_openpilot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
         with open(log_filename, "w") as log_file:
-            log_file.write("時間,總線,CAN_ID,原始數據,DRL位狀態\n")
+            log_file.write("時間,總線,CAN_ID,原始數據,診斷指令分析\n")
 
             rk = Ratekeeper(100)  # 100Hz監聽
 
@@ -44,7 +44,7 @@ def monitor_with_openpilot_can():
 
                 if can_msgs is not None:
                     for msg in can_msgs.can:
-                        # 檢查是否為LIGHT_STALK消息 (0x750 = 1570)
+                        # 檢查是否為診斷消息 (0x750 = 1872)
                         if msg.address == 0x750:
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
@@ -52,16 +52,14 @@ def monitor_with_openpilot_can():
                             data_bytes = msg.dat
                             data_hex = ''.join(f'{b:02X}' for b in data_bytes)
 
-                            # 解析DRL位（第31位 = 字節3第7位）
-                            drl_bit = 0
-                            if len(data_bytes) >= 4:
-                                drl_bit = (data_bytes[3] >> 7) & 0x01
+                            # 分析診斷指令內容
+                            cmd_analysis = analyze_diagnostic_command(data_bytes)
 
                             # 顯示結果
-                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | DRL:{drl_bit}")
+                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | {cmd_analysis}")
 
                             # 記錄到文件
-                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{drl_bit}\n")
+                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{cmd_analysis}\n")
                             log_file.flush()
 
                 rk.keep_time()
@@ -98,7 +96,7 @@ def monitor_with_messaging_bridge():
         log_filename = f"drl_log_bridge_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
         with open(log_filename, "w") as log_file:
-            log_file.write("時間,總線,CAN_ID,原始數據,DRL位狀態\n")
+            log_file.write("時間,總線,CAN_ID,原始數據,診斷指令分析\n")
 
             while True:
                 # 接收CAN消息
@@ -106,15 +104,15 @@ def monitor_with_messaging_bridge():
 
                 if can_data and can_data.can:
                     for msg in can_data.can:
-                        if msg.address == 0x750:  # LIGHT_STALK
+                        if msg.address == 0x750:  # 診斷通道
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                             data_hex = ''.join(f'{b:02X}' for b in msg.dat)
-                            drl_bit = (msg.dat[3] >> 7) & 0x01 if len(msg.dat) >= 4 else 0
+                            cmd_analysis = analyze_diagnostic_command(msg.dat)
 
-                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | DRL:{drl_bit}")
+                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | {cmd_analysis}")
 
-                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{drl_bit}\n")
+                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{cmd_analysis}\n")
                             log_file.flush()
 
     except KeyboardInterrupt:
@@ -144,7 +142,7 @@ def monitor_with_direct_cereal():
         log_filename = f"drl_log_cereal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
         with open(log_filename, "w") as log_file:
-            log_file.write("時間,總線,CAN_ID,原始數據,DRL位狀態\n")
+            log_file.write("時間,總線,CAN_ID,原始數據,診斷指令分析\n")
 
             while True:
                 sm.update(0)  # 非阻塞更新
@@ -157,11 +155,11 @@ def monitor_with_direct_cereal():
                             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                             data_hex = ''.join(f'{b:02X}' for b in msg.dat)
-                            drl_bit = (msg.dat[3] >> 7) & 0x01 if len(msg.dat) >= 4 else 0
+                            cmd_analysis = analyze_diagnostic_command(msg.dat)
 
-                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | DRL:{drl_bit}")
+                            print(f"[{timestamp}] 總線:{msg.src} | ID:0x{msg.address:03X} | Data:{data_hex} | {cmd_analysis}")
 
-                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{drl_bit}\n")
+                            log_file.write(f"{timestamp},{msg.src},0x{msg.address:03X},{data_hex},{cmd_analysis}\n")
                             log_file.flush()
 
                 time.sleep(0.01)  # 10ms延遲
