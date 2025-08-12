@@ -16,12 +16,12 @@ MAX_ACCEL_PROFILES = {
 MAX_ACCEL_BREAKPOINTS = [0.,  1,   3.,  6.,   8.,  11.,  16., 20., 25., 30., 55.]
 
 MIN_ACCEL_PROFILES = {
-  "eco":                [-.08, -.2,  -.5,  -.8, -1.00, -1.10],
-  "normal":             [-.09, -.3,  -.6,  -.9, -1.05, -1.15],
-  "sport":              [-.10, -.4,  -.7,  -.95, -1.1, -1.20],
-  "stock":              [-1.2, -1.2, -1.2, -1.2, -1.2, -1.2],
+  "eco":                [-.1,  -.3,  -.5,  -.7,  -.9,  -1.0,  -1.2],
+  "normal":             [-.15, -.35, -.55, -.75, -.95, -1.05, -1.2],
+  "sport":              [-.2,  -.4,  -.6,  -.8,  -1.0, -1.1,  -1.2],
+  "stock":              [-1.2, -1.2, -1.2, -1.2, -1.2, -1.2,  -1.2],
 }
-MIN_ACCEL_BREAKPOINTS = [0.,    1.,   2.,   3.,   8.3,  50.]
+MIN_ACCEL_BREAKPOINTS = [0.,    1.,   2.,   3.,   8.3,  15.,   50.]
 
 # Precompute slopes for Cubic Bézier curves
 def compute_symmetric_slopes(x, y):
