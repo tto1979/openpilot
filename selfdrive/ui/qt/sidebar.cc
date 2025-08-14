@@ -158,7 +158,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   const QRect r = QRect(0, 247, event->rect().width(), 50);
   //p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
   if (net_type == "Hotspot") {
-    p.drawPixmap(r.x(), r.y() + (r.height() - link_img.height()) / 2, link_img);
+    p.drawPixmap(r.x() + (r.width() - link_img.width()) / 2, r.y() + (r.height() - link_img.height()) / 2, link_img);
   } else if (net_type == network_type[cereal::DeviceState::NetworkType::WIFI]) {
     p.drawText(r, Qt::AlignCenter, wifi_addr);
   } else {
