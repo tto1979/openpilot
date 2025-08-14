@@ -259,7 +259,7 @@ class LatControlTorque(LatControl):
         nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + \
           past_lateral_accels_desired + future_planned_lateral_accels + \
           past_rolls + future_rolls
-        
+
         ff_raw = self.torque_from_nn(nn_input)
         ff = ff_raw * nnff_strength_factor
 
