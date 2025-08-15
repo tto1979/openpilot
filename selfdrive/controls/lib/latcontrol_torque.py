@@ -95,9 +95,9 @@ class LatControlTorque(LatControl):
     if self.use_nn or self.use_lateral_jerk:
       # Scaling the lateral acceleration "friction response" could be helpful for some.
       # Increase for a stronger response, decrease for a weaker response.
-      nnff_lateral_jerk_factor = 1.0  # TODO-SP: replace with ---> float(self.param_s.get("NNFFLateralJerkFactor", encoding="utf8"))
+      nnff_lateral_jerk_factor = 0.9  # TODO-SP: replace with ---> float(self.param_s.get("NNFFLateralJerkFactor", encoding="utf8"))
       nnff_lateral_jerk_factor = max(0.0, min(1.0, nnff_lateral_jerk_factor))
-      self.lat_jerk_friction_factor = 0.4 * nnff_lateral_jerk_factor
+      self.lat_jerk_friction_factor = 0.35 * nnff_lateral_jerk_factor
       # Increasing lat accel friction factor to account for any decrease of the lat jerk friction factor from default
       self.lat_accel_friction_factor = 0.7 + (0.3 * (1.0 - nnff_lateral_jerk_factor))  # in [0, 3], in 0.05 increments. 3 is arbitrary safety limit
 
