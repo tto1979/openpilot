@@ -190,8 +190,8 @@ class LatControlTorque(LatControl):
 
       gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
       ff = gravity_adjusted_lateral_accel
+
       if self.use_nn and model_good:
-        # update past data
         pitch = 0.0
         roll = params.roll
         if model_data is not None and hasattr(model_data.orientation, 'y') and len(model_data.orientation.y) > 0:
@@ -221,11 +221,7 @@ class LatControlTorque(LatControl):
         if self.nn_friction_override:
           ff = nn_lat_accel
         else:
-          base_lat_accel = self.lateral_accel_from_torque(
-            self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.torque_params),
-            self.torque_params
-          )
-          ff = base_lat_accel + (nn_lat_accel - base_lat_accel)
+          ff = nn_lat_accel
         nnff_setpoint_input = [CS.vEgo, setpoint, lateral_jerk_setpoint, roll] + \
           past_lateral_accels_desired + future_planned_lateral_accels + \
           past_rolls + future_rolls
@@ -239,7 +235,7 @@ class LatControlTorque(LatControl):
 
         pid_log.error = float(lat_accel_from_setpoint - lat_accel_from_measurement)
         error_blend_factor = float(np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
-        if error_blend_factor > 0.0:  # blend in stronger error response when in high lat accel
+        if error_blend_factor > 0.0:
           nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0] + \
             [0.0] * len(past_lateral_accels_desired) + [0.0] * len(future_planned_lateral_accels) + \
             [0.0] * len(past_rolls) + [0.0] * len(future_rolls)
