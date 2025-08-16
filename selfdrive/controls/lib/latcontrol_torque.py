@@ -4,7 +4,6 @@ import numpy as np
 
 from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
-from opendbc.car.interfaces import LatControlInputs
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
@@ -223,7 +222,7 @@ class LatControlTorque(LatControl):
           ff = nn_lat_accel
         else:
           base_lat_accel = self.lateral_accel_from_torque(
-            self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.torque_params), 
+            self.torque_from_lateral_accel(gravity_adjusted_lateral_accel, self.torque_params),
             self.torque_params
           )
           ff = base_lat_accel + (nn_lat_accel - base_lat_accel)
@@ -256,8 +255,8 @@ class LatControlTorque(LatControl):
         else:
           friction_input = desired_lateral_accel - actual_lateral_accel
 
-        friction_lat_accel = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-        ff += self.lateral_accel_from_torque(friction_lat_accel, self.torque_params)
+        friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+        ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
 
         pid_log.error = float(setpoint - measurement)
 
