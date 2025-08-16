@@ -67,12 +67,12 @@ class LatControlTorque(LatControl):
   def __init__(self, CP, CI):
     super().__init__(CP, CI)
     self.torque_params = CP.lateralTuning.torque.as_builder()
-    self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
-                             k_f=self.torque_params.kf, pos_limit=self.steer_max, neg_limit=-self.steer_max)
-    self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
-    self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
+    self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
+                             k_f=self.torque_params.kf)
     self.update_limits()
+    self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
+    self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn
@@ -139,8 +139,8 @@ class LatControlTorque(LatControl):
     self.update_limits()
 
   def update_limits(self):
-    self.pid.set_limits(self.lateral_accel_from_torque(self.steer_max, self.torque_params),
-                        self.lateral_accel_from_torque(-self.steer_max, self.torque_params))
+    self.pid.set_limits(self.lateral_accel_from_torque(self.steer_max),
+                        self.lateral_accel_from_torque(-self.steer_max))
 
   def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, model_data=None):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
@@ -224,15 +224,15 @@ class LatControlTorque(LatControl):
         torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
 
         pid_log.error = float(setpoint - measurement)
-        ff = gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
         error_blend_factor = float(np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
         if error_blend_factor > 0.0:  # blend in stronger error response when in high lat accel
           nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0] + \
             [0.0] * len(past_lateral_accels_desired) + [0.0] * len(future_planned_lateral_accels) + \
             [0.0] * len(past_rolls) + [0.0] * len(future_rolls)
           torque_from_error = self.torque_from_nn(nnff_error_input)
-          if sign(pid_log.error) == sign(torque_from_error) and abs(pid_log.error) < abs(torque_from_error):
-            error_value = float(pid_log.error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor)
+          accel_from_error = self.lateral_accel_from_torque(torque_from_error)
+          if sign(pid_log.error) == sign(accel_from_error) and abs(pid_log.error) < abs(accel_from_error):
+            error_value = float(pid_log.error * (1.0 - error_blend_factor) + accel_from_error * error_blend_factor)
             pid_log.error = error_value
 
         # compute feedforward (same as nn setpoint output)
@@ -241,17 +241,16 @@ class LatControlTorque(LatControl):
         nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + \
           past_lateral_accels_desired + future_planned_lateral_accels + \
           past_rolls + future_rolls
-        ff = self.torque_from_nn(nn_input)
-
-        # apply friction override for cars with low NN friction response
+        ff_torque = self.torque_from_nn(nn_input)
         if self.nn_friction_override:
           base_torque = self.torque_from_lateral_accel(LatControlInputs(0.0, 0.0, CS.vEgo, CS.aEgo), self.torque_params)
           friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-          ff += base_torque + friction_torque
+          ff_torque += base_torque + friction_torque
+        ff = self.lateral_accel_from_torque(ff_torque)
+
         nn_log = nn_input + nnff_setpoint_input + nnff_measurement_input
       else:
         pid_log.error = float(setpoint - measurement)
-        ff = gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
         error = desired_lateral_accel - actual_lateral_accel
 
         if self.use_lateral_jerk:
@@ -259,21 +258,25 @@ class LatControlTorque(LatControl):
         else:
           friction_input = error
 
-        ff += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+        gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
+        ff = gravity_adjusted_lateral_accel
+        friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+        friction_accel = self.lateral_accel_from_torque(friction_torque)
+        ff += friction_accel
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
       output_lataccel = self.pid.update(pid_log.error,
-                                      feedforward=ff,
-                                      speed=CS.vEgo,
-                                      freeze_integrator=freeze_integrator)
-      output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
+                                        feedforward=ff,
+                                        speed=CS.vEgo,
+                                        freeze_integrator=freeze_integrator)
+      output_torque = self.torque_from_lateral_accel(LatControlInputs(output_lataccel, roll_compensation, CS.vEgo, CS.aEgo), self.torque_params)
 
       pid_log.active = True
       pid_log.p = float(self.pid.p)
       pid_log.i = float(self.pid.i)
       pid_log.d = float(self.pid.d)
       pid_log.f = float(self.pid.f)
-      pid_log.output = float(-output_torque)  # TODO: log lat accel?
+      pid_log.output = float(-output_torque)
       pid_log.actualLateralAccel = float(actual_lateral_accel)
       pid_log.desiredLateralAccel = float(desired_lateral_accel)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
