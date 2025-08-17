@@ -189,10 +189,8 @@ class LatControlTorque(LatControl):
       lat_accel_friction_factor = self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0
 
       gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
-      ff = gravity_adjusted_lateral_accel
-      ff -= self.torque_params.latAccelOffset
-
       if self.use_nn and model_good:
+        ff = gravity_adjusted_lateral_accel
         pitch = 0.0
         roll = params.roll
         if model_data is not None and hasattr(model_data.orientation, 'y') and len(model_data.orientation.y) > 0:
@@ -243,6 +241,9 @@ class LatControlTorque(LatControl):
 
         nn_log = nn_input + nnff_setpoint_input + nnff_measurement_input
       else:
+        ff = gravity_adjusted_lateral_accel
+        ff -= self.torque_params.latAccelOffset
+
         if self.use_lateral_jerk:
           friction_input = lat_accel_friction_factor * (desired_lateral_accel - actual_lateral_accel) + self.lat_jerk_friction_factor * lookahead_lateral_jerk
         else:
