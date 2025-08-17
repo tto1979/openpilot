@@ -190,6 +190,7 @@ class LatControlTorque(LatControl):
 
       gravity_adjusted_lateral_accel = desired_lateral_accel - roll_compensation
       ff = gravity_adjusted_lateral_accel
+      ff -= self.torque_params.latAccelOffset
 
       if self.use_nn and model_good:
         pitch = 0.0
@@ -200,8 +201,6 @@ class LatControlTorque(LatControl):
         self.roll_deque.append(roll)
         self.lateral_accel_desired_deque.append(desired_lateral_accel)
 
-        # prepare past and future values
-        # adjust future times to account for longitudinal acceleration
         adjusted_future_times = [t + 0.5*CS.aEgo*(t/max(CS.vEgo, 1.0)) for t in self.nn_future_times]
         past_rolls = [self.roll_deque[min(len(self.roll_deque)-1, i)] for i in self.history_frame_offsets]
         future_rolls = [roll_pitch_adjust(np.interp(t, ModelConstants.T_IDXS, model_data.orientation.x) + roll,
@@ -253,8 +252,6 @@ class LatControlTorque(LatControl):
         ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
 
         pid_log.error = float(setpoint - measurement)
-
-      ff -= self.torque_params.latAccelOffset
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
       output_lataccel = self.pid.update(pid_log.error,
