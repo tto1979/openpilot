@@ -218,10 +218,8 @@ class LatControlTorque(LatControl):
           past_lateral_accels_desired + future_planned_lateral_accels + \
           past_rolls + future_rolls
         nn_lat_accel = self.torque_from_nn(nn_input)
-        if self.nn_friction_override:
-          ff = nn_lat_accel
-        else:
-          ff = nn_lat_accel
+        ff = nn_lat_accel
+
         nnff_setpoint_input = [CS.vEgo, setpoint, lateral_jerk_setpoint, roll] + \
           past_lateral_accels_desired + future_planned_lateral_accels + \
           past_rolls + future_rolls
@@ -255,6 +253,8 @@ class LatControlTorque(LatControl):
         ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
 
         pid_log.error = float(setpoint - measurement)
+
+      ff -= self.torque_params.latAccelOffset
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
       output_lataccel = self.pid.update(pid_log.error,
