@@ -260,11 +260,10 @@ class LatControlTorque(LatControl):
 
         if self.use_lateral_jerk:
           friction_input = lat_accel_friction_factor * (desired_lateral_accel - actual_lateral_accel) + self.lat_jerk_friction_factor * lookahead_lateral_jerk
+          friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+          ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
         else:
-          friction_input = desired_lateral_accel - actual_lateral_accel
-
-        friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-        ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
+          ff += get_friction(desired_lateral_accel - actual_lateral_accel, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
         pid_log.error = float(setpoint - measurement)
 
