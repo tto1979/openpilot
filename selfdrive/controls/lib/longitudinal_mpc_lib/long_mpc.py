@@ -116,7 +116,7 @@ def get_stopped_equivalence_factor(v_lead, v_ego):
   # away, resulting in an early demand for acceleration.
   v_diff_offset = 0
   v_diff_offset_max = 12
-  speed_to_reach_max_v_diff_offset = 24 # in kp/h
+  speed_to_reach_max_v_diff_offset = 26 # in kp/h
   speed_to_reach_max_v_diff_offset = speed_to_reach_max_v_diff_offset * CV.KPH_TO_MS
   delta_speed = v_lead - v_ego
   if np.all(delta_speed > 0):
@@ -398,7 +398,7 @@ class LongitudinalMpc:
       t_follow += 0.5
 
     if Params().get_bool("ToyotaTune") and not (self.CP.flags & ToyotaFlags.SMART_DSU):
-      stop_distance += 1
+      stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
