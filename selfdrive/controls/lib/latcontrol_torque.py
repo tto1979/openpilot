@@ -121,7 +121,6 @@ class LatControlTorque(LatControl):
       self.history_frame_offsets = [history_check_frames[0] - i for i in history_check_frames]
       self.lateral_accel_desired_deque = deque(maxlen=history_check_frames[0])
       self.roll_deque = deque(maxlen=history_check_frames[0])
-      self.error_deque = deque(maxlen=history_check_frames[0])
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
 
   def update_lateral_lag(self, lag):
@@ -153,11 +152,6 @@ class LatControlTorque(LatControl):
       roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
       actual_curvature = actual_curvature_vm
       curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
-      actual_lateral_jerk = 0.0
-
-      if self.use_nn or self.use_lateral_jerk:
-        actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
-        actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
 
       desired_lateral_accel = desired_curvature * CS.vEgo ** 2
 
@@ -170,8 +164,6 @@ class LatControlTorque(LatControl):
       setpoint = desired_lateral_accel + low_speed_factor * desired_curvature
       measurement = actual_lateral_accel + low_speed_factor * actual_curvature
 
-      lateral_jerk_setpoint = 0
-      lateral_jerk_measurement = 0
       lookahead_lateral_jerk = 0
 
       model_good = model_data is not None and len(list(model_data.orientation.x)) >= CONTROL_N
@@ -182,10 +174,6 @@ class LatControlTorque(LatControl):
         predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
         desired_lateral_jerk = (np.interp(self.desired_lat_jerk_time, ModelConstants.T_IDXS, model_data.acceleration.y) - desired_lateral_accel) / self.desired_lat_jerk_time
         lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk)
-        if lookahead_lateral_jerk == 0.0:
-          actual_lateral_jerk = 0.0
-        lateral_jerk_setpoint = self.lat_jerk_friction_factor * lookahead_lateral_jerk
-        lateral_jerk_measurement = self.lat_jerk_friction_factor * actual_lateral_jerk
 
       lat_accel_friction_factor = self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0
 
@@ -227,33 +215,9 @@ class LatControlTorque(LatControl):
 
         ff -= self.torque_params.latAccelOffset
 
-        nnff_setpoint_input = [CS.vEgo, setpoint, lateral_jerk_setpoint, roll] + \
-          past_lateral_accels_desired + future_planned_lateral_accels + \
-          past_rolls + future_rolls
+        pid_log.error = float(setpoint - measurement)
 
-        nnff_measurement_input = [CS.vEgo, measurement, lateral_jerk_measurement, roll] + \
-          past_lateral_accels_desired + future_planned_lateral_accels + \
-          past_rolls + future_rolls
-
-        torque_from_setpoint = self.torque_from_nn(nnff_setpoint_input)
-        torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
-
-        lat_accel_from_setpoint = self.lateral_accel_from_torque(torque_from_setpoint, self.torque_params)
-        lat_accel_from_measurement = self.lateral_accel_from_torque(torque_from_measurement, self.torque_params)
-
-        pid_log.error = float(lat_accel_from_setpoint - lat_accel_from_measurement)
-        error_blend_factor = float(np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
-        if error_blend_factor > 0.0:  # blend in stronger error response when in high lat accel
-          nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0] + \
-            [0.0] * len(past_lateral_accels_desired) + [0.0] * len(future_planned_lateral_accels) + \
-            [0.0] * len(past_rolls) + [0.0] * len(future_rolls)
-          torque_from_error = self.torque_from_nn(nnff_error_input)
-          lat_accel_from_error = self.lateral_accel_from_torque(torque_from_error, self.torque_params)
-          if sign(pid_log.error) == sign(lat_accel_from_error) and abs(pid_log.error) < abs(lat_accel_from_error):
-            error_value = float(pid_log.error * (1.0 - error_blend_factor) + lat_accel_from_error * error_blend_factor)
-            pid_log.error = error_value
-
-        nn_log = nn_input + nnff_setpoint_input + nnff_measurement_input
+        nn_log = nn_input
       else:
         ff = gravity_adjusted_lateral_accel
         ff -= self.torque_params.latAccelOffset
