@@ -22,7 +22,6 @@ from openpilot.selfdrive.selfdrived.helpers import ExcessiveActuationCheck
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
-from openpilot.system.hardware import HARDWARE
 from openpilot.system.version import get_build_metadata
 
 REPLAY = "REPLAY" in os.environ
@@ -135,12 +134,7 @@ class SelfdriveD:
     self.rk = Ratekeeper(100, print_delay_threshold=None)
     self.nn_alert_shown = False
 
-    # some comma three with NVMe experience NVMe dropouts mid-drive that
-    # cause loggerd to crash on write, so ignore it only on that platform
     self.ignored_processes = set()
-    nvme_expected = os.path.exists('/dev/nvme0n1') or (not os.path.isfile("/persist/comma/living-in-the-moment"))
-    if HARDWARE.get_device_type() == 'tici' and nvme_expected:
-      self.ignored_processes = {'loggerd', }
     if self.dp_jetson:
       self.ignored_processes = {'dmonitoringd', 'dmonitoringmodeld', 'logcatd', 'logmessaged', 'loggerd', 'tombstoned', 'uploader'}
 
