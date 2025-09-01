@@ -107,8 +107,38 @@ class Car:
       if dp_atl:
         top_params |= structs.TopFlags.LateralALKA
 
+      if self.params.get_bool("NNFF"):
+        top_params |= structs.TopFlags.NNFF
+
       if self.params.get_bool("toyota_stock_long"):
         top_params |= structs.TopFlags.ToyotaStockLong
+
+      if self.params.get_bool("ToyotaTune"):
+        top_params |= structs.TopFlags.ToyotaTSSPTune
+
+      if self.params.get_bool("toyotaautolock"):
+        top_params |= structs.TopFlags.ToyotaAutoLock
+
+      if self.params.get_bool("toyotaautounlock"):
+        top_params |= structs.TopFlags.ToyotaAutoUnlock
+
+      if self.params.get_bool("ReverseAccChange"):
+        top_params |= structs.TopFlags.ToyotaReverseAccChange
+
+      if self.params.get_bool("topsng"):
+        top_params |= structs.TopFlags.ToyotaTSSPSNG
+
+      if self.params.get_bool("toyota_bsm"):
+        top_params |= structs.TopFlags.ToyotaBSM
+
+      if self.params.get_bool("AleSato_AutomaticBrakeHold"):
+        top_params |= structs.TopFlags.ToyotaAutoBrakeHold
+
+      if self.params.get_bool("ExperimentalMode"):
+        top_params |= structs.TopFlags.ToyotaExperimentalMode
+
+      if self.params.get_bool("ToyotaDriveMode"):
+        top_params |= structs.TopFlags.ToyotaDriveMode
 
       self.CI = get_car(*self.can_callbacks, obd_callback(self.params), alpha_long_allowed, is_release, num_pandas, top_params, cached_params)
       self.RI = interfaces[self.CI.CP.carFingerprint].RadarInterface(self.CI.CP)
