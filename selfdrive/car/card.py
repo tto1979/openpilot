@@ -85,7 +85,6 @@ class Car:
     is_release = self.params.get_bool("IsReleaseBranch")
 
     dp_atl = self.params.get_bool("dp_atl")
-    accel_personality = True if self.params.get_int("AccelPersonality") != 4 else False
     top_params = 0
 
     if CI is None:
@@ -108,9 +107,6 @@ class Car:
       if dp_atl:
         top_params |= structs.TopFlags.LateralALKA
 
-      if accel_personality:
-        top_params |= structs.TopFlags.AccelPersonality
-
       if self.params.get_bool("toyota_stock_long"):
         top_params |= structs.TopFlags.ToyotaStockLong
 
@@ -132,9 +128,6 @@ class Car:
     auto_brakehold = self.params.get_bool("AleSato_AutomaticBrakeHold") and self.CP.carFingerprint in TSS2_CAR and not (self.CP.flags & ToyotaFlags.HYBRID.value)
     if auto_brakehold:
       self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.ALLOW_AEB
-
-    if top_params & structs.TopFlags.AccelPersonality:
-      self.CP.alternativeExperience |= ALTERNATIVE_EXPERIENCE.RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX
 
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
