@@ -8,9 +8,10 @@ See the LICENSE.md file in the root directory for more details.
 from cereal import car, custom
 from opendbc.car import structs
 from openpilot.common.params import Params
+from openpilot.selfdrive.selfdrived.events import Events
 
 ButtonType = car.CarState.ButtonEvent.Type
-EventNameSP = custom.OnroadEventSP.EventName
+EventName = log.OnroadEvent.EventName
 
 DISTANCE_LONG_PRESS = 150
 DISTANCE_SHORT_PRESS = 50
@@ -76,7 +77,7 @@ class CruiseHelper:
     if self.button_frame_counts[ButtonType.gapAdjustCruise] >= DISTANCE_LONG_PRESS and not self.experimental_mode_switched:
       self._experimental_mode = not experimental_mode
       self.params.put_bool_nonblocking("ExperimentalMode", self._experimental_mode)
-      events.add(EventNameSP.experimentalModeSwitched)
+      events.add(EventName.experimentalModeSwitched)
       self.experimental_mode_switched = True
 
   def _get_distance_button_state(self, CS) -> bool:
