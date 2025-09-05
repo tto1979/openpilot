@@ -8,7 +8,6 @@ See the LICENSE.md file in the root directory for more details.
 from cereal import car, log
 from opendbc.car import structs
 from openpilot.common.params import Params
-from openpilot.selfdrive.selfdrived.events import Events
 
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = log.OnroadEvent.EventName
