@@ -1051,6 +1051,10 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       AlertStatus.normal, AlertSize.small,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.engageBrakehold, .1,),
   },
+
+  EventName.experimentalModeSwitched: {
+    ET.WARNING: NormalPermanentAlert("切換 Experimental Mode", duration=1.5)
+  }
 }
 
 

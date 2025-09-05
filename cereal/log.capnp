@@ -138,6 +138,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     atlDisengageSound @99;
     torqueNNLoad @100;
     automaticBrakehold @101;
+    experimentalModeSwitched @102;
   }
 }
 
