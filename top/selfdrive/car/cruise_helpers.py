@@ -27,25 +27,40 @@ class CruiseHelper:
 
     self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
     self.ispressed_prev = False
-    self.distance_button_hold = 0
+    self.distance_button_hold = False
     self.gap_button_counter = 0
     self.short_press_button_counter = 0
 
     if self.params.get("UserExperimentalMode") is None:
       user_exp_mode = self.params.get_bool("ExperimentalMode")
       self.params.put_bool("UserExperimentalMode", user_exp_mode)
+    self.manual_exp_mode_change = False
+    self.last_exp_mode_state = self.params.get_bool("ExperimentalMode")
+
+    self.sng_e2e_enabled = self.params.get_bool("sng_e2e")
+    self.other_systems_active = self.sng_e2e_enabled
 
   def update(self, CS, events, experimental_mode) -> None:
     if self.CP.openpilotLongitudinalControl:
       if CS.cruiseState.available:
         self.update_button_frame_counts(CS)
 
+        current_exp_mode = self.params.get_bool("ExperimentalMode")
+        if current_exp_mode != self.last_exp_mode_state and not self.manual_exp_mode_change:
+          self._reset_button_counters()
+          print("CruiseHelper: Detected external experimental mode change, resetting counters")
         distance_button_pressed = self._get_distance_button_state(CS)
 
-        self._update_distance_button_logic(distance_button_pressed, experimental_mode)
+        if not self._should_defer_to_other_systems():
+          self._update_distance_button_logic(distance_button_pressed, experimental_mode)
+        else:
+          if distance_button_pressed:
+            self._reset_button_counters()
 
         # toggle experimental mode once on distance button hold
         self.update_experimental_mode(events, experimental_mode)
+        self.last_exp_mode_state = current_exp_mode
+        self.manual_exp_mode_change = False
 
   def update_button_frame_counts(self, CS) -> None:
     for button in self.button_frame_counts:
@@ -69,6 +84,16 @@ class CruiseHelper:
       if button_event.type == ButtonType.gapAdjustCruise and button_event.pressed:
         return True
     return False
+
+  def _should_defer_to_other_systems(self) -> bool:
+    if self.sng_e2e_enabled:
+      return True
+    return False
+
+  def _reset_button_counters(self) -> None:
+    self.gap_button_counter = 0
+    self.short_press_button_counter = 0
+    self.distance_button_hold = False
 
   def _update_distance_button_logic(self, distance_button_pressed: bool, experimental_mode: bool) -> None:
     # change experimental/chill mode on fly with long press
