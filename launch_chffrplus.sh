@@ -88,6 +88,7 @@ function launch {
   sudo apt update
   sudo $(which pip3) install --upgrade pip
   sudo $(which pip3) install flask
+  sudo $(which pip3) install kaitaistruct
 
   # start manager
   cd system/manager
