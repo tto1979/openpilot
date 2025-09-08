@@ -36,6 +36,9 @@ dependencies = [
   "pyopenssl < 24.3.0",
   "pyaudio",
 
+  # ubloxd (TODO: just use struct)
+  "kaitaistruct",
+
   # panda
   "libusb1",
   "spidev; platform_system == 'Linux'",
@@ -159,7 +162,6 @@ testpaths = [
   "system/camerad",
   "system/hardware",
   "system/loggerd",
-  "system/proclogd",
   "system/tests",
   "system/ubloxd",
   "system/webrtc",
@@ -248,6 +250,7 @@ exclude = [
   "teleoprtc_repo",
   "third_party",
   "*.ipynb",
+  "generated",
 ]
 lint.flake8-implicit-str-concat.allow-multiline = false
 

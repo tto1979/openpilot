@@ -50,6 +50,10 @@ class DesireHelper:
     self.lane_change_completed = False
     self.atl_enabled = self.params.get_bool("dp_atl")
 
+  @staticmethod
+  def get_lane_change_direction(CS):
+    return LaneChangeDirection.left if CS.leftBlinker else LaneChangeDirection.right
+
   def update(self, carstate, lateral_active, lane_change_prob, left_edge_detected, right_edge_detected):
     v_ego = carstate.vEgo
     one_blinker = carstate.leftBlinker != carstate.rightBlinker
@@ -66,11 +70,13 @@ class DesireHelper:
         if self.lat_lca_auto_sec > 0.:
           self.lat_lca_auto_sec_start = time.monotonic()
 
+        # Initialize lane change direction to prevent UI alert flicker
+        self.lane_change_direction = self.get_lane_change_direction(carstate)
+
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
-        # Set lane change direction
-        self.lane_change_direction = LaneChangeDirection.left if \
-          carstate.leftBlinker else LaneChangeDirection.right
+        # Update lane change direction
+        self.lane_change_direction = self.get_lane_change_direction(carstate)
 
         torque_applied = carstate.steeringPressed and \
                          ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
