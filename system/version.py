@@ -43,7 +43,7 @@ def get_top_branch_migration(device_type: str, branch_name: str) -> str:
 
 # Legacy dictionary for backward compatibility
 TOP_BRANCH_MIGRATIONS = {
-    ("tici", "dev"): "dev-c3", 
+    ("tici", "dev"): "dev-c3",
     ("tici", "release"): "release-c3",
 }
 
