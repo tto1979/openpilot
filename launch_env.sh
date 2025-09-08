@@ -10,7 +10,7 @@ if [ -s /data/params/d/CarModel ] && [ "$(cat /data/params/d/CarModel)" != "[-No
 fi
 
 if [ -z "$AGNOS_VERSION" ]; then
-  export AGNOS_VERSION="13.1"
+  export AGNOS_VERSION="12.8"
 fi
 
 export STAGING_ROOT="/data/safe_staging"
