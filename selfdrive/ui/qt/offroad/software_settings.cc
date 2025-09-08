@@ -66,22 +66,65 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // branch selecting
   targetBranchBtn = new ButtonControl(tr("Target Branch"), tr("SELECT"));
   connect(targetBranchBtn, &ButtonControl::clicked, [=]() {
-    auto current = params.get("GitBranch");
-    QStringList branches = QString::fromStdString(params.get("UpdaterAvailableBranches")).split(",");
-    for (QString b : {current.c_str(), "devel-staging", "devel", "nightly", "nightly-dev", "master"}) {
-      auto i = branches.indexOf(b);
-      if (i >= 0) {
-        branches.removeAt(i);
-        branches.insert(0, b);
-      }
-    }
+    if (Hardware::get_device_type() == cereal::InitData::DeviceType::TICI) {
+      // TICI device special handling - only show -c3/-C3 branches
+      auto current = params.get("GitBranch");
+      QStringList allBranches = QString::fromStdString(params.get("UpdaterAvailableBranches")).split(",");
+      QStringList branches;
 
-    QString cur = QString::fromStdString(params.get("UpdaterTargetBranch"));
-    QString selection = MultiOptionDialog::getSelection(tr("Select a branch"), branches, cur, this);
-    if (!selection.isEmpty()) {
-      params.put("UpdaterTargetBranch", selection.toStdString());
-      targetBranchBtn->setValue(QString::fromStdString(params.get("UpdaterTargetBranch")));
-      checkForUpdates();
+      // Filter to only show branches ending with -c3 or -C3
+      for (const QString &b : allBranches) {
+        if (b.endsWith("-c3") || b.endsWith("-C3")) {
+          branches.append(b);
+        }
+      }
+
+      // Prioritize recommended branches for TOP fork
+      for (QString b : {current.c_str(), "dev-c3", "release-c3"}) {
+        auto i = branches.indexOf(b);
+        if (i >= 0) {
+          branches.removeAt(i);
+          branches.insert(0, b);
+        }
+      }
+
+      QRegularExpression topPattern("^TOP\\d+-[Cc]3$", QRegularExpression::CaseInsensitiveOption);
+      for (const QString &branch : allBranches) {
+        if (topPattern.match(branch).hasMatch()) {
+          auto i = branches.indexOf(branch);
+          if (i >= 0) {
+            branches.removeAt(i);
+            branches.insert(1, branch);
+          }
+        }
+      }
+
+      QString cur = QString::fromStdString(params.get("UpdaterTargetBranch"));
+      QString selection = MultiOptionDialog::getSelection(tr("Select a branch"), branches, cur, this);
+      if (!selection.isEmpty()) {
+        params.put("UpdaterTargetBranch", selection.toStdString());
+        targetBranchBtn->setValue(QString::fromStdString(params.get("UpdaterTargetBranch")));
+        checkForUpdates();
+      }
+    } else {
+      // Non-TICI devices keep original logic
+      auto current = params.get("GitBranch");
+      QStringList branches = QString::fromStdString(params.get("UpdaterAvailableBranches")).split(",");
+      for (QString b : {current.c_str(), "devel-staging", "devel", "nightly", "nightly-dev", "master"}) {
+        auto i = branches.indexOf(b);
+        if (i >= 0) {
+          branches.removeAt(i);
+          branches.insert(0, b);
+        }
+      }
+
+      QString cur = QString::fromStdString(params.get("UpdaterTargetBranch"));
+      QString selection = MultiOptionDialog::getSelection(tr("Select a branch"), branches, cur, this);
+      if (!selection.isEmpty()) {
+        params.put("UpdaterTargetBranch", selection.toStdString());
+        targetBranchBtn->setValue(QString::fromStdString(params.get("UpdaterTargetBranch")));
+        checkForUpdates();
+      }
     }
   });
   if (!params.getBool("IsTestedBranch")) {

@@ -5,6 +5,7 @@ import json
 import os
 import pathlib
 import subprocess
+import re
 
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.swaglog import cloudlog
@@ -12,6 +13,39 @@ from openpilot.common.git import get_commit, get_origin, get_branch, get_short_b
 
 RELEASE_BRANCHES = ['release3-staging', 'release3', 'release-tici', 'nightly']
 TESTED_BRANCHES = RELEASE_BRANCHES + ['devel', 'devel-staging', 'nightly-dev']
+
+# TOP fork branch migrations for TICI devices
+def get_top_branch_migration(device_type: str, branch_name: str) -> str:
+    """
+    Get the target branch for TICI device migration.
+    Handles both fixed branches and dynamic version numbers.
+    """
+    if device_type != "tici":
+        return branch_name
+
+    # Fixed branch mappings
+    fixed_mappings = {
+        "dev": "dev-c3",
+        "release": "release-c3",
+    }
+
+    # Check fixed mappings first
+    if branch_name in fixed_mappings:
+        return fixed_mappings[branch_name]
+
+    # Handle TOP version pattern (TOP01001, TOP01002, etc.)
+    top_pattern = re.compile(r'^TOP\d+$', re.IGNORECASE)
+    if top_pattern.match(branch_name):
+        return f"{branch_name}-C3"
+
+    # If no match, return original branch name
+    return branch_name
+
+# Legacy dictionary for backward compatibility
+TOP_BRANCH_MIGRATIONS = {
+    ("tici", "dev"): "dev-c3", 
+    ("tici", "release"): "release-c3",
+}
 
 BUILD_METADATA_FILENAME = "build.json"
 
@@ -109,6 +143,21 @@ class BuildMetadata:
   @property
   def ui_description(self) -> str:
     return f"{self.openpilot.version} / {self.openpilot.git_commit[:6]} / {self.channel}"
+
+  @property
+  def development_channel(self) -> bool:
+    return self.channel in ['devel', 'devel-staging', 'nightly-dev']
+
+  @property
+  def channel_type(self) -> str:
+    if self.channel.lower().endswith(("-c3", "-C3")):
+      return "tici"
+    elif self.development_channel:
+      return "development"
+    elif self.channel.startswith("staging-"):
+      return "staging"
+    else:
+      return "release"
 
 
 def build_metadata_from_dict(build_metadata: dict) -> BuildMetadata:

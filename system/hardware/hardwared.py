@@ -23,7 +23,7 @@ from openpilot.system.statsd import statlog
 from openpilot.common.swaglog import cloudlog
 from openpilot.system.hardware.power_monitoring import PowerMonitoring
 from openpilot.system.hardware.fan_controller import TiciFanController
-from openpilot.system.version import terms_version, training_version
+from openpilot.system.version import terms_version, training_version, get_build_metadata
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 ThermalStatus = log.DeviceState.ThermalStatus
@@ -323,6 +323,16 @@ def hardware_thread(end_event, hw_queue) -> None:
 
     # ensure device is fully booted
     startup_conditions["device_booted"] = startup_conditions.get("device_booted", False) or HARDWARE.booted()
+
+    # if an unsupported device and branch is detected, going onroad is blocked
+    # only allow going onroad when:
+    # - TIZI, or
+    # - TICI and channel_type is "tici" (ends with -c3/-C3)
+    build_metadata = get_build_metadata()
+    is_unsupported_combo = TICI and build_metadata.channel_type != "tici"
+    startup_conditions["not_tici"] = not is_unsupported_combo
+    onroad_conditions["not_tici"] = not is_unsupported_combo
+    set_offroad_alert_if_changed("Offroad_TiciSupport", is_unsupported_combo, extra_text=build_metadata.channel)
 
     # if the temperature enters the danger zone, go offroad to cool down
     onroad_conditions["device_temp_good"] = thermal_status < ThermalStatus.danger
