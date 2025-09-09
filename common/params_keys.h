@@ -141,7 +141,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"dp_jetson", {PERSISTENT, BOOL}},
     {"DrivingPersonalitiesUIWheel", {PERSISTENT, BOOL}},
     {"e2e_link", {PERSISTENT, BOOL, "1"}},
-    {"FlaskInstallRequested", {PERSISTENT, BOOL}},
+    {"PackagesInstallRequested", {PERSISTENT, BOOL}},
     {"fleetmanager", {PERSISTENT, BOOL, "1"}},
     {"LateralAllowed", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},
     {"NNFF", {PERSISTENT, BOOL}},
