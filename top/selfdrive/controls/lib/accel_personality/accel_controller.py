@@ -21,6 +21,19 @@ class AccelController:
     self.params = Params()
     self.personality = AccelPersonality.stock
     self.frame = 0
+    self.accel_profile_init = False
+    self.prev_car_accel_profile = None
+
+  def update_from_carstate(self, carstate):
+    if (hasattr(carstate, 'toyota_drive_mode') and carstate.toyota_drive_mode and
+        hasattr(carstate, 'accel_profile') and carstate.accel_profile is not None):
+
+        if (not self.accel_profile_init or
+            carstate.accel_profile != self.prev_car_accel_profile):
+
+          self.params.put_nonblocking('AccelPersonality', int(carstate.accel_profile))
+          self.accel_profile_init = True
+          self.prev_car_accel_profile = carstate.accel_profile
 
   def _update_personality_from_param(self):
     if self.frame % int(1. / DT_MDL) == 0:
@@ -70,5 +83,10 @@ class AccelController:
     self._update_personality_from_param()
     return bool(self.personality != AccelPersonality.stock)
 
-  def update(self):
+  def update(self, carstate=None):
     self.frame += 1
+
+    if carstate is not None:
+      self.update_from_carstate(carstate)
+
+    self._update_personality_from_param()
