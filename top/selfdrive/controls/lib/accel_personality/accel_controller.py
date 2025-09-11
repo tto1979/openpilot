@@ -21,6 +21,20 @@ class AccelController:
     self.params = Params()
     self.personality = AccelPersonality.stock
     self.frame = 0
+    self.accel_profile_init = False
+    self.prev_car_accel_profile = None
+    self.toyota_drive_mode_enabled = self.params.get_bool("ToyotaDriveMode")
+
+  def update_from_carstate(self, carstate):
+    if (self.toyota_drive_mode_enabled and hasattr(carstate, 'accelProfile') and carstate.accelProfile is not None):
+
+      if (not self.accel_profile_init or carstate.accelProfile != self.prev_car_accel_profile):
+        self.params.put_nonblocking('AccelPersonality', int(carstate.accelProfile))
+        self.personality = carstate.accelProfile
+        self.accel_profile_init = True
+        self.prev_car_accel_profile = carstate.accelProfile
+        return True
+    return False
 
   def _update_personality_from_param(self):
     if self.frame % int(1. / DT_MDL) == 0:
@@ -30,7 +44,6 @@ class AccelController:
           self.personality = personality_int
 
   def _get_max_accel_for_speed(self, v_ego: float) -> float:
-    self._update_personality_from_param()
 
     if self.personality == AccelPersonality.eco:
       mode = "eco"
@@ -42,7 +55,6 @@ class AccelController:
     return get_max_accel_hermite(v_ego, mode)
 
   def _get_min_accel_for_speed(self, v_ego: float) -> float:
-    self._update_personality_from_param()
 
     if self.personality == AccelPersonality.eco:
       mode = "eco"
@@ -56,7 +68,6 @@ class AccelController:
     return get_min_accel_hermite(v_ego, mode)
 
   def get_accel_limits(self, v_ego: float, accel_limits: list[float]) -> tuple[float, float]:
-    self._update_personality_from_param()
 
     if self.personality == AccelPersonality.stock:
       return (accel_limits[0], accel_limits[1])
@@ -66,9 +77,14 @@ class AccelController:
       return (min_accel, max_accel)
 
   def is_personality_enabled(self, accel_personality: int = AccelPersonality.stock) -> bool:
-    self.personality = accel_personality
-    self._update_personality_from_param()
     return bool(self.personality != AccelPersonality.stock)
 
-  def update(self):
+  def update(self, carstate=None):
     self.frame += 1
+
+    toyota_updated = False
+    if carstate is not None:
+      toyota_updated = self.update_from_carstate(carstate)
+
+    if not toyota_updated:
+      self._update_personality_from_param()
