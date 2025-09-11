@@ -179,6 +179,8 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
   def update(self, sm):
     LongitudinalPlannerTOP.update(self, sm)
+    carstate = sm['carState']
+    self.accel_controller.update(carstate)
 
     # standstill e2e
     v_ego = sm['carState'].vEgo
@@ -271,7 +273,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     else:
       accel_clip = [ACCEL_MIN, ACCEL_MAX]
 
-    if self.accel_controller.is_personality_enabled:
+    if self.accel_controller.is_personality_enabled():
       max_limit = self.accel_controller._get_max_accel_for_speed(v_ego)
 
       if mode == 'acc':

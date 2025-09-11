@@ -13,11 +13,16 @@ class LongitudinalPlannerTOP:
     self.accel_controller = AccelController()
 
   def update(self, sm: messaging.SubMaster) -> None:
-    self.accel_controller.update()
+    if hasattr(sm, 'updated') and sm.updated['carState']:
+      carstate = sm['carState']
+      self.accel_controller.update(carstate)
+    else:
+      self.accel_controller.update()
 
   def publish_longitudinal_plan_top(self, sm: messaging.SubMaster, pm: messaging.PubMaster) -> None:
     plan_top_send = messaging.new_message('longitudinalPlanTOP')
 
     plan_top_send.valid = sm.all_checks(service_list=['carState', 'controlsState'])
 
+    plan_top_send.longitudinalPlanTOP.accelPersonality = self.accel_controller.personality
     pm.send('longitudinalPlanTOP', plan_top_send)
