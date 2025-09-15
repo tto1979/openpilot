@@ -7,6 +7,7 @@ selfdrive/assets/training/*.png filter=lfs diff=lfs merge=lfs -text
 system/hardware/tici/updater filter=lfs diff=lfs merge=lfs -text
 third_party/**/*.a filter=lfs diff=lfs merge=lfs -text
 third_party/**/*.dylib filter=lfs diff=lfs merge=lfs -text
+third_party/ffmpeg/include/**/*.h filter=lfs diff=lfs merge=lfs -text
 third_party/acados/*/t_renderer filter=lfs diff=lfs merge=lfs -text
 third_party/bootstrap/bootstrap-icons.svg filter=lfs diff=lfs merge=lfs -text
 third_party/qt5/larch64/bin/lrelease filter=lfs diff=lfs merge=lfs -text
