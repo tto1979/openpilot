@@ -1251,7 +1251,6 @@ dependencies = [
     { name = "cffi" },
     { name = "crcmod" },
     { name = "cython" },
-    { name = "dearpygui" },
     { name = "flask" },
     { name = "future-fstrings" },
     { name = "inputs" },
@@ -1328,6 +1327,7 @@ testing = [
     { name = "ruff" },
 ]
 tools = [
+    { name = "dearpygui" },
     { name = "metadrive-simulator", marker = "platform_machine != 'aarch64'" },
 ]
 
@@ -1344,7 +1344,7 @@ requires-dist = [
     { name = "crcmod" },
     { name = "cython" },
     { name = "dbus-next", marker = "extra == 'dev'" },
-    { name = "dearpygui", specifier = ">=2.1.0" },
+    { name = "dearpygui", marker = "extra == 'tools'", specifier = ">=2.1.0" },
     { name = "dictdiffer", marker = "extra == 'dev'" },
     { name = "flask" },
     { name = "future-fstrings" },
