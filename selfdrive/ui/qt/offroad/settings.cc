@@ -660,8 +660,8 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   this));
 
   toggles.append(new ParamControl("ToyotaTune",
-                                  tr("Toyota Longitudinal Tuning"),
-                                  tr("Using the longitudinal Tuning can increase the sensitivity of longitudinal control in Toyota models."),
+                                  tr("TSS-P Longitudinal Tuning"),
+                                  tr("Using the longitudinal tuning can improve the smoothness on Toyota TSS-P models when equipped with SDSU for longitudinal control."),
                                   "../assets/icons/road.png",
                                   this));
 
