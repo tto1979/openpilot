@@ -38,7 +38,6 @@ private:
   bool blindSpotRight = false;
   bool drivingPersonalitiesUIWheel = false;
   bool timSignals = false;
-  bool muteDM = false;
   bool hideBottomIcons = false;
   bool turnSignalLeft = false;
   bool turnSignalRight = false;

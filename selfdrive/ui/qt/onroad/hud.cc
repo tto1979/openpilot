@@ -42,7 +42,6 @@ void HudRenderer::updateState(const UIState &s) {
   blindSpotRight = s.scene.blind_spot_right;
   drivingPersonalitiesUIWheel = s.scene.driving_personalities_ui_wheel;
   timSignals = s.scene.tim_signals;
-  muteDM = s.scene.mute_dm;
   personalityProfile = s.scene.personality_profile;
   turnSignalLeft = s.scene.turn_signal_left;
   turnSignalRight = s.scene.turn_signal_right;
@@ -181,7 +180,7 @@ void HudRenderer::drawDrivingPersonalities(QPainter &p, const QRect &rect) {
   constexpr int textDuration = 3000; // 3 seconds
 
   // Set the x and y coordinates
-  int x = rightHandDM ? rect.right() - (btn_size - 24) / 2 - (bdr_s * 2) - (muteDM ? 50 : 250) : rect.right() - (btn_size - 96) / 2 - (bdr_s * 2);
+  int x = rightHandDM ? rect.right() - (btn_size - 24) / 2 - (bdr_s * 2) - 250 : rect.right() - (btn_size - 96) / 2 - (bdr_s * 2);
   const int y = rect.bottom() - footer_h / 2 - 80;
 
   // Enable Antialiasing

@@ -74,21 +74,12 @@ class SelfdriveD(CruiseHelper):
     self.sensor_packets = ["accelerometer", "gyroscope"]
     self.camera_packets = ["roadCameraState", "driverCameraState", "wideRoadCameraState"]
 
-    self.dp_jetson = self.params.get_bool("dp_jetson")
-    if self.dp_jetson:
-      self.camera_packets = ["roadCameraState", "wideRoadCameraState"]
-
-
     # TODO: de-couple selfdrived with card/conflate on carState without introducing controls mismatches
     self.car_state_sock = messaging.sub_sock('carState', timeout=20)
 
     ignore = self.sensor_packets + self.gps_packets + ['alertDebug'] + ['modelExt']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
-
-    if self.dp_jetson:
-      ignore += ['driverCameraState', 'driverMonitoringState']
-
     if REPLAY:
       # no vipc in replay will make them ignored anyways
       ignore += ['roadCameraState', 'wideRoadCameraState']
@@ -134,10 +125,6 @@ class SelfdriveD(CruiseHelper):
     self.state_machine = StateMachine(self.alka)
     self.rk = Ratekeeper(100, print_delay_threshold=None)
     self.nn_alert_shown = False
-
-    self.ignored_processes = set()
-    if self.dp_jetson:
-      self.ignored_processes = {'dmonitoringd', 'dmonitoringmodeld', 'logcatd', 'logmessaged', 'loggerd', 'tombstoned', 'uploader'}
 
     # Determine startup event
     self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
@@ -200,7 +187,7 @@ class SelfdriveD(CruiseHelper):
     if not self.CP.pcmCruise and CS.vCruise > 250 and resume_pressed:
       self.events.add(EventName.resumeBlocked)
 
-    if not self.CP.notCar and not self.dp_jetson:
+    if not self.CP.notCar:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
 
     # Add car events, ignore if CAN isn't valid
@@ -316,7 +303,7 @@ class SelfdriveD(CruiseHelper):
       if not_running != self.not_running_prev:
         cloudlog.event("process_not_running", not_running=not_running, error=True)
       self.not_running_prev = not_running
-    if self.sm.recv_frame['managerState'] and (not_running - self.ignored_processes):
+    if self.sm.recv_frame['managerState'] and not_running:
       self.events.add(EventName.processNotRunning)
     else:
       if not SIMULATION and not self.rk.lagging:

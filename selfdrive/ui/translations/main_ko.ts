@@ -1107,14 +1107,6 @@ Enabled: Short and Long = 5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Enable Jetson Support</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable this option if you intend to run dp on Nvidia Jetson. Reboot required.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Enable Local File Server</source>
         <translation type="unfinished"></translation>
     </message>

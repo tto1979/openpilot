@@ -137,7 +137,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"ToyotaTune", {PERSISTENT, BOOL}},
     {"dp_device_offroad", {CLEAR_ON_MANAGER_START, BOOL}},
     {"dp_atl", {PERSISTENT, BOOL}},
-    {"dp_jetson", {PERSISTENT, BOOL}},
     {"DrivingPersonalitiesUIWheel", {PERSISTENT, BOOL}},
     {"e2e_link", {PERSISTENT, BOOL, "1"}},
     {"FlaskInstallRequested", {PERSISTENT, BOOL}},

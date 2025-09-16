@@ -1100,14 +1100,6 @@ Enabled: Short and Long = 5.</source>
 開啟選項: 短按及長按 = 5。</translation>
     </message>
     <message>
-        <source>Enable Jetson Support</source>
-        <translation>啟用 Jetson 支援</translation>
-    </message>
-    <message>
-        <source>Enable this option if you intend to run dp on Nvidia Jetson. Reboot required.</source>
-        <translation>如果您打算在 Nvidia Jetson NX 上跑 TOP ，請開啟這個選項，但此選項可能造成駕駛監控被關閉，且需重新啟動後生效。</translation>
-    </message>
-    <message>
         <source>Enable Local File Server</source>
         <translation>開啟檔案服務器</translation>
     </message>
