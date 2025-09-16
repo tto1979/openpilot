@@ -93,7 +93,6 @@ void ui_update_params(UIState *s) {
   scene.onroadScreenOff = params.getBool("OnroadScreenOff");
   scene.driving_personalities_ui_wheel = params.getBool("DrivingPersonalitiesUIWheel");
   scene.tim_signals = params.getBool("TimSignals");
-  scene.mute_dm = params.getBool("dp_jetson");
   scene.experimental_mode_via_wheel = params.getBool("e2e_link");
 }
 

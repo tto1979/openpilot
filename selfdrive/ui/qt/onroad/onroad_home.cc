@@ -100,7 +100,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   static bool propagateEvent = false;
   static bool recentlyTapped = false;
   const bool isToyotaCar = scene.steering_wheel_car;
-  const int y_offset = scene.mute_dm ? 70 : 300;
+  const int y_offset = 70;
   // bool rightHandDM = sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD();
 
   // Driving personalities button

@@ -737,12 +737,6 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/acc_change.png",
                                   this));
 
-  toggles.append(new ParamControl("dp_jetson",
-                                  tr("Enable Jetson Support"),
-                                  tr("Enable this option if you intend to run dp on Nvidia Jetson. Reboot required."),
-                                  "../assets/icons/road.png",
-                                  this));
-
   for (ParamControl *toggle : toggles) {
     if (main_layout->count() != 0) {
       toggle_layout->addWidget(horizontal_line());

@@ -75,21 +75,12 @@ class SelfdriveD(CruiseHelper):
     self.sensor_packets = ["accelerometer", "gyroscope"]
     self.camera_packets = ["roadCameraState", "driverCameraState", "wideRoadCameraState"]
 
-    self.dp_jetson = self.params.get_bool("dp_jetson")
-    if self.dp_jetson:
-      self.camera_packets = ["roadCameraState", "wideRoadCameraState"]
-
-
     # TODO: de-couple selfdrived with card/conflate on carState without introducing controls mismatches
     self.car_state_sock = messaging.sub_sock('carState', timeout=20)
 
     ignore = self.sensor_packets + self.gps_packets + ['alertDebug'] + ['modelExt']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
-
-    if self.dp_jetson:
-      ignore += ['driverCameraState', 'driverMonitoringState']
-
     if REPLAY:
       # no vipc in replay will make them ignored anyways
       ignore += ['roadCameraState', 'wideRoadCameraState']
@@ -137,8 +128,6 @@ class SelfdriveD(CruiseHelper):
     self.nn_alert_shown = False
 
     self.ignored_processes = set()
-    if self.dp_jetson:
-      self.ignored_processes = {'dmonitoringd', 'dmonitoringmodeld', 'logcatd', 'logmessaged', 'loggerd', 'tombstoned', 'uploader'}
 
     # some comma three with NVMe experience NVMe dropouts mid-drive that
     # cause loggerd to crash on write, so ignore it only on that platform
@@ -208,7 +197,7 @@ class SelfdriveD(CruiseHelper):
     if not self.CP.pcmCruise and CS.vCruise > 250 and resume_pressed:
       self.events.add(EventName.resumeBlocked)
 
-    if not self.CP.notCar and not self.dp_jetson:
+    if not self.CP.notCar:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
 
     # Add car events, ignore if CAN isn't valid
