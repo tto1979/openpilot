@@ -1019,7 +1019,7 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
     <message>
         <source>TSS-P Longitudinal Tuning</source>
-        <translation>Toyota縱向控制調校</translation>
+        <translation>TSS-P 縱向控制調校</translation>
     </message>
     <message>
         <source>Using the longitudinal tuning can improve the smoothness on Toyota TSS-P models when equipped with SDSU for longitudinal control.</source>
