@@ -1018,12 +1018,12 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>車輛停止時開啟實驗模式，這可以避免雷達對其他移動車輛的誤判而讓車輛不斷往前滑行。</translation>
     </message>
     <message>
-        <source>Toyota Longitudinal Tuning</source>
+        <source>TSS-P Longitudinal Tuning</source>
         <translation>Toyota縱向控制調校</translation>
     </message>
     <message>
-        <source>Using the longitudinal Tuning can increase the sensitivity of longitudinal control in Toyota models.</source>
-        <translation>使用Toyata蹤向調校可增加蹤向操控的靈敏度。</translation>
+        <source>Using the longitudinal tuning can improve the smoothness on Toyota TSS-P models when equipped with SDSU for longitudinal control.</source>
+        <translation>使用此縱向調校可以提高配備 SDSU 進行縱向控制的 Toyota TSS-P 車型平順感。</translation>
     </message>
     <message>
         <source>Dynamic Distance Adjustment</source>

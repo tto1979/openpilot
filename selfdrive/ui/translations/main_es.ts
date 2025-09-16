@@ -1023,11 +1023,11 @@ El Modo Firehose te permite maximizar las subidas de datos de entrenamiento para
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Toyota Longitudinal Tuning</source>
+        <source>TSS-P Longitudinal Tuning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Using the longitudinal Tuning can increase the sensitivity of longitudinal control in Toyota models.</source>
+        <source>Using the longitudinal tuning can improve the smoothness on Toyota TSS-P models when equipped with SDSU for longitudinal control.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
