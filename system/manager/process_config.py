@@ -8,6 +8,8 @@ from cereal import car
 from openpilot.common.params import Params
 from openpilot.system.hardware import PC, TICI
 from openpilot.system.manager.process import PythonProcess, NativeProcess, DaemonProcess
+from openpilot.system.hardware.hw import Paths
+from openpilot.top.mapd.mapd_manager import MAPD_PATH
 
 WEBCAM = os.getenv("USE_WEBCAM") is not None
 
@@ -93,6 +95,9 @@ def flask_simple_check(started: bool, params: Params, CP: car.CarParams) -> bool
   """Simple Flask check for fleetmanager startup condition"""
   return importlib.util.find_spec("flask") is not None
 
+def mapd_ready(started: bool, params: Params, CP: car.CarParams) -> bool:
+  return bool(os.path.exists(Paths.mapd_root()))
+
 def or_(*fns):
   return lambda *args: operator.or_(*(fn(*args) for fn in fns))
 
@@ -147,7 +152,10 @@ procs = [
   PythonProcess("statsd", "system.statsd", always_run),
   PythonProcess("feedbackd", "selfdrive.ui.feedback.feedbackd", only_onroad),
 
+  # TOP
   NativeProcess("fleetmanager", "system/fleetmanager", ["./fleet_manager.py"], flask_ready_and_second_boot),
+  NativeProcess("mapd", Paths.mapd_root(), ["bash", "-c", f"{MAPD_PATH} > /dev/null 2>&1"], mapd_ready),
+  PythonProcess("mapd_manager", "top.mapd.mapd_manager", always_run),
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),

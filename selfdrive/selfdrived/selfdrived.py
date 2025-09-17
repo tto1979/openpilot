@@ -124,6 +124,8 @@ class SelfdriveD(CruiseHelper):
     self.recalibrating_seen = False
     self.state_machine = StateMachine(self.alka)
     self.rk = Ratekeeper(100, print_delay_threshold=None)
+
+    self.ignored_processes = {'mapd', }
     self.nn_alert_shown = False
 
     # Determine startup event

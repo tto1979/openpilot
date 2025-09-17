@@ -2635,7 +2635,7 @@ struct Event {
     topControlsState @107 :Custom.TopControlsState;
     longitudinalPlanTOP @108 :Custom.LongitudinalPlanTOP;
     modelExt @109 :Custom.ModelExt;
-    customReserved3 @110 :Custom.CustomReserved3;
+    liveMapDataTOP @110 :Custom.LiveMapDataTOP;
     customReserved4 @111 :Custom.CustomReserved4;
     customReserved5 @112 :Custom.CustomReserved5;
     customReserved6 @113 :Custom.CustomReserved6;
