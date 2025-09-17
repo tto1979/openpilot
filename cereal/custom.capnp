@@ -29,7 +29,13 @@ struct ModelExt @0xf35cc4560bbf6ec2 {
   rightEdgeDetected @1 :Bool;
 }
 
-struct CustomReserved3 @0xda96579883444c35 {
+struct LiveMapDataTOP @0xda96579883444c35 {
+  speedLimitValid @0 :Bool;
+  speedLimit @1 :Float32;
+  speedLimitAheadValid @2 :Bool;
+  speedLimitAhead @3 :Float32;
+  speedLimitAheadDistance @4 :Float32;
+  roadName @5 :Text;
 }
 
 struct CustomReserved4 @0x80ae746ee2596b11 {
