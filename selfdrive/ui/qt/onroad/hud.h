@@ -20,6 +20,9 @@ private:
   void drawDrivingPersonalities(QPainter &p, const QRect &rect);
   void drawTimSignals(QPainter &p, const QRect &rect);
 
+  QString road_name;
+  void drawRoadName(QPainter &p, const QRect &surface_rect);
+
   static constexpr int btn_size = 250;
   static constexpr int UI_BORDER_SIZE = 15;
   static constexpr int bdr_s = 30;
