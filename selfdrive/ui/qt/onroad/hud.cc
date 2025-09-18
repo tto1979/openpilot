@@ -73,6 +73,12 @@ void HudRenderer::updateState(const UIState &s) {
   v_ego_cluster_seen = v_ego_cluster_seen || car_state.getVEgoCluster() != 0.0;
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = std::max<float>(0.0f, v_ego * (is_metric ? MS_TO_KPH : MS_TO_MPH));
+
+  if (sm.alive("liveMapDataTOP") && sm.rcv_frame("liveMapDataTOP") > 0)
+  {
+    const auto live_map_data = sm["liveMapDataTOP"].getLiveMapDataTOP();
+    road_name = QString::fromStdString(live_map_data.getRoadName());
+  }
 }
 
 void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
@@ -83,7 +89,7 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
   bg.setColorAt(0, brakeLights ? QColor::fromRgbF(1.0, 0.48, 0.5, 0.45) : QColor::fromRgbF(0, 0, 0, 0.45));
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT, bg);
-
+  drawRoadName(p, surface_rect);
 
   if (is_cruise_available) {
     drawSetSpeed(p, surface_rect);
@@ -262,4 +268,37 @@ void HudRenderer::drawTimSignals(QPainter &p, const QRect &rect) {
     drawSignal(turnSignalLeft, leftSignalXPosition, false, blindSpotLeft);
     drawSignal(turnSignalRight, rightSignalXPosition, true, blindSpotRight);
   }
+}
+
+void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
+{
+  if (road_name.isEmpty() || road_name.isNull()) {
+       return;
+  }
+
+  // Set font first to measure text
+  p.setFont(InterFont(48, QFont::Normal));
+  QFontMetrics fm(p.font());
+
+  // Calculate required width based on text + padding
+  int text_width = fm.horizontalAdvance(road_name);
+  int padding = 40;
+  int rect_width = text_width + padding;
+
+  // Set minimum and maximum widths
+  int min_width = 200;
+  int max_width = surface_rect.width() - 40;
+  rect_width = std::max(min_width, std::min(rect_width, max_width));
+
+  int rect_height = 70;
+  // Position road name at the bottom center
+  QRect road_rect(surface_rect.width() / 2 - rect_width / 2, surface_rect.height() - rect_height - 5, rect_width, rect_height);
+  p.setPen(QPen(QColor(255, 255, 255, 100), 1));
+  p.setBrush(QColor(0, 0, 0, 120));
+  p.drawRoundedRect(road_rect, 6, 6);
+
+  // Truncate long road names if they still don't fit
+  p.setPen(QColor(255, 255, 255, 255));
+  QString truncated = fm.elidedText(road_name, Qt::ElideRight, road_rect.width() - 20);
+  p.drawText(road_rect, Qt::AlignCenter, truncated);
 }
