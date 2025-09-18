@@ -485,14 +485,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
 <context>
     <name>OffroadAlert</name>
     <message>
-        <source>Immediately connect to the internet to check for updates. If you do not connect to the internet, openpilot won&apos;t engage in %1</source>
-        <translation>請立即連接網路檢查更新。如果不連接網路，openpilot 將在 %1 後便無法使用</translation>
-    </message>
-    <message>
-        <source>Connect to internet to check for updates. openpilot won&apos;t automatically start until it connects to internet to check for updates.</source>
-        <translation>請連接至網際網路以檢查更新。在連接至網際網路並完成更新檢查之前，openpilot 將不會自動啟動。</translation>
-    </message>
-    <message>
         <source>Unable to download updates
 %1</source>
         <translation>無法下載更新
@@ -505,14 +497,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>An update to your device&apos;s operating system is downloading in the background. You will be prompted to update when it&apos;s ready to install.</source>
         <translation>一個有關操作系統的更新正在後台下載中。當更新準備好安裝時，您將收到提示進行更新。</translation>
-    </message>
-    <message>
-        <source>openpilot was unable to identify your car. Your car is either unsupported or its ECUs are not recognized. Please submit a pull request to add the firmware versions to the proper vehicle. Need help? Join discord.comma.ai.</source>
-        <translation>openpilot 無法識別您的車輛。您的車輛可能未被支援，或是其電控單元 (ECU) 未被識別。請提交一個 Pull Request 為您的車輛添加正確的韌體版本。需要幫助嗎？請加入 discord.comma.ai 。</translation>
-    </message>
-    <message>
-        <source>openpilot detected a change in the device&apos;s mounting position. Ensure the device is fully seated in the mount and the mount is firmly secured to the windshield.</source>
-        <translation>openpilot 偵測到裝置的安裝位置發生變化。請確保裝置完全安裝在支架上，並確保支架牢固地固定在擋風玻璃上。</translation>
     </message>
     <message>
         <source>Device temperature too high. System cooling down before starting. Current internal component temperature: %1</source>
@@ -533,6 +517,34 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>openpilot detected excessive %1 actuation on your last drive. Please contact support at https://comma.ai/support and share your device&apos;s Dongle ID for troubleshooting.</source>
         <translation>openpilot 在您上次的駕駛中，偵測到過度的 %1 作動。請至 https://comma.ai/support 聯絡客服，並提供您裝置的 Dongle ID 以進行故障排除。</translation>
+    </message>
+    <message>
+        <source>Immediately connect to the internet to check for updates. If you do not connect to the internet, TOP won&apos;t engage in %1</source>
+        <translation>請立即連接網路檢查更新。如果不連接網路，TOP 將在 %1 後便無法使用</translation>
+    </message>
+    <message>
+        <source>Connect to internet to check for updates. TOP won&apos;t automatically start until it connects to internet to check for updates.</source>
+        <translation>請連接至網際網路以檢查更新。在連接至網際網路並完成更新檢查之前，TOP 將不會自動啟動。</translation>
+    </message>
+    <message>
+        <source>TOP was unable to identify your car. Your car is either unsupported or its ECUs are not recognized. Please submit a pull request to add the firmware versions to the proper vehicle. Need help? Join discord.comma.ai.</source>
+        <translation>TOP 無法識別您的車輛。您的車輛可能未被支援，或是其電控單元 (ECU) 未被識別。請提交一個 Pull Request 為您的車輛添加正確的韌體版本。需要幫助嗎？請加入 discord.comma.ai 。</translation>
+    </message>
+    <message>
+        <source>TOP detected a change in the device&apos;s mounting position. Ensure the device is fully seated in the mount and the mount is firmly secured to the windshield.</source>
+        <translation>TOP 偵測到裝置的安裝位置發生變化。請確保裝置完全安裝在支架上，並確保支架牢固地固定在擋風玻璃上。</translation>
+    </message>
+    <message>
+        <source>OpenStreetMap database is out of date. New maps must be downloaded if you wish to continue using OpenStreetMap data for Enhanced Speed Control and road name display.
+
+%1</source>
+        <translation>OpenStreetMap 資料庫版本過舊。若要繼續使用 OpenStreetMap 資料提供進階速限控制與道路名稱顯示功能，請下載最新的地圖資料。
+
+%1</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Unsupported branch detected&lt;/b&gt; - The current version of &lt;b&gt;&lt;u&gt;%1&lt;/u&gt;&lt;/b&gt; branch is no longer supported on the comma three. Please go to &lt;b&gt;[Device &gt; Software]&lt;/b&gt; and install a supported branch with &lt;b&gt;&lt;u&gt;-c3&lt;/u&gt;&lt;/b&gt; or &lt;b&gt;&lt;u&gt;-C3&lt;/u&gt;&lt;/b&gt; in the branch name for the comma three.</source>
+        <translation>&lt;b&gt;偵測到無法支援的版本&lt;/b&gt; - 目前的版本 &lt;b&gt;&lt;u&gt;%1&lt;/u&gt;&lt;/b&gt; 此版本目前不再支援 C3. 請點選 &lt;b&gt;[裝置 &gt; 軟體]&lt;/b&gt; 安裝可支援的版本其名稱具備 &lt;b&gt;&lt;u&gt;-c3&lt;/u&gt;&lt;/b&gt; 或 &lt;b&gt;&lt;u&gt;-C3&lt;/u&gt;&lt;/b&gt; 此版本名稱適用於C3。</translation>
     </message>
 </context>
 <context>
@@ -571,6 +583,141 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>System Unresponsive</source>
         <translation>系統無回應</translation>
+    </message>
+</context>
+<context>
+    <name>OsmPanel</name>
+    <message>
+        <source>Mapd Version</source>
+        <translation>Mapd 版本</translation>
+    </message>
+    <message>
+        <source>Offline Maps ETA</source>
+        <translation>離線地圖預計下載時間</translation>
+    </message>
+    <message>
+        <source>Time Elapsed</source>
+        <translation>時間經過</translation>
+    </message>
+    <message>
+        <source>Downloaded Maps</source>
+        <translation>下載地圖</translation>
+    </message>
+    <message>
+        <source>DELETE</source>
+        <translation>刪除</translation>
+    </message>
+    <message>
+        <source>This will delete ALL downloaded maps
+
+Are you sure you want to delete all the maps?</source>
+        <translation>這將刪除所有地圖檔
+
+確認您將刪除所有地圖檔？</translation>
+    </message>
+    <message>
+        <source>Yes, delete all the maps.</source>
+        <translation>確認，刪除所有地圖檔。</translation>
+    </message>
+    <message>
+        <source>Database Update</source>
+        <translation>資料庫更新</translation>
+    </message>
+    <message>
+        <source>CHECK</source>
+        <translation>檢查</translation>
+    </message>
+    <message>
+        <source>Country</source>
+        <translation>國家</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>選取</translation>
+    </message>
+    <message>
+        <source>Fetching Country list...</source>
+        <translation>國家清單載入中...</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>州/省份</translation>
+    </message>
+    <message>
+        <source>Fetching State list...</source>
+        <translation>州/省份清單載入中...</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>全部</translation>
+    </message>
+    <message>
+        <source>REFRESH</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <source>UPDATE</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <source>Download starting...</source>
+        <translation>正在下載中...</translation>
+    </message>
+    <message>
+        <source>Error: Invalid download. Retry.</source>
+        <translation>錯誤：下載失敗，請重試。</translation>
+    </message>
+    <message>
+        <source>Download complete!</source>
+        <translation>下載完成！</translation>
+    </message>
+    <message>
+        <source>
+
+Warning: You are on a metered connection!</source>
+        <translation>
+
+警告：您正在使用按量計費網路！</translation>
+    </message>
+    <message>
+        <source>This will start the download process and it might take a while to complete.</source>
+        <translation>下載程序即將開始，請耐心等候完成。</translation>
+    </message>
+    <message>
+        <source>Continue on Metered</source>
+        <translation>繼續使用按量計費網路</translation>
+    </message>
+    <message>
+        <source>Start Download</source>
+        <translation>開始下載</translation>
+    </message>
+    <message>
+        <source>m </source>
+        <translation>分</translation>
+    </message>
+    <message>
+        <source>s</source>
+        <translation>秒</translation>
+    </message>
+    <message>
+        <source>Calculating...</source>
+        <translation>正在計算...</translation>
+    </message>
+    <message>
+        <source>Downloaded</source>
+        <translation>已下載</translation>
+    </message>
+    <message>
+        <source>Calculating ETA...</source>
+        <translation>正在計算預計完成時間...</translation>
+    </message>
+    <message>
+        <source>Ready</source>
+        <translation>準備完成</translation>
+    </message>
+    <message>
+        <source>Time remaining: </source>
+        <translation>剩餘時間： </translation>
     </message>
 </context>
 <context>
@@ -711,6 +858,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>T.O.P</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OSM</source>
+        <translation>離線地圖</translation>
     </message>
 </context>
 <context>
