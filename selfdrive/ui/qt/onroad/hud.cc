@@ -292,13 +292,13 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
 
   int rect_height = 70;
   // Position road name at the bottom center
-  QRect road_rect(surface_rect.width() / 2 - rect_width / 2, surface_rect.height() - rect_height - 5, rect_width, rect_height);
+  QRect road_rect(surface_rect.width() / 2 - rect_width / 2, 5, rect_width, rect_height);
   p.setPen(QPen(QColor(255, 255, 255, 100), 1));
   p.setBrush(QColor(0, 0, 0, 120));
   p.drawRoundedRect(road_rect, 6, 6);
 
   // Truncate long road names if they still don't fit
-  p.setPen(QColor(255, 255, 255, 255));
+  p.setPen(QColor(255, 215, 0, 255));
   QString truncated = fm.elidedText(road_name, Qt::ElideRight, road_rect.width() - 20);
   p.drawText(road_rect, Qt::AlignCenter, truncated);
 }
