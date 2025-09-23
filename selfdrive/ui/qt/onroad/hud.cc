@@ -277,7 +277,7 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
   }
 
   // Set font first to measure text
-  p.setFont(InterFont(48, QFont::Normal));
+  p.setFont(InterFont(48, QFont::DemiBold));
   QFontMetrics fm(p.font());
 
   // Calculate required width based on text + padding
@@ -290,12 +290,12 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
   int max_width = surface_rect.width() - 40;
   rect_width = std::max(min_width, std::min(rect_width, max_width));
 
-  int rect_height = 70;
   // Position road name at the bottom center
-  QRect road_rect(surface_rect.width() / 2 - rect_width / 2, 5, rect_width, rect_height);
-  p.setPen(QPen(QColor(255, 255, 255, 100), 1));
+  QRect road_rect(surface_rect.width() / 2 - rect_width / 2, -4, rect_width, 60);
+
+  p.setPen(Qt::NoPen);
   p.setBrush(QColor(0, 0, 0, 120));
-  p.drawRoundedRect(road_rect, 6, 6);
+  p.drawRoundedRect(road_rect, 12, 12);
 
   // Truncate long road names if they still don't fit
   p.setPen(QColor(255, 215, 0, 255));
