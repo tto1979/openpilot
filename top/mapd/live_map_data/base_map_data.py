@@ -6,8 +6,7 @@ See the LICENSE.md file in the root directory for more details.
 """
 from abc import abstractmethod, ABC
 
-from cereal import messaging
-from openpilot.common.gps import get_gps_location_service
+import cereal.messaging as messaging
 from openpilot.common.params import Params
 from openpilot.top.navd.helpers import coordinate_from_param
 
@@ -16,14 +15,12 @@ class BaseMapData(ABC):
   def __init__(self):
     self.params = Params()
 
-    self.gps_location_service = get_gps_location_service(self.params)
-    gps_packets = [self.gps_location_service]
-    self.sm = messaging.SubMaster(['livePose'] + gps_packets, ignore_alive=gps_packets, ignore_avg_freq=gps_packets,
-                                  ignore_valid=gps_packets, poll='livePose')
-    self.pm = messaging.PubMaster(['liveMapDataSP'])
+    self.sm = messaging.SubMaster(['liveLocationKalman'])
+    self.pm = messaging.PubMaster(['liveMapDataTOP'])
 
+    self.localizer_valid = False
     self.last_bearing = None
-    self.last_position = coordinate_from_param("LastGPSPosition", self.params)
+    self.last_position = coordinate_from_param("LastGPSPositionLLK", self.params)
 
   @abstractmethod
   def update_location(self) -> None:
@@ -46,7 +43,7 @@ class BaseMapData(ABC):
     next_speed_limit, next_speed_limit_distance = self.get_next_speed_limit_and_distance()
 
     mapd_top_send = messaging.new_message('liveMapDataTOP')
-    mapd_top_send.valid = self.sm.all_checks(['livePose'])
+    mapd_top_send.valid = self.sm['liveLocationKalman'].gpsOK
     live_map_data = mapd_top_send.liveMapDataTOP
 
     live_map_data.speedLimitValid = bool(speed_limit > 0)

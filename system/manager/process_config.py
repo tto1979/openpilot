@@ -196,6 +196,7 @@ procs = [
   NativeProcess("fleetmanager", "system/fleetmanager", ["./fleet_manager.py"], flask_ready_and_second_boot),
   NativeProcess("mapd", Paths.mapd_root(), ["bash", "-c", f"{MAPD_PATH} > /dev/null 2>&1"], mapd_ready),
   PythonProcess("mapd_manager", "top.mapd.mapd_manager", always_run),
+  NativeProcess("locationd_llk", "top/selfdrive/locationd", ["./locationd"], only_onroad),
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
