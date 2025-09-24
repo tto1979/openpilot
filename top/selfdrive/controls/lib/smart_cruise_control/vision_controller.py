@@ -165,19 +165,19 @@ class SmartCruiseControlVision:
     if self.state not in ACTIVE_STATES:
       # when not overshooting, calculate v_turn as the speed at the prediction horizon when following
       # the smooth deceleration.
-      a_target = self.a_ego
+      a_target = float(self.a_ego)
     # ENTERING
     elif self.state == VisionState.entering:
       # when not overshooting, target a smooth deceleration in preparation for a sharp turn to come.
-      a_target = np.interp(self.max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V)
+      a_target = float(np.interp(self.max_pred_lat_acc, _ENTERING_SMOOTH_DECEL_BP, _ENTERING_SMOOTH_DECEL_V))
     # TURNING
     elif self.state == VisionState.turning:
       # When turning, we provide a target acceleration that is comfortable for the lateral acceleration felt.
-      a_target = np.interp(self.current_lat_acc, _TURNING_ACC_BP, _TURNING_ACC_V)
+      a_target = float(np.interp(self.current_lat_acc, _TURNING_ACC_BP, _TURNING_ACC_V))
     # LEAVING
     elif self.state == VisionState.leaving:
       # When leaving, we provide a comfortable acceleration to regain speed.
-      a_target = _LEAVING_ACC
+      a_target = float(_LEAVING_ACC)
     else:
       raise NotImplementedError(f"SCC-V state not supported: {self.state}")
 
