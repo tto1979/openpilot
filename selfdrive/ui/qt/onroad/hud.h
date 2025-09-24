@@ -20,6 +20,9 @@ private:
   void drawDrivingPersonalities(QPainter &p, const QRect &rect);
   void drawTimSignals(QPainter &p, const QRect &rect);
 
+  bool pulseElement(int frame);
+  void drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name);
+
   QString road_name;
   void drawRoadName(QPainter &p, const QRect &surface_rect);
 
@@ -36,6 +39,11 @@ private:
   bool v_ego_cluster_seen = false;
   bool brakeLights = false;
   int status = STATUS_DISENGAGED;
+
+  bool longOverride;
+  bool smartCruiseControlVisionEnabled;
+  bool smartCruiseControlVisionActive;
+  int smartCruiseControlVisionFrame;
 
   bool blindSpotLeft = false;
   bool blindSpotRight = false;

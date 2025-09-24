@@ -16,11 +16,6 @@ from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 from openpilot.top.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlannerTOP
 
-# PFEIFER - VTSC {{
-from openpilot.selfdrive.controls.vtsc import vtsc
-# }} PFEIFER - VTSC
-
-
 LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
@@ -301,14 +296,11 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_clip[1], clipped_accel_coast])
       accel_clip[1] = min(accel_clip[1], clipped_accel_coast_interp)
 
+    # Get new v_cruise and a_desired from Smart Cruise Control
+    v_cruise, self.a_desired = LongitudinalPlannerTOP.update_targets(self, sm, self.v_desired_filter.x, self.a_desired, v_cruise)
+
     if force_slow_decel:
       v_cruise = 0.0
-
-    # PFEIFER - VTSC {{
-    vtsc.update(prev_accel_constraint, v_ego, sm)
-    if vtsc.active and v_cruise > vtsc.v_target:
-      v_cruise = vtsc.v_target
-    # }} PFEIFER - VTSC
 
     lead_xv_0 = self.mpc.process_lead(sm['radarState'].leadOne)
     lead_xv_1 = self.mpc.process_lead(sm['radarState'].leadTwo)
