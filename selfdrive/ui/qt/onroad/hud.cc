@@ -55,6 +55,7 @@ void HudRenderer::updateState(const UIState &s) {
     return;
   }
 
+  const auto car_control = sm["carControl"].getCarControl();
   const auto &controls_state = sm["controlsState"].getControlsState();
   const auto &car_state = sm["carState"].getCarState();
   const auto &drivermonitor_state = sm["driverMonitoringState"].getDriverMonitoringState();
@@ -183,7 +184,7 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
-bool HudRendererTOP::pulseElement(int frame) {
+bool HudRenderer::pulseElement(int frame) {
   if (frame % UI_FREQ < (UI_FREQ / 2.5)) {
     return false;
   }
@@ -191,7 +192,7 @@ bool HudRendererTOP::pulseElement(int frame) {
   return true;
 }
 
-void HudRendererTOP::drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name) {
+void HudRenderer::drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name) {
   int x = surface_rect.center().x();
   int y = surface_rect.height() / 4;
 
