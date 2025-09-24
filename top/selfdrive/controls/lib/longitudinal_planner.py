@@ -19,9 +19,6 @@ class LongitudinalPlannerTOP:
   def update_targets(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
     self.scc.update(sm, v_ego, a_ego, v_cruise)
 
-    # Speed Limit Resolver
-    self.resolver.update(v_ego, sm)
-
     targets = {
       Source.cruise: (v_cruise, a_ego),
       Source.sccVision: (self.scc.vision.output_v_target, self.scc.vision.output_a_target),
