@@ -182,6 +182,13 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"OsmStateTitle", {PERSISTENT, STRING}},
     {"OsmWayTest", {PERSISTENT, STRING}},
     {"RoadName", {CLEAR_ON_ONROAD_TRANSITION, STRING}},
+
     // Smart Cruise Control
     {"SmartCruiseControlVision", {PERSISTENT, BOOL, "1"}},
+
+    // Speed Limit
+    {"SpeedLimitMode", {PERSISTENT, INT, "1"}},
+    {"SpeedLimitOffsetType", {PERSISTENT, INT, "0"}},
+    {"SpeedLimitPolicy", {PERSISTENT, INT, "3"}},
+    {"SpeedLimitValueOffset", {PERSISTENT, INT, "0"}},
 };
