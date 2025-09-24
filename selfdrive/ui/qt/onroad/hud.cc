@@ -107,7 +107,7 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
     bool scc_vision_active_pulse = pulseElement(smartCruiseControlVisionFrame);
     if ((smartCruiseControlVisionEnabled && !smartCruiseControlVisionActive) || (smartCruiseControlVisionActive && scc_vision_active_pulse)) {
-      drawSmartCruiseControlOnroadIcon(p, surface_rect, x_offset, y1_offset, "SCC-V");
+      drawSmartCruiseControlOnroadIcon(p, surface_rect, x_offset, y1_offset, "VTSC");
     }
 
     if (smartCruiseControlVisionActive) {
@@ -197,7 +197,7 @@ void HudRenderer::drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &sur
   int y = surface_rect.height() / 4;
 
   QString text = QString::fromStdString(name);
-  QFont font = InterFont(36, QFont::Bold);
+  QFont font = InterFont(42, QFont::Bold);
   p.setFont(font);
 
   QFontMetrics fm(font);
