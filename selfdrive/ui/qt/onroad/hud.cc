@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <QElapsedTimer>
+#include <QPainterPath>
 #include "selfdrive/ui/qt/util.h"
 
 constexpr int SET_SPEED_NA = 255;
@@ -54,9 +55,11 @@ void HudRenderer::updateState(const UIState &s) {
     return;
   }
 
+  const auto car_control = sm["carControl"].getCarControl();
   const auto &controls_state = sm["controlsState"].getControlsState();
   const auto &car_state = sm["carState"].getCarState();
   const auto &drivermonitor_state = sm["driverMonitoringState"].getDriverMonitoringState();
+  const auto lp_top = sm["longitudinalPlanTOP"].getLongitudinalPlanTOP();
 
   // Handle older routes where vCruiseCluster is not set
   set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
@@ -64,6 +67,9 @@ void HudRenderer::updateState(const UIState &s) {
   is_cruise_available = set_speed != -1;
   brakeLights = car_state.getBrakeLights();
   rightHandDM = drivermonitor_state.getIsRHD();
+  longOverride = car_control.getCruiseControl().getOverride();
+  smartCruiseControlVisionEnabled = lp_top.getSmartCruiseControl().getVision().getEnabled();
+  smartCruiseControlVisionActive = lp_top.getSmartCruiseControl().getVision().getActive();
 
   if (is_cruise_set && !is_metric) {
     set_speed *= KM_TO_MILE;
@@ -93,6 +99,22 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
   if (is_cruise_available) {
     drawSetSpeed(p, surface_rect);
+
+    // Smart Cruise Control
+    int x_offset = -260;
+    int y1_offset = -80;
+    // int y2_offset = -140;  // reserved for 2 icons
+
+    bool scc_vision_active_pulse = pulseElement(smartCruiseControlVisionFrame);
+    if ((smartCruiseControlVisionEnabled && !smartCruiseControlVisionActive) || (smartCruiseControlVisionActive && scc_vision_active_pulse)) {
+      drawSmartCruiseControlOnroadIcon(p, surface_rect, x_offset, y1_offset, "SCC-V");
+    }
+
+    if (smartCruiseControlVisionActive) {
+      smartCruiseControlVisionFrame++;
+    } else {
+      smartCruiseControlVisionFrame = 0;
+    }
   }
   drawCurrentSpeed(p, surface_rect);
 
@@ -160,6 +182,48 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
 
   p.setPen(QColor(0xff, 0xff, 0xff, alpha));
   p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+bool HudRenderer::pulseElement(int frame) {
+  if (frame % UI_FREQ < (UI_FREQ / 2.5)) {
+    return false;
+  }
+
+  return true;
+}
+
+void HudRenderer::drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name) {
+  int x = surface_rect.center().x();
+  int y = surface_rect.height() / 4;
+
+  QString text = QString::fromStdString(name);
+  QFont font = InterFont(36, QFont::Bold);
+  p.setFont(font);
+
+  QFontMetrics fm(font);
+
+  int padding_v = 5;
+  int box_width = 160;
+  int box_height = fm.height() + padding_v * 2;
+
+  QRectF bg_rect(x - (box_width / 2) + x_offset,
+                 y - (box_height / 2) + y_offset,
+                 box_width, box_height);
+
+  QPainterPath boxPath;
+  boxPath.addRoundedRect(bg_rect, 10, 10);
+
+  int text_w = fm.horizontalAdvance(text);
+  qreal baseline_y = bg_rect.top() + padding_v + fm.ascent();
+  qreal text_x = bg_rect.center().x() - (text_w / 2.0);
+
+  QPainterPath textPath;
+  textPath.addText(QPointF(text_x, baseline_y), font, text);
+  boxPath = boxPath.subtracted(textPath);
+
+  p.setPen(Qt::NoPen);
+  p.setBrush(longOverride ? QColor(0x91, 0x9b, 0x95, 0xf1) : QColor(0, 0xff, 0, 0xff));
+  p.drawPath(boxPath);
 }
 
 void HudRenderer::drawIcon(QPainter &p, QPoint pos, const QPixmap &img, 

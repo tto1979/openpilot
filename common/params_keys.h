@@ -162,7 +162,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"toyota_bsm", {PERSISTENT, BOOL}},
     {"ToyotaDriveMode", {PERSISTENT, BOOL}},
     {"toyota_stock_long", {PERSISTENT, BOOL}},
-    {"TurnVisionControl", {PERSISTENT, BOOL, "1"}},
     {"UserExperimentalMode", {CLEAR_ON_MANAGER_START, BOOL}},
 
     // mapd
@@ -171,7 +170,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"MapSpeedLimit", {CLEAR_ON_ONROAD_TRANSITION, FLOAT, "0.0"}},
     {"NextMapSpeedLimit", {CLEAR_ON_ONROAD_TRANSITION, JSON}},
     {"Offroad_OSMUpdateRequired", {CLEAR_ON_MANAGER_START, JSON}},
-    {"OsmDbUpdatesCheck", {CLEAR_ON_MANAGER_START, BOOL}},  // mapd database update happens with device ON, reset on boot
+    {"OsmDbUpdatesCheck", {CLEAR_ON_MANAGER_START, BOOL}},
     {"OSMDownloadBounds", {PERSISTENT, STRING}},
     {"OsmDownloadedDate", {PERSISTENT, STRING, "0.0"}},
     {"OSMDownloadLocations", {PERSISTENT, JSON}},
@@ -184,4 +183,6 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"OsmStateTitle", {PERSISTENT, STRING}},
     {"OsmWayTest", {PERSISTENT, STRING}},
     {"RoadName", {CLEAR_ON_ONROAD_TRANSITION, STRING}},
+    // Smart Cruise Control
+    {"SmartCruiseControlVision", {PERSISTENT, BOOL, "1"}},
 };
