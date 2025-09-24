@@ -17,8 +17,6 @@
 #include "selfdrive/ui/qt/offroad/timpilot.h"
 #include "selfdrive/ui/qt/widgets/myqrcodes.h" // QrCode
 
-QFrame *horizontal_line(QWidget *parent = nullptr);
-
 // ********** settings window + top-level panels **********
 class SettingsWindow : public QFrame {
   Q_OBJECT

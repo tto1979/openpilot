@@ -67,6 +67,9 @@ class Plant:
     lp = messaging.new_message('liveParameters')
     car_control = messaging.new_message('carControl')
     model = messaging.new_message('modelV2')
+    car_state_top = messaging.new_message('carStateTOP')
+    live_map_data_top = messaging.new_message('liveMapDataTOP')
+    gps_data = messaging.new_message('gpsLocation')
     a_lead = (v_lead - self.v_lead_prev)/self.ts
     self.v_lead_prev = v_lead
 
@@ -133,7 +136,10 @@ class Plant:
           'controlsState': control.controlsState,
           'selfdriveState': ss.selfdriveState,
           'liveParameters': lp.liveParameters,
-          'modelV2': model.modelV2}
+          'modelV2': model.modelV2,
+          'carStateTOP': car_state_top.carStateTOP,
+          'liveMapDataTOP': live_map_data_top.liveMapDataTOP,
+          'gpsLocation': gps_data.gpsLocation}
     self.planner.update(sm)
     self.acceleration = self.planner.output_a_target
     self.speed = self.speed + self.acceleration * self.ts

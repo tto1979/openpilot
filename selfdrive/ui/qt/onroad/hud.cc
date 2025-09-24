@@ -60,6 +60,27 @@ void HudRenderer::updateState(const UIState &s) {
   const auto &car_state = sm["carState"].getCarState();
   const auto &drivermonitor_state = sm["driverMonitoringState"].getDriverMonitoringState();
   const auto lp_top = sm["longitudinalPlanTOP"].getLongitudinalPlanTOP();
+  const auto lmd = sm["liveMapDataTOP"].getLiveMapDataTOP();
+
+  float speedConv = is_metric ? MS_TO_KPH : MS_TO_MPH;
+  speedLimit = lp_top.getSpeedLimit().getResolver().getSpeedLimit() * speedConv;
+  speedLimitLast = lp_top.getSpeedLimit().getResolver().getSpeedLimitLast() * speedConv;
+  speedLimitOffset = lp_top.getSpeedLimit().getResolver().getSpeedLimitOffset() * speedConv;
+  speedLimitValid = lp_top.getSpeedLimit().getResolver().getSpeedLimitValid();
+  speedLimitLastValid = lp_top.getSpeedLimit().getResolver().getSpeedLimitLastValid();
+  speedLimitFinalLast = lp_top.getSpeedLimit().getResolver().getSpeedLimitFinalLast() * speedConv;
+  speedLimitMode = static_cast<SpeedLimitMode>(s.scene.speed_limit_mode);
+  if (sm.updated("liveMapDataTOP")) {
+    speedLimitAheadValid = lmd.getSpeedLimitAheadValid();
+    speedLimitAhead = lmd.getSpeedLimitAhead() * speedConv;
+    speedLimitAheadDistance = lmd.getSpeedLimitAheadDistance();
+    if (speedLimitAheadDistance < speedLimitAheadDistancePrev && speedLimitAheadValidFrame < SPEED_LIMIT_AHEAD_VALID_FRAME_THRESHOLD) {
+      speedLimitAheadValidFrame++;
+    } else if (speedLimitAheadDistance > speedLimitAheadDistancePrev && speedLimitAheadValidFrame > 0) {
+      speedLimitAheadValidFrame--;
+    }
+  }
+  speedLimitAheadDistancePrev = speedLimitAheadDistance;
 
   // Handle older routes where vCruiseCluster is not set
   set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
@@ -114,6 +135,12 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
       smartCruiseControlVisionFrame++;
     } else {
       smartCruiseControlVisionFrame = 0;
+    }
+
+    // Speed Limit
+    if (speedLimitMode != SpeedLimitMode::OFF) {
+      drawSpeedLimitSigns(p);
+      drawUpcomingSpeedLimit(p);
     }
   }
   drawCurrentSpeed(p, surface_rect);
@@ -365,4 +392,200 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
   p.setPen(QColor(255, 215, 0, 255));
   QString truncated = fm.elidedText(road_name, Qt::ElideRight, road_rect.width() - 20);
   p.drawText(road_rect, Qt::AlignCenter, truncated);
+}
+
+void HudRenderer::drawSpeedLimitSigns(QPainter &p) {
+  bool speedLimitWarningEnabled = speedLimitMode == SpeedLimitMode::WARNING;  // TODO-TOP: update to include SpeedLimitMode::ASSIST
+  bool hasSpeedLimit = speedLimitValid || speedLimitLastValid;
+  bool overspeed = hasSpeedLimit && speedLimitFinalLast < std::nearbyint(speed);
+  QString speedLimitStr = hasSpeedLimit ? QString::number(std::nearbyint(speedLimitLast)) : "---";
+
+  // Offset display text
+  QString speedLimitSubText = "";
+  if (speedLimitOffset != 0) {
+    speedLimitSubText = (speedLimitOffset > 0 ? "" : "-") + QString::number(std::nearbyint(speedLimitOffset));
+  }
+
+  float speedLimitSubTextFactor = is_metric ? 0.5 : 0.6;
+  if (speedLimitSubText.size() >= 3) {
+    speedLimitSubTextFactor = 0.475;
+  }
+
+  // Position next to MAX speed box
+  const int sign_width = is_metric ? 200 : 172;
+  const int sign_x = is_metric ? 280 : 272;
+  const int sign_y = 45;
+  const int sign_height = 204;
+  QRect sign_rect(sign_x, sign_y, sign_width, sign_height);
+
+  int alpha = 255;
+  QColor red_color = QColor(255, 0, 0, alpha);
+  QColor speed_color = (speedLimitWarningEnabled && overspeed) ? red_color :
+                       (!speedLimitValid && speedLimitLastValid ? QColor(0x91, 0x9b, 0x95, 0xf1) : QColor(0, 0, 0, alpha));
+
+  if (is_metric) {
+    // EU Vienna Convention style circular sign
+    QRect vienna_rect = sign_rect;
+    int circle_size = std::min(vienna_rect.width(), vienna_rect.height());
+    QRect circle_rect(vienna_rect.x(), vienna_rect.y(), circle_size, circle_size);
+
+    if (vienna_rect.width() > vienna_rect.height()) {
+      circle_rect.moveLeft(vienna_rect.x() + (vienna_rect.width() - circle_size) / 2);
+    } else if (vienna_rect.height() > vienna_rect.width()) {
+      circle_rect.moveTop(vienna_rect.y() + (vienna_rect.height() - circle_size) / 2);
+    }
+
+    // White background circle
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(255, 255, 255, alpha));
+    p.drawEllipse(circle_rect);
+
+    // Red border ring with color coding
+    QRect red_ring = circle_rect;
+
+    p.setBrush(red_color);
+    p.drawEllipse(red_ring);
+
+    // Center white circle for text
+    int ring_size = circle_size * 0.12;
+    QRect center_circle = red_ring.adjusted(ring_size, ring_size, -ring_size, -ring_size);
+    p.setBrush(QColor(255, 255, 255, alpha));
+    p.drawEllipse(center_circle);
+
+    // Speed value, smaller font for 3+ digits
+    int font_size = (speedLimitStr.size() >= 3) ? 70 : 85;
+    p.setFont(InterFont(font_size, QFont::Bold));
+
+    p.setPen(speed_color);
+    p.drawText(center_circle, Qt::AlignCenter, speedLimitStr);
+
+    // Offset value in small circular box
+    if (!speedLimitSubText.isEmpty() && hasSpeedLimit) {
+      int offset_circle_size = circle_size * 0.4;
+      int overlap = offset_circle_size * 0.25;
+      QRect offset_circle_rect(
+        circle_rect.right() - offset_circle_size/1.25 + overlap,
+        circle_rect.top() - offset_circle_size/1.75 + overlap,
+        offset_circle_size,
+        offset_circle_size
+      );
+
+      p.setPen(QPen(QColor(77, 77, 77, 255), 6));
+      p.setBrush(QColor(0, 0, 0, alpha));
+      p.drawEllipse(offset_circle_rect);
+
+      p.setFont(InterFont(offset_circle_size * speedLimitSubTextFactor, QFont::Bold));
+      p.setPen(QColor(255, 255, 255, alpha));
+      p.drawText(offset_circle_rect, Qt::AlignCenter, speedLimitSubText);
+    }
+  } else {
+    // US/Canada MUTCD style sign
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(255, 255, 255, alpha));
+    p.drawRoundedRect(sign_rect, 32, 32);
+
+    // Inner border with violation color coding
+    QRect inner_rect = sign_rect.adjusted(10, 10, -10, -10);
+    QColor border_color = QColor(0, 0, 0, alpha);
+
+    p.setPen(QPen(border_color, 4));
+    p.setBrush(QColor(255, 255, 255, alpha));
+    p.drawRoundedRect(inner_rect, 22, 22);
+
+    // "SPEED LIMIT" text
+    p.setFont(InterFont(40, QFont::DemiBold));
+    p.setPen(QColor(0, 0, 0, alpha));
+    p.drawText(inner_rect.adjusted(0, 10, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
+    p.drawText(inner_rect.adjusted(0, 50, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
+
+    // Speed value with color coding
+    p.setFont(InterFont(90, QFont::Bold));
+
+    p.setPen(speed_color);
+    p.drawText(inner_rect.adjusted(0, 80, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
+
+    // Offset value in small box
+    if (!speedLimitSubText.isEmpty() && hasSpeedLimit) {
+      int offset_box_size = sign_rect.width() * 0.4;
+      int overlap = offset_box_size * 0.25;
+      QRect offset_box_rect(
+        sign_rect.right() - offset_box_size/1.5 + overlap,
+        sign_rect.top() - offset_box_size/1.25 + overlap,
+        offset_box_size,
+        offset_box_size
+      );
+
+      int corner_radius = offset_box_size * 0.2;
+      p.setPen(QPen(QColor(77, 77, 77, 255), 6));
+      p.setBrush(QColor(0, 0, 0, alpha));
+      p.drawRoundedRect(offset_box_rect, corner_radius, corner_radius);
+
+      p.setFont(InterFont(offset_box_size * speedLimitSubTextFactor, QFont::Bold));
+      p.setPen(QColor(255, 255, 255, alpha));
+      p.drawText(offset_box_rect, Qt::AlignCenter, speedLimitSubText);
+    }
+  }
+}
+
+void HudRenderer::drawUpcomingSpeedLimit(QPainter &p) {
+  bool speed_limit_ahead = speedLimitAheadValid && speedLimitAhead > 0 && speedLimitAhead != speedLimit && speedLimitAheadValidFrame > 0;
+  if (!speed_limit_ahead) {
+    return;
+  }
+
+  auto roundToInterval = [&](float distance, int interval, int threshold) {
+    int base = static_cast<int>(distance / interval) * interval;
+    return (distance - base >= threshold) ? base + interval : base;
+  };
+
+  auto outputDistance = [&] {
+    if (is_metric) {
+      if (speedLimitAheadDistance < 50) return tr("Near");
+      if (speedLimitAheadDistance >= 1000) return QString::number(speedLimitAheadDistance * METER_TO_KM, 'f', 1) + tr("km");
+
+      int rounded = (speedLimitAheadDistance < 200) ? std::max(10, roundToInterval(speedLimitAheadDistance, 10, 5)) : roundToInterval(speedLimitAheadDistance, 100, 50);
+      return QString::number(rounded) + tr("m");
+    } else {
+      float distance_ft = speedLimitAheadDistance * METER_TO_FOOT;
+      if (distance_ft < 100) return tr("Near");
+      if (distance_ft >= 900) return QString::number(speedLimitAheadDistance * METER_TO_MILE, 'f', 1) + tr("mi");
+
+      int rounded = (distance_ft < 500) ? std::max(50, roundToInterval(distance_ft, 50, 25)) : roundToInterval(distance_ft, 100, 50);
+      return QString::number(rounded) + tr("ft");
+    }
+  };
+
+  QString speedStr = QString::number(std::nearbyint(speedLimitAhead));
+  QString distanceStr = outputDistance();
+
+  // Position below current speed limit sign
+  const int sign_width = is_metric ? 200 : 172;
+  const int sign_x = is_metric ? 280 : 272;
+  const int sign_y = 45;
+  const int sign_height = 204;
+
+  const int ahead_width = 170;
+  const int ahead_height = 160;
+  const int ahead_x = sign_x + (sign_width - ahead_width) / 2;
+  const int ahead_y = sign_y + sign_height + 10;
+
+  QRect ahead_rect(ahead_x, ahead_y, ahead_width, ahead_height);
+  p.setPen(QPen(QColor(255, 255, 255, 100), 3));
+  p.setBrush(QColor(0, 0, 0, 180));
+  p.drawRoundedRect(ahead_rect, 16, 16);
+
+  // "AHEAD" label
+  p.setFont(InterFont(40, QFont::DemiBold));
+  p.setPen(QColor(200, 200, 200, 255));
+  p.drawText(ahead_rect.adjusted(0, 4, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("AHEAD"));
+
+  // Speed value
+  p.setFont(InterFont(70, QFont::Bold));
+  p.setPen(QColor(255, 255, 255, 255));
+  p.drawText(ahead_rect.adjusted(0, 38, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedStr);
+
+  // Distance
+  p.setFont(InterFont(40, QFont::Normal));
+  p.setPen(QColor(180, 180, 180, 255));
+  p.drawText(ahead_rect.adjusted(0, 110, 0, 0), Qt::AlignTop | Qt::AlignHCenter, distanceStr);
 }

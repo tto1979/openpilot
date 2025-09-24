@@ -14,6 +14,24 @@
 #include "selfdrive/ui/qt/widgets/input.h"
 #include "selfdrive/ui/qt/widgets/toggle.h"
 
+inline QFrame *horizontal_line(QWidget *parent = nullptr) {
+  QFrame *line = new QFrame(parent);
+  line->setFrameShape(QFrame::StyledPanel);
+  line->setStyleSheet(R"(
+    border-width: 1px;
+    border-bottom-style: solid;
+    border-color: gray;
+  )");
+  line->setFixedHeight(2);
+  return line;
+}
+
+inline QFrame *vertical_space(int height = 10) {
+  QFrame *spacer = new QFrame();
+  spacer->setFixedHeight(height);
+  return spacer;
+}
+
 class ElidedLabel : public QLabel {
   Q_OBJECT
 
@@ -253,7 +271,7 @@ public:
     key = param.toStdString();
     int value = atoi(params.get(key).c_str());
 
-    if (value > 0 && value < button_group->buttons().size()) {
+    if (value >= 0 && value < button_group->buttons().size()) {
       button_group->button(value)->setChecked(true);
     }
 
@@ -270,6 +288,9 @@ public:
   void showEvent(QShowEvent *event) override {
     refresh();
   }
+
+signals:
+  void showDescriptionEvent();
 
 private:
   std::string key;
@@ -307,6 +328,155 @@ private:
   QVBoxLayout outer_layout;
   QVBoxLayout inner_layout;
 };
+
+
+class PushButton : public QPushButton {
+  Q_OBJECT
+
+public:
+  PushButton(const QString &text, int width = 0, QWidget *parent = nullptr) : QPushButton(text, parent) {
+    if (width > 0) {
+      setFixedWidth(width);
+    }
+
+    setStyleSheet(R"(
+      QPushButton {
+        font-size: 50px;
+        margin: 10px;
+        padding: 15px 30px;
+        border-width: 0;
+        border-radius: 30px;
+        color: #dddddd;
+        background-color: #393939;
+        text-align: left;
+        min-height: 120px;
+      }
+      QPushButton:pressed {
+        background-color: #4a4a4a;
+      }
+    )");
+  }
+};
+
+
+class OptionControl : public AbstractControl {
+  Q_OBJECT
+
+public:
+  OptionControl(const QString &param, const QString &title, const QString &desc, const QString &icon,
+                std::pair<int, int> range, QWidget *parent = nullptr)
+      : AbstractControl(title, desc, icon, parent), key(param.toStdString()) {
+
+    QHBoxLayout *controls_layout = new QHBoxLayout();
+
+    minus_btn = new QPushButton("-");
+    minus_btn->setFixedSize(60, 60);
+    minus_btn->setStyleSheet(R"(
+      QPushButton {
+        border-radius: 30px;
+        font-size: 30px;
+        font-weight: bold;
+        background-color: #393939;
+        color: #E4E4E4;
+      }
+      QPushButton:pressed {
+        background-color: #4a4a4a;
+      }
+    )");
+
+    plus_btn = new QPushButton("+");
+    plus_btn->setFixedSize(60, 60);
+    plus_btn->setStyleSheet(minus_btn->styleSheet());
+
+    value_label = new QLabel();
+    value_label->setAlignment(Qt::AlignCenter);
+    value_label->setMinimumWidth(150);
+    value_label->setStyleSheet("font-size: 40px; color: #E4E4E4;");
+
+    controls_layout->addWidget(minus_btn);
+    controls_layout->addWidget(value_label);
+    controls_layout->addWidget(plus_btn);
+
+    hlayout->addLayout(controls_layout);
+
+    min_val = range.first;
+    max_val = range.second;
+    current_val = std::atoi(params.get(key).c_str());
+
+    updateDisplay();
+
+    connect(minus_btn, &QPushButton::clicked, [this]() {
+      if (current_val > min_val) {
+        current_val--;
+        params.put(key, std::to_string(current_val));
+        updateDisplay();
+        emit updateLabels();
+      }
+    });
+
+    connect(plus_btn, &QPushButton::clicked, [this]() {
+      if (current_val < max_val) {
+        current_val++;
+        params.put(key, std::to_string(current_val));
+        updateDisplay();
+        emit updateLabels();
+      }
+    });
+  }
+
+  void setLabel(const QString &text) {
+    suffix_text = text;
+    updateDisplay();
+  }
+
+signals:
+  void updateLabels();
+
+public slots:
+  void showDescription() {
+  }
+
+private slots:
+  void updateDisplay() {
+    value_label->setText(QString::number(current_val) + suffix_text);
+    minus_btn->setEnabled(current_val > min_val);
+    plus_btn->setEnabled(current_val < max_val);
+  }
+
+private:
+  std::string key;
+  Params params;
+  QPushButton *minus_btn, *plus_btn;
+  QLabel *value_label;
+  int current_val, min_val, max_val;
+  QString suffix_text;
+};
+
+
+class PanelBackButton : public QPushButton {
+  Q_OBJECT
+
+public:
+  PanelBackButton(const QString &label = "Back", QWidget *parent = nullptr) : QPushButton(label, parent) {
+    setObjectName("back_btn");
+    setStyleSheet(R"(
+      QPushButton {
+        font-size: 50px;
+        margin: 0px;
+        padding: 15px;
+        border-width: 0;
+        border-radius: 30px;
+        color: #dddddd;
+        background-color: #393939;
+      }
+      QPushButton:pressed {
+        background-color: #4a4a4a;
+      }
+    )");
+    setFixedSize(400, 100);
+  }
+};
+
 
 // convenience class for wrapping layouts
 class LayoutWidget : public QWidget {
