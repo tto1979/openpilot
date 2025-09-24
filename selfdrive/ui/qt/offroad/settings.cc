@@ -685,7 +685,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/lane.png",
                                   this));
 
-  toggles.append(new ParamControl("TurnVisionControl",
+  toggles.append(new ParamControl("SmartCruiseControlVision",
                                   tr("Vision Based Turn Control"),
                                   tr("Use vision path predictions to estimate the appropriate speed to drive through turns ahead."),
                                   "../assets/icons/road.png",

@@ -146,7 +146,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
     "wideRoadCameraState", "managerState", "selfdriveState", "longitudinalPlan",
-    "topControlsState", "longitudinalPlanTOP", "liveMapDataTOP",
+    "topControlsState", "longitudinalPlanTOP", "liveMapDataTOP", "carControl",
   });
   scene.wide_cam = false;
   scene.longitudinal_control = false;
