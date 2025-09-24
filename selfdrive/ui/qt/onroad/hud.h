@@ -2,6 +2,9 @@
 
 #include <QPainter>
 #include "selfdrive/ui/ui.h"
+#include "selfdrive/ui/qt/offroad/speed_limit/helpers.h"
+
+constexpr int SPEED_LIMIT_AHEAD_VALID_FRAME_THRESHOLD = 5;
 
 class HudRenderer : public QObject {
   Q_OBJECT
@@ -19,6 +22,8 @@ private:
   void drawIcon(QPainter &p, QPoint pos, const QPixmap &img, QColor bg_color = QColor(0,0,0,0), qreal opacity = 1.0);
   void drawDrivingPersonalities(QPainter &p, const QRect &rect);
   void drawTimSignals(QPainter &p, const QRect &rect);
+  void drawSpeedLimitSigns(QPainter &p);
+  void drawUpcomingSpeedLimit(QPainter &p);
 
   bool pulseElement(int frame);
   void drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name);
@@ -44,6 +49,19 @@ private:
   bool smartCruiseControlVisionEnabled;
   bool smartCruiseControlVisionActive;
   int smartCruiseControlVisionFrame;
+
+  float speedLimit;
+  float speedLimitLast;
+  float speedLimitOffset;
+  bool speedLimitValid;
+  bool speedLimitLastValid;
+  float speedLimitFinalLast;
+  bool speedLimitAheadValid;
+  float speedLimitAhead;
+  float speedLimitAheadDistance;
+  float speedLimitAheadDistancePrev;
+  int speedLimitAheadValidFrame;
+  SpeedLimitMode speedLimitMode = SpeedLimitMode::OFF;
 
   bool blindSpotLeft = false;
   bool blindSpotRight = false;

@@ -81,6 +81,7 @@ typedef struct UIScene {
   bool turn_signal_right;
   bool wide_cam; 
   int personality_profile;
+  int speed_limit_mode = 0;
 } UIScene;
 
 class UIState : public QObject {

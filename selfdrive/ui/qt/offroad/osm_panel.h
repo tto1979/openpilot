@@ -24,6 +24,7 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/ui.h"
 #include "system/hardware/hw.h"
+#include "selfdrive/ui/qt/offroad/speed_limit/speed_limit_settings.h"
 
 constexpr int FAST_REFRESH_INTERVAL = 1000; // ms
 constexpr int SLOW_REFRESH_INTERVAL = 5000; // ms
@@ -65,6 +66,11 @@ private:
   ButtonControl *setupOsmUpdateButton(QWidget *parent);
   ButtonControl *setupOsmDownloadButton(QWidget *parent);
   ButtonControl *setupUsStatesButton(QWidget *parent);
+
+  ButtonControl *speedLimitBtn;
+  SpeedLimitSettings *speedLimitScreen = nullptr;
+  QWidget *speedLimitWrapper = nullptr;
+  ButtonControl *setupSpeedLimitButton();
 
   QTimer *timer;
   std::string osm_download_locations;

@@ -18,6 +18,10 @@ struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
   accelPersonality @0 :AccelerationPersonality;
   longitudinalPlanSource @1 :LongitudinalPlanSource;
   smartCruiseControl @2 :SmartCruiseControl;
+  speedLimit @3 :SpeedLimit;
+  vTarget @4 :Float32;
+  aTarget @5 :Float32;
+
   enum AccelerationPersonality {
     sport @0;
     normal @1;
@@ -38,7 +42,6 @@ struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
       active @6 :Bool;
     }
 
-
     enum VisionState {
       disabled @0; # System disabled or inactive.
       enabled @1; # No predicted substantial turn on vision range.
@@ -47,7 +50,28 @@ struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
       leaving @4; # Road ahead straightens. Start to allow positive acceleration.
       overriding @5; # System overriding with manual control.
     }
+  }
 
+  struct SpeedLimit {
+    resolver @0 :Resolver;
+
+    struct Resolver {
+      speedLimit @0 :Float32;
+      distToSpeedLimit @1 :Float32;
+      source @2 :Source;
+      speedLimitOffset @3 :Float32;
+      speedLimitLast @4 :Float32;
+      speedLimitFinal @5 :Float32;
+      speedLimitFinalLast @6 :Float32;
+      speedLimitValid @7 :Bool;
+      speedLimitLastValid @8 :Bool;
+    }
+
+    enum Source {
+      none @0;
+      car @1;
+      map @2;
+    }
   }
 
   enum LongitudinalPlanSource {
@@ -70,7 +94,8 @@ struct LiveMapDataTOP @0xda96579883444c35 {
   roadName @5 :Text;
 }
 
-struct CustomReserved4 @0x80ae746ee2596b11 {
+struct CarStateTOP @0x80ae746ee2596b11 {
+  speedLimit @0 :Float32;
 }
 
 struct CustomReserved5 @0xa5cd762cd951a455 {

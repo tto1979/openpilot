@@ -13,6 +13,7 @@
 
 #include "common/swaglog.h"
 #include "selfdrive/ui/qt/widgets/scrollview.h"
+#include "selfdrive/ui/qt/offroad/speed_limit/speed_limit_settings.h"
 
 OsmPanel::OsmPanel(QWidget *parent) : QFrame(parent) {
   main_layout = new QStackedLayout(this);
@@ -25,6 +26,10 @@ OsmPanel::OsmPanel(QWidget *parent) : QFrame(parent) {
   list->addItem(setupOsmUpdateButton(parent));
   list->addItem(setupOsmDownloadButton(parent));
   list->addItem(setupUsStatesButton(parent));
+
+  //Speed limit
+  list->addItem(horizontal_line());
+  list->addItem(setupSpeedLimitButton());
 
   connect(uiState(), &UIState::offroadTransition, [=](bool offroad) {
     updateLabels();
@@ -40,6 +45,29 @@ OsmPanel::OsmPanel(QWidget *parent) : QFrame(parent) {
   vlayout->setContentsMargins(50, 20, 50, 20);
   vlayout->addWidget(new ScrollView(list, this), 1);
   main_layout->addWidget(osmScreen);
+
+  speedLimitScreen = new SpeedLimitSettings(this);
+
+  speedLimitWrapper = new QWidget(this);
+  QVBoxLayout *wrapperLayout = new QVBoxLayout(speedLimitWrapper);
+  wrapperLayout->setContentsMargins(30, 20, 30, 20);
+  wrapperLayout->setSpacing(0);
+
+  QWidget *speedLimitContainer = new QWidget(speedLimitWrapper);
+  QVBoxLayout *containerLayout = new QVBoxLayout(speedLimitContainer);
+  containerLayout->setContentsMargins(0, 0, 0, 0);
+  containerLayout->setSpacing(0);
+  containerLayout->addWidget(speedLimitScreen);
+  ScrollView *speedLimitScroller = new ScrollView(speedLimitContainer, speedLimitWrapper);
+  speedLimitScroller->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  speedLimitScroller->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  speedLimitScroller->setWidgetResizable(true);
+  wrapperLayout->addWidget(speedLimitScroller);
+
+  connect(speedLimitScreen, &SpeedLimitSettings::backPress, [=]() {
+    main_layout->setCurrentWidget(osmScreen);
+  });
+  main_layout->addWidget(speedLimitWrapper);
 }
 
 ButtonControl *OsmPanel::setupOsmDeleteMapsButton(QWidget *parent) {
@@ -280,4 +308,23 @@ void OsmPanel::updateMapSize() {
   if (!mapSizeFuture.has_value() || !mapSizeFuture.value().isRunning()) {
     mapSizeFuture = QtConcurrent::run(getDirSize, MAP_PATH);
   }
+}
+
+ButtonControl *OsmPanel::setupSpeedLimitButton() {
+  speedLimitBtn = new ButtonControl(tr("Speed Limit"), tr("CONFIGURE"),
+                                   tr("Configure speed limit settings including source policy, mode, and offset options."));
+  connect(speedLimitBtn, &ButtonControl::clicked, [=]() {
+    int screenWidth = this->width();
+    if (screenWidth > 0) {
+      int margin = qMax(20, qMin(50, screenWidth / 20));
+      speedLimitScreen->setMaximumWidth(screenWidth - 2 * margin - 40);
+
+      QVBoxLayout *wrapperLayout = qobject_cast<QVBoxLayout*>(speedLimitWrapper->layout());
+      if (wrapperLayout) {
+        wrapperLayout->setContentsMargins(margin, 20, margin, 20);
+      }
+    }
+    main_layout->setCurrentWidget(speedLimitWrapper);
+  });
+  return speedLimitBtn;
 }
