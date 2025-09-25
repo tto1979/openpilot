@@ -691,6 +691,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/road.png",
                                   this));
 
+  toggles.append(new ParamControl("SmartCruiseControlMap",
+                                  tr("Map Based Turn Control"),
+                                  tr("Use map data to estimate the appropriate speed to drive through turns ahead."),
+                                  "../assets/icons/road.png",
+                                  this));
+
   toggles.append(new ParamControl("fleetmanager",
                                   tr("Enable Local File Server"),
                                   tr("This will allow you to play or download openpilot driving record files through your browser.\nUse web interface to control it: *http://&lt;device_ip&gt;:8082*.\nInternet access from mobile phone (tethering) is required."),
