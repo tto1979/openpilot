@@ -182,19 +182,19 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     # Logging for state changes
     if self.red_light_detected != prev_red_light_detected:
       light_status = "RED LIGHT" if self.red_light_detected else "GREEN LIGHT"
-      print((f"Traffic light status changed: {light_status}, "
-            f"filter: {self.red_light_filter.x:.2f}, "
-            f"model length: {self.model_length:.2f}m, "
-            f"consecutive R/G: {self.consecutive_red_detections}/{self.consecutive_green_detections}"))
+      print(f"Traffic light status changed: {light_status}, " \
+            f"filter: {self.red_light_filter.x:.2f}, " \
+            f"model length: {self.model_length:.2f}m, " \
+            f"consecutive R/G: {self.consecutive_red_detections}/{self.consecutive_green_detections}")
 
     # Periodic status logging
     self.update_counter += 1
     if self.update_counter >= 20:  # Every 1 second at 20Hz
       light_status = "RED" if self.red_light_detected else ("GREEN" if self.green_light_detected else "UNKNOWN")
       lead_info = f"(dist: {self.lead_distance:.1f}m, v: {self.lead_velocity:.1f}m/s)" if self.tracking_lead else "(no lead)"
-      print((f"Traffic status: {light_status}, filter: {self.red_light_filter.x:.2f}, "
-            f"model: {self.model_length:.2f}m, lead: {lead_info}, "
-            f"consecutive R/G: {self.consecutive_red_detections}/{self.consecutive_green_detections}"))
+      print(f"Traffic status: {light_status}, filter: {self.red_light_filter.x:.2f}, " \
+            f"model: {self.model_length:.2f}m, lead: {lead_info}, " \
+            f"consecutive R/G: {self.consecutive_red_detections}/{self.consecutive_green_detections}")
       self.update_counter = 0
 
     return self.red_light_detected
