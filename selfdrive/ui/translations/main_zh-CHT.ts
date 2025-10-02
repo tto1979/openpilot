@@ -868,59 +868,6 @@ Warning: You are on a metered connection!</source>
         <source>now</source>
         <translation>現在</translation>
     </message>
-    <message>
-        <source>None</source>
-        <translation>無調整</translation>
-    </message>
-    <message>
-        <source>Fixed</source>
-        <translation>固定值</translation>
-    </message>
-    <message>
-        <source>Percent</source>
-        <translation>百分比</translation>
-    </message>
-    <message>
-        <source>Car
-Only</source>
-        <translation>僅用車資</translation>
-    </message>
-    <message>
-        <source>Map
-Only</source>
-        <translation>僅用圖資</translation>
-    </message>
-    <message>
-        <source>Car
-First</source>
-        <translation>車資優先</translation>
-    </message>
-    <message>
-        <source>Map
-First</source>
-        <translation>圖資優先</translation>
-    </message>
-    <message>
-        <source>Both
-Data</source>
-        <translation>合併資料</translation>
-    </message>
-    <message>
-        <source>Off</source>
-        <translation>關閉</translation>
-    </message>
-    <message>
-        <source>Info.</source>
-        <translation>資訊</translation>
-    </message>
-    <message>
-        <source>Warning</source>
-        <translation>提示</translation>
-    </message>
-    <message>
-        <source>Assist</source>
-        <translation>輔助</translation>
-    </message>
 </context>
 <context>
     <name>SettingsWindow</name>
@@ -1144,6 +1091,64 @@ Data</source>
 </context>
 <context>
     <name>SpeedLimitPolicy</name>
+    <message>
+        <source>None</source>
+        <translation>無調整</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <translation>固定值</translation>
+    </message>
+    <message>
+        <source>Percent</source>
+        <translation>百分比</translation>
+    </message>
+    <message>
+        <source>Car
+Only</source>
+        <translation>僅用
+車資</translation>
+    </message>
+    <message>
+        <source>Map
+Only</source>
+        <translation>僅用
+圖資</translation>
+    </message>
+    <message>
+        <source>Car
+First</source>
+        <translation>車資
+優先</translation>
+    </message>
+    <message>
+        <source>Map
+First</source>
+        <translation>圖資
+優先</translation>
+    </message>
+    <message>
+        <source>Both
+Data</source>
+        <translation>合併
+資料</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>Info.</source>
+        <translation>資訊</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>提示</translation>
+    </message>
+    <message>
+        <source>Assist</source>
+        <translation>輔助</translation>
+    </message>
     <message>
         <source>Back</source>
         <translation>回上頁</translation>
