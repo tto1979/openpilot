@@ -22,8 +22,9 @@ private:
   void drawIcon(QPainter &p, QPoint pos, const QPixmap &img, QColor bg_color = QColor(0,0,0,0), qreal opacity = 1.0);
   void drawDrivingPersonalities(QPainter &p, const QRect &rect);
   void drawTimSignals(QPainter &p, const QRect &rect);
-  void drawSpeedLimitSigns(QPainter &p);
+  void drawSpeedLimitSigns(QPainter &p, QRect &sign_rect);
   void drawUpcomingSpeedLimit(QPainter &p);
+  void drawSpeedLimitPreActiveArrow(QPainter &p, QRect &sign_rect);
 
   bool pulseElement(int frame);
   void drawSmartCruiseControlOnroadIcon(QPainter &p, const QRect &surface_rect, int x_offset, int y_offset, std::string name);
@@ -65,6 +66,11 @@ private:
   float speedLimitAheadDistancePrev;
   int speedLimitAheadValidFrame;
   SpeedLimitMode speedLimitMode = SpeedLimitMode::OFF;
+  cereal::LongitudinalPlanTOP::SpeedLimit::AssistState speedLimitAssistState;
+  bool speedLimitAssistActive;
+  int speedLimitAssistFrame;
+  QPixmap plus_arrow_up_img;
+  QPixmap minus_arrow_down_img;
 
   bool blindSpotLeft = false;
   bool blindSpotRight = false;

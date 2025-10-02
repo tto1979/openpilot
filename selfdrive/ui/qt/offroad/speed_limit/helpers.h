@@ -41,10 +41,12 @@ enum class SpeedLimitMode {
   OFF,
   INFO,
   WARNING,
+  ASSIST,
 };
 
 inline const QString SpeedLimitModeTexts[]{
   QObject::tr("Off"),
   QObject::tr("Info."),
   QObject::tr("Warning"),
+  QObject::tr("Assist"),
 };

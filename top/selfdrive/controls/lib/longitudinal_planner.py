@@ -6,30 +6,53 @@ See the LICENSE.md file in the root directory for more details.
 """
 
 from cereal import messaging, custom
+from openpilot.common.constants import CV
+from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
 from openpilot.top.selfdrive.controls.lib.accel_personality.accel_controller import AccelController
 from openpilot.top.selfdrive.controls.lib.smart_cruise_control.smart_cruise_control import SmartCruiseControl
+from openpilot.top.selfdrive.controls.lib.speed_limit.speed_limit_assist import SpeedLimitAssist
 from openpilot.top.selfdrive.controls.lib.speed_limit.speed_limit_resolver import SpeedLimitResolver
+from openpilot.selfdrive.selfdrived.events import Events
 
-Source = custom.LongitudinalPlanTOP.LongitudinalPlanSource
+LongitudinalPlanSource = custom.LongitudinalPlanTOP.LongitudinalPlanSource
 class LongitudinalPlannerTOP:
   def __init__(self):
+    self.events = Events()
+    self.resolver = SpeedLimitResolver()
     self.accel_controller = AccelController()
     self.scc = SmartCruiseControl()
     self.resolver = SpeedLimitResolver()
-    self.source = Source.cruise
+    self.sla = SpeedLimitAssist(CP)
+    self.source = LongitudinalPlanSource.cruise
 
     self.output_v_target = 0.
     self.output_a_target = 0.
   def update_targets(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
-    self.scc.update(sm, v_ego, a_ego, v_cruise)
+    CS = sm['carState']
+    v_cruise_cluster_kph = min(CS.vCruiseCluster, V_CRUISE_MAX)
+    v_cruise_cluster = v_cruise_cluster_kph * CV.KPH_TO_MS
+
+    long_enabled = sm['carControl'].enabled
+    long_override = sm['carControl'].cruiseControl.override
+
+    self.events_sp.clear()
+
+    # Smart Cruise Control
+    self.scc.update(sm, long_enabled, long_override, v_ego, a_ego, v_cruise)
 
     # Speed Limit Resolver
     self.resolver.update(v_ego, sm)
 
+    # Speed Limit Assist
+    has_speed_limit = self.resolver.speed_limit_valid or self.resolver.speed_limit_last_valid
+    self.sla.update(long_enabled, long_override, v_ego, a_ego, v_cruise_cluster, self.resolver.speed_limit,
+                    self.resolver.speed_limit_final_last, has_speed_limit, self.resolver.distance, self.events_sp)
+
     targets = {
-      Source.cruise: (v_cruise, a_ego),
-      Source.sccVision: (self.scc.vision.output_v_target, self.scc.vision.output_a_target),
-      Source.sccMap: (self.scc.map.output_v_target, self.scc.map.output_a_target),
+      LongitudinalPlanSource.cruise: (v_cruise, a_ego),
+      LongitudinalPlanSource.sccVision: (self.scc.vision.output_v_target, self.scc.vision.output_a_target),
+      LongitudinalPlanSource.sccMap: (self.scc.map.output_v_target, self.scc.map.output_a_target),
+      LongitudinalPlanSource.speedLimitAssist: (self.sla.output_v_target, self.sla.output_a_target),
     }
 
     self.source = min(targets, key=lambda k: targets[k][0])
@@ -52,6 +75,7 @@ class LongitudinalPlannerTOP:
     longitudinalPlanTOP.longitudinalPlanSource = self.source
     longitudinalPlanTOP.vTarget = float(self.output_v_target)
     longitudinalPlanTOP.aTarget = float(self.output_a_target)
+    longitudinalPlanTOP.events = self.events.to_msg()
     # Smart Cruise Control
     smartCruiseControl = longitudinalPlanTOP.smartCruiseControl
     # Vision Control
@@ -83,6 +107,12 @@ class LongitudinalPlannerTOP:
     resolver.speedLimitOffset = float(self.resolver.speed_limit_offset)
     resolver.distToSpeedLimit = float(self.resolver.distance)
     resolver.source = self.resolver.source
+    assist = speedLimit.assist
+    assist.state = self.sla.state
+    assist.enabled = self.sla.is_enabled
+    assist.active = self.sla.is_active
+    assist.vTarget = float(self.sla.output_v_target)
+    assist.aTarget = float(self.sla.output_a_target)
 
     plan_top_send.longitudinalPlanTOP.accelPersonality = self.accel_controller.personality
     pm.send('longitudinalPlanTOP', plan_top_send)

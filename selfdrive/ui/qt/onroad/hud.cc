@@ -8,6 +8,9 @@
 constexpr int SET_SPEED_NA = 255;
 
 HudRenderer::HudRenderer() {
+  plus_arrow_up_img = loadPixmap("../../top/selfdrive/assets/img_plus_arrow_up", {105, 105});
+  minus_arrow_down_img = loadPixmap("../../top/selfdrive/assets/img_minus_arrow_down", {105, 105});
+
   profile_data = {
     {QPixmap("../assets/aggressive.png"), "Aggressive"},
     {QPixmap("../assets/standard.png"), "Standard"},
@@ -70,6 +73,8 @@ void HudRenderer::updateState(const UIState &s) {
   speedLimitLastValid = lp_top.getSpeedLimit().getResolver().getSpeedLimitLastValid();
   speedLimitFinalLast = lp_top.getSpeedLimit().getResolver().getSpeedLimitFinalLast() * speedConv;
   speedLimitMode = static_cast<SpeedLimitMode>(s.scene.speed_limit_mode);
+  speedLimitAssistState = lp_top.getSpeedLimit().getAssist().getState();
+  speedLimitAssistActive = lp_top.getSpeedLimit().getAssist().getActive();
   if (sm.updated("liveMapDataTOP")) {
     speedLimitAheadValid = lmd.getSpeedLimitAheadValid();
     speedLimitAhead = lmd.getSpeedLimitAhead() * speedConv;
@@ -150,9 +155,32 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
     smartCruiseControlMapFrame = smartCruiseControlMapActive ? (smartCruiseControlMapFrame + 1) : 0;
 
     // Speed Limit
-    if (speedLimitMode != SpeedLimitMode::OFF) {
-      drawSpeedLimitSigns(p);
-      drawUpcomingSpeedLimit(p);
+    bool showSpeedLimit;
+    bool speed_limit_assist_pre_active_pulse = pulseElement(speedLimitAssistFrame);
+
+    // Position speed limit sign next to set speed box
+    const int sign_width = is_metric ? 200 : 172;
+    const int sign_x = is_metric ? 280 : 272;
+    const int sign_y = 45;
+    const int sign_height = 204;
+    QRect sign_rect(sign_x, sign_y, sign_width, sign_height);
+
+    if (speedLimitAssistState == cereal::LongitudinalPlanTOP::SpeedLimit::AssistState::PRE_ACTIVE) {
+      speedLimitAssistFrame++;
+      showSpeedLimit = speed_limit_assist_pre_active_pulse;
+      drawSpeedLimitPreActiveArrow(p, sign_rect);
+    } else {
+      speedLimitAssistFrame = 0;
+      showSpeedLimit = speedLimitMode != SpeedLimitMode::OFF;
+    }
+
+    if (showSpeedLimit) {
+      drawSpeedLimitSigns(p, sign_rect);
+
+      // do not show during SLA's preActive state
+      if (speedLimitAssistState != cereal::LongitudinalPlanTOP::SpeedLimit::AssistState::PRE_ACTIVE) {
+        drawUpcomingSpeedLimit(p);
+      }
     }
   }
   drawCurrentSpeed(p, surface_rect);
@@ -184,12 +212,17 @@ void HudRenderer::drawSetSpeed(QPainter &p, const QRect &surface_rect) {
   QColor set_speed_color = QColor(0x72, 0x72, 0x72, 0xff);
   if (is_cruise_set) {
     set_speed_color = QColor(255, 255, 255);
-    if (status == STATUS_DISENGAGED) {
-      max_color = QColor(255, 255, 255);
-    } else if (status == STATUS_OVERRIDE) {
-      max_color = QColor(0x91, 0x9b, 0x95, 0xff);
+    if (speedLimitAssistActive) {
+      set_speed_color = longOverride ? QColor(0x91, 0x9b, 0x95, 0xff) : QColor(0, 0xff, 0, 0xff);
+      max_color = longOverride ? QColor(0x91, 0x9b, 0x95, 0xff) : QColor(0x80, 0xd8, 0xa6, 0xff);
     } else {
-      max_color = QColor(0x80, 0xd8, 0xa6, 0xff);
+      if (status == STATUS_DISENGAGED) {
+        max_color = QColor(255, 255, 255);
+      } else if (status == STATUS_OVERRIDE) {
+        max_color = QColor(0x91, 0x9b, 0x95, 0xff);
+      } else {
+        max_color = QColor(0x80, 0xd8, 0xa6, 0xff);
+      }
     }
   }
 
@@ -406,10 +439,10 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
   p.drawText(road_rect, Qt::AlignCenter, truncated);
 }
 
-void HudRenderer::drawSpeedLimitSigns(QPainter &p) {
-  bool speedLimitWarningEnabled = speedLimitMode == SpeedLimitMode::WARNING;  // TODO-TOP: update to include SpeedLimitMode::ASSIST
+void HudRenderer::drawSpeedLimitSigns(QPainter &p, QRect &sign_rect) {
+  bool speedLimitWarningEnabled = speedLimitMode >= SpeedLimitMode::WARNING;  // TODO-TOP: update to include SpeedLimitMode::ASSIST
   bool hasSpeedLimit = speedLimitValid || speedLimitLastValid;
-  bool overspeed = hasSpeedLimit && speedLimitFinalLast < std::nearbyint(speed);
+  bool overspeed = hasSpeedLimit && std::nearbyint(speedLimitFinalLast) < std::nearbyint(speed);
   QString speedLimitStr = hasSpeedLimit ? QString::number(std::nearbyint(speedLimitLast)) : "---";
 
   // Offset display text
@@ -422,13 +455,6 @@ void HudRenderer::drawSpeedLimitSigns(QPainter &p) {
   if (speedLimitSubText.size() >= 3) {
     speedLimitSubTextFactor = 0.475;
   }
-
-  // Position next to MAX speed box
-  const int sign_width = is_metric ? 200 : 172;
-  const int sign_x = is_metric ? 280 : 272;
-  const int sign_y = 45;
-  const int sign_height = 204;
-  QRect sign_rect(sign_x, sign_y, sign_width, sign_height);
 
   int alpha = 255;
   QColor red_color = QColor(255, 0, 0, alpha);
@@ -600,4 +626,26 @@ void HudRenderer::drawUpcomingSpeedLimit(QPainter &p) {
   p.setFont(InterFont(40, QFont::Normal));
   p.setPen(QColor(180, 180, 180, 255));
   p.drawText(ahead_rect.adjusted(0, 110, 0, 0), Qt::AlignTop | Qt::AlignHCenter, distanceStr);
+}
+
+
+void HudRenderer::drawSpeedLimitPreActiveArrow(QPainter &p, QRect &sign_rect) {
+  const int sign_margin = 12;
+  const int arrow_spacing = sign_margin * 3;
+  int arrow_x = sign_rect.right() + arrow_spacing;
+
+  int _set_speed = std::nearbyint(set_speed);
+  int _speed_limit_final_last = std::nearbyint(speedLimitFinalLast);
+
+  // Calculate the vertical offset using a sinusoidal function for smooth bouncing
+  double bounce_frequency = 2.0 * M_PI / UI_FREQ;  // 20 frames for one full oscillation
+  int bounce_offset = 20 * sin(speedLimitAssistFrame * bounce_frequency);  // Adjust the amplitude (20 pixels) as needed
+
+  if (_set_speed < _speed_limit_final_last) {
+    QPoint iconPosition(arrow_x, sign_rect.center().y() - plus_arrow_up_img.height() / 2 + bounce_offset);
+    p.drawPixmap(iconPosition, plus_arrow_up_img);
+  } else if (_set_speed > _speed_limit_final_last) {
+    QPoint iconPosition(arrow_x, sign_rect.center().y() - minus_arrow_down_img.height() / 2 - bounce_offset);
+    p.drawPixmap(iconPosition, minus_arrow_down_img);
+  }
 }
