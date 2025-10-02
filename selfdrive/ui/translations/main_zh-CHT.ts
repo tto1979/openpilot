@@ -1090,7 +1090,7 @@ Warning: You are on a metered connection!</source>
     </message>
 </context>
 <context>
-    <name>SpeedLimitPolicy</name>
+    <name>Helpers</name>
     <message>
         <source>None</source>
         <translation>無調整</translation>
@@ -1149,6 +1149,9 @@ Data</source>
         <source>Assist</source>
         <translation>輔助</translation>
     </message>
+</context>
+<context>
+    <name>SpeedLimitPolicy</name>
     <message>
         <source>Back</source>
         <translation>回上頁</translation>
