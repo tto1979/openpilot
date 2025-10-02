@@ -1090,7 +1090,7 @@ Warning: You are on a metered connection!</source>
     </message>
 </context>
 <context>
-    <name>Helpers</name>
+    <name>SpeedLimitOffsetType</name>
     <message>
         <source>None</source>
         <translation>無調整</translation>
@@ -1103,6 +1103,9 @@ Warning: You are on a metered connection!</source>
         <source>Percent</source>
         <translation>百分比</translation>
     </message>
+</context>
+<context>
+    <name>SpeedLimitSourcePolicy</name>
     <message>
         <source>Car
 Only</source>
@@ -1133,6 +1136,9 @@ Data</source>
         <translation>合併
 資料</translation>
     </message>
+</context>
+<context>
+    <name>SpeedLimitMode</name>
     <message>
         <source>Off</source>
         <translation>關閉</translation>
