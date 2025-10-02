@@ -47,7 +47,6 @@ class TestAlerts:
 
       cfg = [c for c in CONFIGS if c.proc_name == 'selfdrived'][0]
       cls.sm = SubMaster(cfg.pubs)
-      cls.sm.update_msgs(0, ['longitudinalPlanTOP'])
 
   def test_events_defined(self):
     # Ensure all events in capnp schema are defined in events.py
