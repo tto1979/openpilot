@@ -21,7 +21,6 @@ struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
   speedLimit @3 :SpeedLimit;
   vTarget @4 :Float32;
   aTarget @5 :Float32;
-  events @6 :List(OnroadEventSP.Event);
 
   enum AccelerationPersonality {
     sport @0;
