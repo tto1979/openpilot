@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QCoreApplication>
 
 enum class SpeedLimitOffsetType {
   NONE,
@@ -15,11 +16,17 @@ enum class SpeedLimitOffsetType {
   PERCENT,
 };
 
-inline const QString SpeedLimitOffsetTypeTexts[]{
-  QObject::tr("None"),
-  QObject::tr("Fixed"),
-  QObject::tr("Percent"),
-};
+inline QString getSpeedLimitOffsetTypeText(SpeedLimitOffsetType type) {
+  switch(type) {
+    case SpeedLimitOffsetType::NONE: 
+      return QCoreApplication::translate("QObject", "None");
+    case SpeedLimitOffsetType::FIXED: 
+      return QCoreApplication::translate("QObject", "Fixed");
+    case SpeedLimitOffsetType::PERCENT: 
+      return QCoreApplication::translate("QObject", "Percent");
+    default: return "";
+  }
+}
 
 enum class SpeedLimitSourcePolicy {
   CAR_ONLY,
@@ -29,13 +36,21 @@ enum class SpeedLimitSourcePolicy {
   COMBINED,
 };
 
-inline const QString SpeedLimitSourcePolicyTexts[]{
-  QObject::tr("Car\nOnly"),
-  QObject::tr("Map\nOnly"),
-  QObject::tr("Car\nFirst"),
-  QObject::tr("Map\nFirst"),
-  QObject::tr("Both\nData")
-};
+inline QString getSpeedLimitSourcePolicyText(SpeedLimitSourcePolicy policy) {
+  switch(policy) {
+    case SpeedLimitSourcePolicy::CAR_ONLY: 
+      return QCoreApplication::translate("QObject", "Car\nOnly");
+    case SpeedLimitSourcePolicy::MAP_ONLY: 
+      return QCoreApplication::translate("QObject", "Map\nOnly");
+    case SpeedLimitSourcePolicy::CAR_FIRST: 
+      return QCoreApplication::translate("QObject", "Car\nFirst");
+    case SpeedLimitSourcePolicy::MAP_FIRST: 
+      return QCoreApplication::translate("QObject", "Map\nFirst");
+    case SpeedLimitSourcePolicy::COMBINED: 
+      return QCoreApplication::translate("QObject", "Both\nData");
+    default: return "";
+  }
+}
 
 enum class SpeedLimitMode {
   OFF,
@@ -44,9 +59,16 @@ enum class SpeedLimitMode {
   ASSIST,
 };
 
-inline const QString SpeedLimitModeTexts[]{
-  QObject::tr("Off"),
-  QObject::tr("Info."),
-  QObject::tr("Warning"),
-  QObject::tr("Assist"),
-};
+inline QString getSpeedLimitModeText(SpeedLimitMode mode) {
+  switch(mode) {
+    case SpeedLimitMode::OFF: 
+      return QCoreApplication::translate("QObject", "Off");
+    case SpeedLimitMode::INFO: 
+      return QCoreApplication::translate("QObject", "Info.");
+    case SpeedLimitMode::WARNING: 
+      return QCoreApplication::translate("QObject", "Warning");
+    case SpeedLimitMode::ASSIST: 
+      return QCoreApplication::translate("QObject", "Assist");
+    default: return "";
+  }
+}

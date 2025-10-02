@@ -25,10 +25,10 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
   speedLimitPolicyScreen = new SpeedLimitPolicy(this);
 
   std::vector<QString> speed_limit_mode_texts{
-    SpeedLimitModeTexts[static_cast<int>(SpeedLimitMode::OFF)],
-    SpeedLimitModeTexts[static_cast<int>(SpeedLimitMode::INFO)],
-    SpeedLimitModeTexts[static_cast<int>(SpeedLimitMode::WARNING)],
-    SpeedLimitModeTexts[static_cast<int>(SpeedLimitMode::ASSIST)],
+    getSpeedLimitModeText(SpeedLimitMode::OFF),
+    getSpeedLimitModeText(SpeedLimitMode::INFO),
+    getSpeedLimitModeText(SpeedLimitMode::WARNING),
+    getSpeedLimitModeText(SpeedLimitMode::ASSIST),
   };
   speed_limit_mode_settings = new ButtonParamControl(
     "SpeedLimitMode",
@@ -62,9 +62,9 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
   QVBoxLayout *offsetLayout = new QVBoxLayout(offsetFrame);
 
   std::vector<QString> speed_limit_offset_texts{
-    SpeedLimitOffsetTypeTexts[static_cast<int>(SpeedLimitOffsetType::NONE)],
-    SpeedLimitOffsetTypeTexts[static_cast<int>(SpeedLimitOffsetType::FIXED)],
-    SpeedLimitOffsetTypeTexts[static_cast<int>(SpeedLimitOffsetType::PERCENT)]
+    getSpeedLimitOffsetTypeText(SpeedLimitOffsetType::NONE),
+    getSpeedLimitOffsetTypeText(SpeedLimitOffsetType::FIXED),
+    getSpeedLimitOffsetTypeText(SpeedLimitOffsetType::PERCENT)
   };
   speed_limit_offset_settings = new ButtonParamControl(
     "SpeedLimitOffsetType",
