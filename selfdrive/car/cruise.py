@@ -49,6 +49,7 @@ class VCruiseHelper:
     self.prev_speed_limit_final_last_kph = 0.
     self.req_plus = False
     self.req_minus = False
+    self.v_cruise_min = 0
 
   @property
   def v_cruise_initialized(self):

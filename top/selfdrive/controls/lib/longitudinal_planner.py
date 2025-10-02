@@ -6,6 +6,7 @@ See the LICENSE.md file in the root directory for more details.
 """
 
 from cereal import messaging, custom
+from opendbc.car import structs
 from openpilot.common.constants import CV
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
 from openpilot.top.selfdrive.controls.lib.accel_personality.accel_controller import AccelController
@@ -16,7 +17,7 @@ from openpilot.selfdrive.selfdrived.events import Events
 
 LongitudinalPlanSource = custom.LongitudinalPlanTOP.LongitudinalPlanSource
 class LongitudinalPlannerTOP:
-  def __init__(self):
+  def __init__(self, CP: structs.CarParams):
     self.events = Events()
     self.resolver = SpeedLimitResolver()
     self.accel_controller = AccelController()
@@ -35,7 +36,7 @@ class LongitudinalPlannerTOP:
     long_enabled = sm['carControl'].enabled
     long_override = sm['carControl'].cruiseControl.override
 
-    self.events_sp.clear()
+    self.events.clear()
 
     # Smart Cruise Control
     self.scc.update(sm, long_enabled, long_override, v_ego, a_ego, v_cruise)

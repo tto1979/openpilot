@@ -6,7 +6,7 @@ See the LICENSE.md file in the root directory for more details.
 """
 import time
 
-from cereal import custom, car
+from cereal import log, car
 from openpilot.common.params import Params
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_MDL
