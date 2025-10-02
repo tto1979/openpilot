@@ -868,6 +868,64 @@ Warning: You are on a metered connection!</source>
         <source>now</source>
         <translation>現在</translation>
     </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished">無調整</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <translation type="unfinished">固定值</translation>
+    </message>
+    <message>
+        <source>Percent</source>
+        <translation type="unfinished">百分比</translation>
+    </message>
+    <message>
+        <source>Car
+Only</source>
+        <translation type="unfinished">僅用
+車資</translation>
+    </message>
+    <message>
+        <source>Map
+Only</source>
+        <translation type="unfinished">僅用
+圖資</translation>
+    </message>
+    <message>
+        <source>Car
+First</source>
+        <translation type="unfinished">車資
+優先</translation>
+    </message>
+    <message>
+        <source>Map
+First</source>
+        <translation type="unfinished">圖資
+優先</translation>
+    </message>
+    <message>
+        <source>Both
+Data</source>
+        <translation type="unfinished">合併
+資料</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">關閉</translation>
+    </message>
+    <message>
+        <source>Info.</source>
+        <translation type="unfinished">資訊</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation type="unfinished">提示</translation>
+    </message>
+    <message>
+        <source>Assist</source>
+        <translation type="unfinished">輔助</translation>
+    </message>
 </context>
 <context>
     <name>SettingsWindow</name>
@@ -1090,70 +1148,37 @@ Warning: You are on a metered connection!</source>
     </message>
 </context>
 <context>
-    <name>SpeedLimitOffsetType</name>
-    <message>
-        <source>None</source>
-        <translation>無調整</translation>
-    </message>
-    <message>
-        <source>Fixed</source>
-        <translation>固定值</translation>
-    </message>
-    <message>
-        <source>Percent</source>
-        <translation>百分比</translation>
-    </message>
-</context>
-<context>
-    <name>SpeedLimitSourcePolicy</name>
-    <message>
-        <source>Car
-Only</source>
-        <translation>僅用
-車資</translation>
-    </message>
-    <message>
-        <source>Map
-Only</source>
-        <translation>僅用
-圖資</translation>
-    </message>
-    <message>
-        <source>Car
-First</source>
-        <translation>車資
-優先</translation>
-    </message>
-    <message>
-        <source>Map
-First</source>
-        <translation>圖資
-優先</translation>
-    </message>
-    <message>
-        <source>Both
-Data</source>
-        <translation>合併
-資料</translation>
-    </message>
-</context>
-<context>
     <name>SpeedLimitMode</name>
     <message>
         <source>Off</source>
-        <translation>關閉</translation>
+        <translation type="vanished">關閉</translation>
     </message>
     <message>
         <source>Info.</source>
-        <translation>資訊</translation>
+        <translation type="vanished">資訊</translation>
     </message>
     <message>
         <source>Warning</source>
-        <translation>提示</translation>
+        <translation type="vanished">提示</translation>
     </message>
     <message>
         <source>Assist</source>
-        <translation>輔助</translation>
+        <translation type="vanished">輔助</translation>
+    </message>
+</context>
+<context>
+    <name>SpeedLimitOffsetType</name>
+    <message>
+        <source>None</source>
+        <translation type="vanished">無調整</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <translation type="vanished">固定值</translation>
+    </message>
+    <message>
+        <source>Percent</source>
+        <translation type="vanished">百分比</translation>
     </message>
 </context>
 <context>
@@ -1232,6 +1257,39 @@ Data</source>
     <message>
         <source>⦿ Assist: Adjusts the vehicle&apos;s cruise speed based on the current road&apos;s speed limit when operating the +/- buttons.</source>
         <translation>⦿ 輔助:按下 +/- 按鈕時，根據當前道路速限調整巡航車速。</translation>
+    </message>
+</context>
+<context>
+    <name>SpeedLimitSourcePolicy</name>
+    <message>
+        <source>Car
+Only</source>
+        <translation type="vanished">僅用
+車資</translation>
+    </message>
+    <message>
+        <source>Map
+Only</source>
+        <translation type="vanished">僅用
+圖資</translation>
+    </message>
+    <message>
+        <source>Car
+First</source>
+        <translation type="vanished">車資
+優先</translation>
+    </message>
+    <message>
+        <source>Map
+First</source>
+        <translation type="vanished">圖資
+優先</translation>
+    </message>
+    <message>
+        <source>Both
+Data</source>
+        <translation type="vanished">合併
+資料</translation>
     </message>
 </context>
 <context>
