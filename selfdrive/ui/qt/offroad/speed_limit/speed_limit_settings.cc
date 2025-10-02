@@ -36,7 +36,7 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
     "",
     "",
     speed_limit_mode_texts,
-    240);
+    230);
   list->addItem(speed_limit_mode_settings);
 
   list->addItem(horizontal_line());
@@ -72,7 +72,7 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
     "",
     "",
     speed_limit_offset_texts,
-    250);
+    240);
 
   offsetLayout->addWidget(speed_limit_offset_settings);
 
