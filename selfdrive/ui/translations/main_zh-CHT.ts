@@ -883,32 +883,27 @@ Warning: You are on a metered connection!</source>
     <message>
         <source>Car
 Only</source>
-        <translation>僅用
-車資</translation>
+        <translation>僅用車資</translation>
     </message>
     <message>
         <source>Map
 Only</source>
-        <translation>僅用
-圖資</translation>
+        <translation>僅用圖資</translation>
     </message>
     <message>
         <source>Car
 First</source>
-        <translation>車資
-優先</translation>
+        <translation>車資優先</translation>
     </message>
     <message>
         <source>Map
 First</source>
-        <translation>圖資
-優先</translation>
+        <translation>圖資優先</translation>
     </message>
     <message>
         <source>Both
 Data</source>
-        <translation>合併
-資料</translation>
+        <translation>合併資料</translation>
     </message>
     <message>
         <source>Off</source>
