@@ -55,7 +55,10 @@ class SpeedLimitResolver:
 
     self.is_metric = self.params.get_bool("IsMetric")
     self.offset_type = self.params.get("SpeedLimitOffsetType", return_default=True)
-    self.offset_value = self.params.get("SpeedLimitValueOffset", return_default=True)
+    try:
+      self.offset_value = int(self.params.get("SpeedLimitValueOffset", return_default=True))
+    except (ValueError, TypeError):
+      self.offset_value = 0
 
     self.speed_limit = 0.
     self.speed_limit_last = 0.
@@ -83,7 +86,10 @@ class SpeedLimitResolver:
       self.policy = self.params.get("SpeedLimitPolicy", return_default=True)
       self.is_metric = self.params.get_bool("IsMetric")
       self.offset_type = self.params.get("SpeedLimitOffsetType", return_default=True)
-      self.offset_value = self.params.get("SpeedLimitValueOffset", return_default=True)
+      try:
+        self.offset_value = int(self.params.get("SpeedLimitValueOffset", return_default=True))
+      except (ValueError, TypeError):
+        self.offset_value = 0
 
   def _get_speed_limit_offset(self) -> float:
     if self.offset_type == OffsetType.off:

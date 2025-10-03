@@ -1198,7 +1198,7 @@ Data</source>
     </message>
     <message>
         <source>⦿ None: No Offset</source>
-        <translation>⦿ 無容許值：不增加速限範圍</translation>
+        <translation>⦿ 無調整：不增加速限容許範圍</translation>
     </message>
     <message>
         <source>⦿ Fixed: Adds a fixed offset [Speed Limit + Offset]</source>
