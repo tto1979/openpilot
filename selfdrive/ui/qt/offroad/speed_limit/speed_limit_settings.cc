@@ -58,9 +58,6 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
   list->addItem(vertical_space(0));
   list->addItem(horizontal_line());
 
-  QFrame *offsetFrame = new QFrame(this);
-  QVBoxLayout *offsetLayout = new QVBoxLayout(offsetFrame);
-
   std::vector<QString> speed_limit_offset_texts{
     getSpeedLimitOffsetTypeText(SpeedLimitOffsetType::NONE),
     getSpeedLimitOffsetTypeText(SpeedLimitOffsetType::FIXED),
@@ -74,7 +71,7 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
     speed_limit_offset_texts,
     240);
 
-  offsetLayout->addWidget(speed_limit_offset_settings);
+  list->addItem(speed_limit_offset_settings);
 
   speed_limit_offset = new OptionControl(
     "SpeedLimitValueOffset",
@@ -83,13 +80,10 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
     "",
     {-30, 30}
     );
-  offsetLayout->addWidget(speed_limit_offset);
-
-  list->addItem(offsetFrame);
+  list->addItem(speed_limit_offset);
 
   connect(speed_limit_mode_settings, &ButtonParamControl::buttonClicked, this, &SpeedLimitSettings::refresh);
   connect(speed_limit_offset, &OptionControl::updateLabels, this, &SpeedLimitSettings::refresh);
-  connect(speed_limit_offset_settings, &ButtonParamControl::showDescriptionEvent, speed_limit_offset, &OptionControl::showDescription);
   connect(speed_limit_offset_settings, &ButtonParamControl::buttonClicked, this, &SpeedLimitSettings::refresh);
 
   refresh();
@@ -109,6 +103,9 @@ void SpeedLimitSettings::refresh() {
   QString offsetLabel = QString::fromStdString(params.get("SpeedLimitValueOffset"));
 
   speed_limit_mode_settings->setDescription(modeDescription(speed_limit_mode_param));
+  speed_limit_mode_settings->showDescription();
+  speed_limit_offset_settings->setDescription(offsetDescription(offset_type_param));
+  speed_limit_offset_settings->showDescription();
   speed_limit_offset->setDescription(offsetDescription(offset_type_param));
 
   if (offset_type_param == SpeedLimitOffsetType::PERCENT) {
@@ -124,9 +121,6 @@ void SpeedLimitSettings::refresh() {
     speed_limit_offset->setLabel(offsetLabel);
     speed_limit_offset->showDescription();
   }
-
-  speed_limit_mode_settings->showDescription();
-  speed_limit_offset->showDescription();
 }
 
 void SpeedLimitSettings::showEvent(QShowEvent *event) {
