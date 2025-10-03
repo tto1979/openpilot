@@ -5,7 +5,7 @@ import threading
 
 import cereal.messaging as messaging
 
-from cereal import car, log
+from cereal import car, custom, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.top.selfdrive.car.cruise_helpers import CruiseHelper
@@ -162,6 +162,34 @@ class SelfdriveD(CruiseHelper):
     if self.startup_event is not None:
       self.events.add(self.startup_event)
       self.startup_event = None
+
+    if self.sm.updated['longitudinalPlanTOP']:
+      sla = self.sm['longitudinalPlanTOP'].speedLimit.assist
+      sla_state = sla.state
+      sla_state_prev = getattr(self, 'sla_state_prev', None)
+
+      speed_limit = self.sm['longitudinalPlanTOP'].speedLimit.resolver.speedLimit
+      speed_limit_prev = getattr(self, 'speed_limit_prev', 0)
+
+      if sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.preActive:
+        self.events.add(EventName.speedLimitPreActive)
+
+      elif sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
+        if sla_state_prev != custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
+          self.events.add(EventName.speedLimitPending)
+
+      elif sla_state in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
+                         custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting):
+
+        if sla_state_prev not in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
+                                  custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting):
+          self.events.add(EventName.speedLimitActive)
+
+        elif speed_limit > 0 and speed_limit_prev > 0 and abs(speed_limit - speed_limit_prev) > 0.5:
+          self.events.add(EventName.speedLimitChanged)
+
+      self.sla_state_prev = sla_state
+      self.speed_limit_prev = speed_limit
 
     # Don't add any more events if not initialized
     if not self.initialized:

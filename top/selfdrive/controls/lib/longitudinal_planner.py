@@ -76,6 +76,7 @@ class LongitudinalPlannerTOP:
     longitudinalPlanTOP.longitudinalPlanSource = self.source
     longitudinalPlanTOP.vTarget = float(self.output_v_target)
     longitudinalPlanTOP.aTarget = float(self.output_a_target)
+    longitudinalPlanTOP.events = self.events.to_msg()
     # Smart Cruise Control
     smartCruiseControl = longitudinalPlanTOP.smartCruiseControl
     # Vision Control
