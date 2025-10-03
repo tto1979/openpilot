@@ -442,8 +442,10 @@ void HudRenderer::drawRoadName(QPainter &p, const QRect &surface_rect)
 void HudRenderer::drawSpeedLimitSigns(QPainter &p, QRect &sign_rect) {
   bool speedLimitWarningEnabled = speedLimitMode >= SpeedLimitMode::WARNING;  // TODO-TOP: update to include SpeedLimitMode::ASSIST
   bool hasSpeedLimit = speedLimitValid || speedLimitLastValid;
-  bool overspeed = hasSpeedLimit && std::nearbyint(speedLimitFinalLast) < std::nearbyint(speed);
-  QString speedLimitStr = hasSpeedLimit ? QString::number(std::nearbyint(speedLimitLast)) : "---";
+  float displaySpeedLimit = speedLimitValid ? speedLimit : speedLimitLast;
+  QString speedLimitStr = hasSpeedLimit ? QString::number(std::nearbyint(displaySpeedLimit)) : "---";
+  float currentSpeedLimitFinal = speedLimitValid ? (speedLimit + speedLimitOffset) : speedLimitFinalLast;
+  bool overspeed = hasSpeedLimit && std::nearbyint(currentSpeedLimitFinal) < std::nearbyint(speed);
 
   // Offset display text
   QString speedLimitSubText = "";
