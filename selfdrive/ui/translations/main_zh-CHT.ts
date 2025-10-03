@@ -1222,7 +1222,7 @@ Data</source>
     </message>
     <message>
         <source>⦿ Assist: Adjusts the vehicle&apos;s cruise speed based on the current road&apos;s speed limit when operating the +/- buttons.</source>
-        <translation>⦿ 輔助:按下 +/- 按鈕時，根據當前道路速限調整巡航車速。</translation>
+        <translation>⦿ 輔助：按下 +/- 按鈕時，根據當前道路速限調整巡航車速。</translation>
     </message>
 </context>
 <context>
