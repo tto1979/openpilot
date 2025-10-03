@@ -99,8 +99,8 @@ void SpeedLimitSettings::refresh() {
   bool is_metric_param = params.getBool("IsMetric");
   SpeedLimitMode speed_limit_mode_param = static_cast<SpeedLimitMode>(std::atoi(params.get("SpeedLimitMode").c_str()));
   SpeedLimitOffsetType offset_type_param = static_cast<SpeedLimitOffsetType>(std::atoi(params.get("SpeedLimitOffsetType").c_str()));
+
   int offsetValue = std::atoi(params.get("SpeedLimitValueOffset").c_str());
-  QString offsetLabel = QString::number(offsetValue);
 
   speed_limit_mode_settings->setDescription(modeDescription(speed_limit_mode_param));
   speed_limit_mode_settings->showDescription();
@@ -108,17 +108,20 @@ void SpeedLimitSettings::refresh() {
   speed_limit_offset_settings->showDescription();
   speed_limit_offset->setDescription(offsetDescription(offset_type_param));
 
+  QString suffix;
   if (offset_type_param == SpeedLimitOffsetType::PERCENT) {
-    offsetLabel += "%";
+    suffix = "%";
   } else if (offset_type_param == SpeedLimitOffsetType::FIXED) {
-    offsetLabel += QString(" %1").arg(is_metric_param ? "km/h" : "mph");
+    suffix = QString(" %1").arg(is_metric_param ? "km/h" : "mph");
+  } else {
+    suffix = "";
   }
 
   if (offset_type_param == SpeedLimitOffsetType::NONE) {
     speed_limit_offset->setVisible(false);
   } else {
     speed_limit_offset->setVisible(true);
-    speed_limit_offset->setLabel(offsetLabel);
+    speed_limit_offset->setLabel(suffix);
     speed_limit_offset->showDescription();
   }
 }
