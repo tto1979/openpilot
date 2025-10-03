@@ -100,20 +100,17 @@ void SpeedLimitSettings::refresh() {
   SpeedLimitMode speed_limit_mode_param = static_cast<SpeedLimitMode>(std::atoi(params.get("SpeedLimitMode").c_str()));
   SpeedLimitOffsetType offset_type_param = static_cast<SpeedLimitOffsetType>(std::atoi(params.get("SpeedLimitOffsetType").c_str()));
 
-
   speed_limit_mode_settings->setDescription(modeDescription(speed_limit_mode_param));
   speed_limit_mode_settings->showDescription();
   speed_limit_offset_settings->setDescription(offsetDescription(offset_type_param));
   speed_limit_offset_settings->showDescription();
   speed_limit_offset->setDescription(offsetDescription(offset_type_param));
 
-  QString suffix;
+  QString suffix = "";
   if (offset_type_param == SpeedLimitOffsetType::PERCENT) {
     suffix = "%";
   } else if (offset_type_param == SpeedLimitOffsetType::FIXED) {
-    suffix = QString(" %1").arg(is_metric_param ? "km/h" : "mph");
-  } else {
-    suffix = "";
+    suffix = is_metric_param ? " km/h" : " mph";
   }
 
   if (offset_type_param == SpeedLimitOffsetType::NONE) {
