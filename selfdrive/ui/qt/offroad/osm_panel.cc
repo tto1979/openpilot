@@ -53,16 +53,7 @@ OsmPanel::OsmPanel(QWidget *parent) : QFrame(parent) {
   wrapperLayout->setContentsMargins(30, 20, 30, 20);
   wrapperLayout->setSpacing(0);
 
-  QWidget *speedLimitContainer = new QWidget(speedLimitWrapper);
-  QVBoxLayout *containerLayout = new QVBoxLayout(speedLimitContainer);
-  containerLayout->setContentsMargins(0, 0, 0, 0);
-  containerLayout->setSpacing(0);
-  containerLayout->addWidget(speedLimitScreen);
-  ScrollView *speedLimitScroller = new ScrollView(speedLimitContainer, speedLimitWrapper);
-  speedLimitScroller->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-  speedLimitScroller->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  speedLimitScroller->setWidgetResizable(true);
-  wrapperLayout->addWidget(speedLimitScroller);
+  wrapperLayout->addWidget(speedLimitScreen);
 
   connect(speedLimitScreen, &SpeedLimitSettings::backPress, [=]() {
     main_layout->setCurrentWidget(osmScreen);
