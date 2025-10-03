@@ -83,7 +83,6 @@ SpeedLimitSettings::SpeedLimitSettings(QWidget *parent) : QStackedWidget(parent)
   list->addItem(speed_limit_offset);
 
   connect(speed_limit_mode_settings, &ButtonParamControl::buttonClicked, this, &SpeedLimitSettings::refresh);
-  connect(speed_limit_offset, &OptionControl::updateLabels, this, &SpeedLimitSettings::refresh);
   connect(speed_limit_offset_settings, &ButtonParamControl::buttonClicked, this, &SpeedLimitSettings::refresh);
 
   refresh();
@@ -100,7 +99,8 @@ void SpeedLimitSettings::refresh() {
   bool is_metric_param = params.getBool("IsMetric");
   SpeedLimitMode speed_limit_mode_param = static_cast<SpeedLimitMode>(std::atoi(params.get("SpeedLimitMode").c_str()));
   SpeedLimitOffsetType offset_type_param = static_cast<SpeedLimitOffsetType>(std::atoi(params.get("SpeedLimitOffsetType").c_str()));
-  QString offsetLabel = QString::fromStdString(params.get("SpeedLimitValueOffset"));
+  int offsetValue = std::atoi(params.get("SpeedLimitValueOffset").c_str());
+  QString offsetLabel = QString::number(offsetValue);
 
   speed_limit_mode_settings->setDescription(modeDescription(speed_limit_mode_param));
   speed_limit_mode_settings->showDescription();
