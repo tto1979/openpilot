@@ -197,7 +197,9 @@ class SpeedLimitAssist:
 
   def _update_confirmed_state(self):
     if self._has_speed_limit:
-      if self.v_offset < LIMIT_SPEED_OFFSET_TH:
+      if self.pcm_op_long:
+        self.state = SpeedLimitAssistState.active
+      elif self.v_offset < LIMIT_SPEED_OFFSET_TH:
         self.state = SpeedLimitAssistState.adapting
       else:
         self.state = SpeedLimitAssistState.active

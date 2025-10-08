@@ -402,7 +402,7 @@ def invalid_lkas_setting_alert(CP: car.CarParams, CS: car.CarState, sm: messagin
 def speed_limit_adjust_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
   speedLimit = sm['longitudinalPlanTOP'].speedLimit.resolver.speedLimit
   speed = round(speedLimit * (CV.MS_TO_KPH if metric else CV.MS_TO_MPH))
-  message = f'Adjusting to {speed} {"km/h" if metric else "mph"} speed limit'
+  message = f'調整至 {speed} {"km/h" if metric else "mph"} 速限'
   return Alert(
     message,
     "",
@@ -421,7 +421,7 @@ def speed_limit_pre_active_alert(CP: car.CarParams, CS: car.CarState, sm: messag
     pcm_long_required_max = cst_low if speed_limit_final_last_conv < CONFIRM_SPEED_THRESHOLD[metric] else cst_high
     pcm_long_required_max_set_speed_conv = round(pcm_long_required_max * speed_conv)
     speed_unit = "km/h" if metric else "mph"
-    alert_2_str = f"Manually change set speed to {pcm_long_required_max_set_speed_conv} {speed_unit} to activate"
+    alert_2_str = f"手動將設定時速調整至 {pcm_long_required_max_set_speed_conv} {speed_unit} 以啟動速限控制"
   else:
     # Non PCM long
     v_cruise_cluster = CS.vCruiseCluster * CV.KPH_TO_MS
@@ -433,10 +433,10 @@ def speed_limit_pre_active_alert(CP: car.CarParams, CS: car.CarState, sm: messag
     elif req_minus:
       arrow_str = "SET/-"
 
-    alert_2_str = f"Operate the {arrow_str} cruise control button to activate"
+    alert_2_str = f"操作 {arrow_str} 巡航控制按鈕以啟動"
 
   return Alert(
-    "Speed Limit Assist: Activation Required",
+    "速限輔助: 需要啟動",
     alert_2_str,
     AlertStatus.normal, AlertSize.mid,
     Priority.LOW, VisualAlert.none, AudibleAlert.none, .1)
@@ -1103,7 +1103,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
 
   EventName.speedLimitActive: {
     ET.WARNING: Alert(
-      "自動調整至道路速限",
+      "速限輔助已啟動，將自動調整至道路速限",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 5.),

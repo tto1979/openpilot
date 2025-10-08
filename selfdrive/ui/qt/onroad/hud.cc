@@ -130,8 +130,8 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
     // Smart Cruise Control
     int x_offset = -260;
-    int y1_offset = -80;
-    int y2_offset = -140;
+    int y1_offset = -70;
+    int y2_offset = -150;
 
     int y_scc_v = 0, y_scc_m = 0;
     const int orders[2] = {y1_offset, y2_offset};

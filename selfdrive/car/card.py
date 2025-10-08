@@ -235,6 +235,9 @@ class Car:
       self.can_log_mono_time = messaging.log_from_bytes(can_strs[0]).logMonoTime
 
     self.v_cruise_helper.update_speed_limit_assist(self.is_metric, self.sm['longitudinalPlanTOP'])
+    if self.CP.openpilotLongitudinalControl and self.CP.pcmCruise:
+      self.v_cruise_helper.update_speed_limit_assist_v_cruise_pcm()
+
     self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric, self.reverse_acc_change)
     if self.sm['carControl'].enabled and not self.CC_prev.enabled:
       # Use CarState w/ buttons from the step selfdrived enables on
