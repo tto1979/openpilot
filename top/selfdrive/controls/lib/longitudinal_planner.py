@@ -36,8 +36,6 @@ class LongitudinalPlannerTOP:
     long_enabled = sm['carControl'].enabled
     long_override = sm['carControl'].cruiseControl.override
 
-    self.events.clear()
-
     # Smart Cruise Control
     self.scc.update(sm, long_enabled, long_override, v_ego, a_ego, v_cruise)
 
@@ -61,6 +59,8 @@ class LongitudinalPlannerTOP:
     return self.output_v_target, self.output_a_target
 
   def update(self, sm: messaging.SubMaster) -> None:
+    self.events.clear()
+
     if hasattr(sm, 'updated') and sm.updated['carState']:
       carstate = sm['carState']
       self.accel_controller.update(carstate)

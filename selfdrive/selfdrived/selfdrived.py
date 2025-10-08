@@ -171,22 +171,25 @@ class SelfdriveD(CruiseHelper):
       speed_limit = self.sm['longitudinalPlanTOP'].speedLimit.resolver.speedLimit
       speed_limit_prev = getattr(self, 'speed_limit_prev', 0)
 
-      if sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.preActive:
-        self.events.add(EventName.speedLimitPreActive)
+      if sla_state_prev is not None:
+        if sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.preActive:
+          self.events.add(EventName.speedLimitPreActive)
 
-      elif sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
-        if sla_state_prev != custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
-          self.events.add(EventName.speedLimitPending)
+        elif sla_state == custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
+          if sla_state_prev != custom.LongitudinalPlanTOP.SpeedLimit.AssistState.pending:
+            if sla_state_prev != custom.LongitudinalPlanTOP.SpeedLimit.AssistState.disabled:
+              self.events.add(EventName.speedLimitPending)
 
-      elif sla_state in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
-                         custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting):
+        elif sla_state in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
+                           custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting):
 
-        if sla_state_prev not in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
-                                  custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting):
-          self.events.add(EventName.speedLimitActive)
+          if (sla_state_prev not in (custom.LongitudinalPlanTOP.SpeedLimit.AssistState.active,
+                                     custom.LongitudinalPlanTOP.SpeedLimit.AssistState.adapting)):
+            if sla_state_prev != custom.LongitudinalPlanTOP.SpeedLimit.AssistState.disabled:
+              self.events.add(EventName.speedLimitActive)
 
-        elif speed_limit > 0 and speed_limit_prev > 0 and abs(speed_limit - speed_limit_prev) > 0.5:
-          self.events.add(EventName.speedLimitChanged)
+          elif speed_limit > 0 and speed_limit_prev > 0 and abs(speed_limit - speed_limit_prev) > 0.5:
+            self.events.add(EventName.speedLimitChanged)
 
       self.sla_state_prev = sla_state
       self.speed_limit_prev = speed_limit
