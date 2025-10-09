@@ -904,6 +904,10 @@ Data</source>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Assist</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsWindow</name>
@@ -1196,6 +1200,10 @@ Data</source>
     </message>
     <message>
         <source>⦿ Warning: Provides a warning when exceeding the current road&apos;s speed limit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>⦿ Assist: Adjusts the vehicle&apos;s cruise speed based on the current road&apos;s speed limit when operating the +/- buttons.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -425,35 +425,35 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
     <message>
         <source>SPEED</source>
-        <translation type="unfinished"></translation>
+        <translation>時速</translation>
     </message>
     <message>
         <source>LIMIT</source>
-        <translation type="unfinished"></translation>
+        <translation>速限</translation>
     </message>
     <message>
         <source>Near</source>
-        <translation type="unfinished"></translation>
+        <translation>接近</translation>
     </message>
     <message>
         <source>km</source>
-        <translation type="unfinished"></translation>
+        <translation>公里</translation>
     </message>
     <message>
         <source>m</source>
-        <translation type="unfinished"></translation>
+        <translation>公尺</translation>
     </message>
     <message>
         <source>mi</source>
-        <translation type="unfinished"></translation>
+        <translation>英里</translation>
     </message>
     <message>
         <source>ft</source>
-        <translation type="unfinished"></translation>
+        <translation>英尺</translation>
     </message>
     <message>
         <source>AHEAD</source>
-        <translation type="unfinished"></translation>
+        <translation>前方</translation>
     </message>
 </context>
 <context>
@@ -753,15 +753,15 @@ Warning: You are on a metered connection!</source>
     </message>
     <message>
         <source>Speed Limit</source>
-        <translation type="unfinished"></translation>
+        <translation>速限控制</translation>
     </message>
     <message>
         <source>CONFIGURE</source>
-        <translation type="unfinished"></translation>
+        <translation>設置</translation>
     </message>
     <message>
         <source>Configure speed limit settings including source policy, mode, and offset options.</source>
-        <translation type="unfinished"></translation>
+        <translation>設定速限相關選項，包括來源政策、運作模式和偏移值。</translation>
     </message>
 </context>
 <context>
@@ -870,52 +870,61 @@ Warning: You are on a metered connection!</source>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>無調整</translation>
     </message>
     <message>
         <source>Fixed</source>
-        <translation type="unfinished"></translation>
+        <translation>固定值</translation>
     </message>
     <message>
         <source>Percent</source>
-        <translation type="unfinished"></translation>
+        <translation>百分比</translation>
     </message>
     <message>
         <source>Car
 Only</source>
-        <translation type="unfinished"></translation>
+        <translation>僅用
+車資</translation>
     </message>
     <message>
         <source>Map
 Only</source>
-        <translation type="unfinished"></translation>
+        <translation>僅用
+圖資</translation>
     </message>
     <message>
         <source>Car
 First</source>
-        <translation type="unfinished"></translation>
+        <translation>車資
+優先</translation>
     </message>
     <message>
         <source>Map
 First</source>
-        <translation type="unfinished"></translation>
+        <translation>圖資
+優先</translation>
     </message>
     <message>
         <source>Both
 Data</source>
-        <translation type="unfinished"></translation>
+        <translation>合併
+資料</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>關閉</translation>
     </message>
     <message>
         <source>Info.</source>
-        <translation type="unfinished"></translation>
+        <translation>資訊</translation>
     </message>
     <message>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>提示</translation>
+    </message>
+    <message>
+        <source>Assist</source>
+        <translation>輔助</translation>
     </message>
 </context>
 <context>
@@ -1142,74 +1151,78 @@ Data</source>
     <name>SpeedLimitPolicy</name>
     <message>
         <source>Back</source>
-        <translation type="unfinished">回上頁</translation>
+        <translation>回上頁</translation>
     </message>
     <message>
         <source>Speed Limit Source</source>
-        <translation type="unfinished"></translation>
+        <translation>速限來源</translation>
     </message>
     <message>
         <source>⦿ Car Only: Use Speed Limit data only from Car</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 僅用車資：僅使用來自車輛的速限資料</translation>
     </message>
     <message>
         <source>⦿ Map Only: Use Speed Limit data only from OpenStreetMaps</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 僅用圖資：僅使用來自地圖的速限資料</translation>
     </message>
     <message>
         <source>⦿ Car First: Use Speed Limit data from Car if available, else use from OpenStreetMaps</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 車資優先：優先使用車輛速限資料，若無則使用 OpenStreetMaps 資料</translation>
     </message>
     <message>
         <source>⦿ Map First: Use Speed Limit data from OpenStreetMaps if available, else use from Car</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 圖資優先：優先使用 OpenStreetMaps 速限資料，若無則使用車輛資料</translation>
     </message>
     <message>
         <source>⦿ Combined: Use combined Speed Limit data from Car &amp; OpenStreetMaps</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 合併資料：使用結合車輛與 OpenStreetMaps 的速限資料</translation>
     </message>
 </context>
 <context>
     <name>SpeedLimitSettings</name>
     <message>
         <source>Back</source>
-        <translation type="unfinished">回上頁</translation>
+        <translation>回上頁</translation>
     </message>
     <message>
         <source>Speed Limit Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>速限模式</translation>
     </message>
     <message>
         <source>Customize Source</source>
-        <translation type="unfinished"></translation>
+        <translation>自訂限制</translation>
     </message>
     <message>
         <source>Speed Limit Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>速限容許值</translation>
     </message>
     <message>
         <source>⦿ None: No Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 無調整：不增加速限容許範圍</translation>
     </message>
     <message>
         <source>⦿ Fixed: Adds a fixed offset [Speed Limit + Offset]</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 固定值：增加固定的容許值 [速限 + 容許值]</translation>
     </message>
     <message>
         <source>⦿ Percent: Adds a percent offset [Speed Limit + (Offset % Speed Limit)]</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 百分比：增加固定的百分比為容許值 [速限 + (速限 * %)</translation>
     </message>
     <message>
         <source>⦿ Off: Disables the Speed Limit functions.</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 關閉：關閉速限功能。</translation>
     </message>
     <message>
         <source>⦿ Information: Displays the current road&apos;s speed limit.</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 資訊：顯示目前的道路速限。</translation>
     </message>
     <message>
         <source>⦿ Warning: Provides a warning when exceeding the current road&apos;s speed limit.</source>
-        <translation type="unfinished"></translation>
+        <translation>⦿ 提示：當超速時發出警告提示。</translation>
+    </message>
+    <message>
+        <source>⦿ Assist: Adjusts the vehicle&apos;s cruise speed based on the current road&apos;s speed limit when operating the +/- buttons.</source>
+        <translation>⦿ 輔助：按下 +/- 按鈕時，根據當前道路速限調整巡航車速。</translation>
     </message>
 </context>
 <context>
@@ -1459,11 +1472,11 @@ NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
     </message>
     <message>
         <source>Map Based Turn Control</source>
-        <translation type="unfinished"></translation>
+        <translation>圖資彎道減速</translation>
     </message>
     <message>
         <source>Use map data to estimate the appropriate speed to drive through turns ahead.</source>
-        <translation type="unfinished"></translation>
+        <translation>利用地圖資料計算前方轉彎處的合適車速進行減速。</translation>
     </message>
 </context>
 <context>
