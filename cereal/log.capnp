@@ -139,6 +139,10 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     torqueNNLoad @100;
     automaticBrakehold @101;
     experimentalModeSwitched @102;
+    speedLimitPreActive @103;
+    speedLimitActive @104;
+    speedLimitChanged @105;
+    speedLimitPending @106;
   }
 }
 

@@ -65,7 +65,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.mpc = LongitudinalMpc(CP, dt=dt)
     # TODO remove mpc modes when TR released
     self.mpc.mode = 'acc'
-    LongitudinalPlannerTOP.__init__(self)
+    LongitudinalPlannerTOP.__init__(self, self.CP)
     self.fcw = False
     self.dt = dt
     self.allow_throttle = True
@@ -339,7 +339,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
       clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_clip[1], clipped_accel_coast])
       accel_clip[1] = min(accel_clip[1], clipped_accel_coast_interp)
 
-    # Get new v_cruise and a_desired from Smart Cruise Control
+    # Get new v_cruise and a_desired from Smart Cruise Control and Speed Limit Assist
     v_cruise, self.a_desired = LongitudinalPlannerTOP.update_targets(self, sm, self.v_desired_filter.x, self.a_desired, v_cruise)
 
     if force_slow_decel:

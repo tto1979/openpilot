@@ -13,6 +13,8 @@ from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.locationd.calibrationd import MIN_SPEED_FILTER
 from openpilot.system.micd import SAMPLE_RATE, SAMPLE_BUFFER
 from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
+from openpilot.top.selfdrive.controls.lib.speed_limit import PCM_LONG_REQUIRED_MAX_SET_SPEED, CONFIRM_SPEED_THRESHOLD
+from openpilot.top.selfdrive.controls.lib.speed_limit.helpers import compare_cluster_target
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -395,6 +397,49 @@ def invalid_lkas_setting_alert(CP: car.CarParams, CS: car.CarState, sm: messagin
   elif CP.brand == "nissan":
     text = "Disable your car's stock LKAS to engage"
   return NormalPermanentAlert("Invalid LKAS setting", text)
+
+
+def speed_limit_adjust_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
+  speedLimit = sm['longitudinalPlanTOP'].speedLimit.resolver.speedLimit
+  speed = round(speedLimit * (CV.MS_TO_KPH if metric else CV.MS_TO_MPH))
+  message = f'調整至 {speed} {"km/h" if metric else "mph"} 速限'
+  return Alert(
+    message,
+    "",
+    AlertStatus.normal, AlertSize.small,
+    Priority.LOW, VisualAlert.none, AudibleAlert.none, 4.)
+
+
+def speed_limit_pre_active_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
+  speed_conv = CV.MS_TO_KPH if metric else CV.MS_TO_MPH
+  speed_limit_final_last = sm['longitudinalPlanTOP'].speedLimit.resolver.speedLimitFinalLast
+  speed_limit_final_last_conv = round(speed_limit_final_last * speed_conv)
+
+  if CP.openpilotLongitudinalControl and CP.pcmCruise:
+    # PCM long
+    cst_low, cst_high = PCM_LONG_REQUIRED_MAX_SET_SPEED[metric]
+    pcm_long_required_max = cst_low if speed_limit_final_last_conv < CONFIRM_SPEED_THRESHOLD[metric] else cst_high
+    pcm_long_required_max_set_speed_conv = round(pcm_long_required_max * speed_conv)
+    speed_unit = "km/h" if metric else "mph"
+    alert_2_str = f"手動將設定時速調整至 {pcm_long_required_max_set_speed_conv} {speed_unit} 以啟動速限控制"
+  else:
+    # Non PCM long
+    v_cruise_cluster = CS.vCruiseCluster * CV.KPH_TO_MS
+
+    req_plus, req_minus = compare_cluster_target(v_cruise_cluster, speed_limit_final_last, metric)
+    arrow_str = ""
+    if req_plus:
+      arrow_str = "RES/+"
+    elif req_minus:
+      arrow_str = "SET/-"
+
+    alert_2_str = f"操作 {arrow_str} 巡航控制按鈕以啟動"
+
+  return Alert(
+    "速限輔助: 需要啟動",
+    alert_2_str,
+    AlertStatus.normal, AlertSize.mid,
+    Priority.LOW, VisualAlert.none, AudibleAlert.none, .1)
 
 
 
@@ -1053,7 +1098,35 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   EventName.experimentalModeSwitched: {
-    ET.WARNING: NormalPermanentAlert("切換 Experimental Mode", duration=1.5)
+    ET.WARNING: NormalPermanentAlert("切換實驗模式", duration=1.5)
+  },
+
+  EventName.speedLimitActive: {
+    ET.WARNING: Alert(
+      "速限輔助已啟動，將自動調整至道路速限",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 5.),
+  },
+
+  EventName.speedLimitChanged: {
+    ET.WARNING: Alert(
+      "設定車速已變更",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 5.),
+  },
+
+  EventName.speedLimitPreActive: {
+    ET.WARNING: speed_limit_pre_active_alert,
+  },
+
+  EventName.speedLimitPending: {
+    ET.WARNING: Alert(
+      "自動調整至上次速限",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 5.),
   }
 }
 
