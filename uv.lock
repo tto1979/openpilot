@@ -1389,7 +1389,7 @@ requires-dist = [
     { name = "pywinctl", marker = "extra == 'dev'" },
     { name = "pyzmq" },
     { name = "qrcode" },
-    { name = "raylib", marker = "extra == 'dev'" },
+    { name = "raylib", marker = "extra == 'dev'", specifier = "<5.5.0.3" },
     { name = "requests" },
     { name = "ruff", marker = "extra == 'testing'" },
     { name = "scons" },
