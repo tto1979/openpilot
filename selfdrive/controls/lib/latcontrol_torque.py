@@ -4,6 +4,7 @@ import numpy as np
 
 from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
+from opendbc.car.tests.test_lateral_limits import MAX_LAT_JERK_UP
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
@@ -73,7 +74,11 @@ class LatControlTorque(LatControl):
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
     self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES = int(1 / self.dt)
-    self.requested_lateral_accel_buffer = deque([0.] * self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES, maxlen=self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES)
+    self.requested_lateral_accel_buffer = deque(
+        [0.] * self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES,
+        maxlen=self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES)
+    self.previous_measurement = 0.0
+    self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * (MAX_LAT_JERK_UP - 0.5)), self.dt)
 
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
@@ -83,7 +88,7 @@ class LatControlTorque(LatControl):
     if self.use_nn or self.use_lateral_jerk:
       # Scaling the lateral acceleration "friction response" could be helpful for some.
       # Increase for a stronger response, decrease for a weaker response.
-      nnff_lateral_jerk_factor = 1.0  # TODO-SP: replace with ---> float(self.param_s.get("NNFFLateralJerkFactor", encoding="utf8"))
+      nnff_lateral_jerk_factor = 1.0  # TODO: read from params
       nnff_lateral_jerk_factor = max(0.0, min(1.0, nnff_lateral_jerk_factor))
       self.lat_jerk_friction_factor = 0.4 * nnff_lateral_jerk_factor
       # Increasing lat accel friction factor to account for any decrease of the lat jerk friction factor from default
@@ -143,6 +148,11 @@ class LatControlTorque(LatControl):
       for _ in range(self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES):
         self.requested_lateral_accel_buffer.append(0.0)
 
+    if hasattr(self, 'previous_measurement'):
+      self.previous_measurement = 0.0
+    if hasattr(self, 'measurement_rate_filter'):
+      self.measurement_rate_filter.reset()
+
   def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, model_data=None):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
     nn_log = None
@@ -151,9 +161,10 @@ class LatControlTorque(LatControl):
       output_torque = 0.0
       pid_log.active = False
     else:
-      actual_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
+      measured_curvature = -VM.calc_curvature(math.radians(CS.steeringAngleDeg - params.angleOffsetDeg), CS.vEgo, params.roll)
       roll_compensation = params.roll * ACCELERATION_DUE_TO_GRAVITY
       curvature_deadzone = abs(VM.calc_curvature(math.radians(self.steering_angle_deadzone_deg), CS.vEgo, 0.0))
+      lateral_accel_deadzone = curvature_deadzone * CS.vEgo ** 2
 
       delay_frames = int(np.clip(lat_delay / self.dt, 1, self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES))
       expected_lateral_accel = self.requested_lateral_accel_buffer[-delay_frames]
@@ -162,12 +173,14 @@ class LatControlTorque(LatControl):
       self.requested_lateral_accel_buffer.append(future_desired_lateral_accel)
       gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
       desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
-      actual_lateral_accel = actual_curvature * CS.vEgo ** 2
-      lateral_accel_deadzone = curvature_deadzone * CS.vEgo ** 2
 
-      low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y if not self.use_nn else LOW_SPEED_Y_NN) ** 2 / (np.clip(CS.vEgo, MIN_SPEED, np.inf) ** 2))
+      measurement = measured_curvature * CS.vEgo ** 2
+      raw_measurement_rate = (measurement - self.previous_measurement) / self.dt
+      measurement_rate = self.measurement_rate_filter.update(raw_measurement_rate)
+      self.previous_measurement = measurement
+
+      low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y if not self.use_nn else LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
-      measurement = actual_lateral_accel
       error = setpoint - measurement
       error_lsf = error + low_speed_factor * error
 
@@ -249,7 +262,7 @@ class LatControlTorque(LatControl):
         pid_log.error = float(error_lsf)
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-      output_lataccel = self.pid.update(pid_log.error, feedforward=ff, speed=CS.vEgo, freeze_integrator=freeze_integrator)
+      output_lataccel = self.pid.update(pid_log.error, -measurement_rate, feedforward=ff, speed=CS.vEgo, freeze_integrator=freeze_integrator)
       output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
 
       pid_log.active = True
@@ -258,8 +271,8 @@ class LatControlTorque(LatControl):
       pid_log.d = float(self.pid.d)
       pid_log.f = float(self.pid.f)
       pid_log.output = float(-output_torque)
-      pid_log.actualLateralAccel = float(actual_lateral_accel)
-      pid_log.desiredLateralAccel = float(expected_lateral_accel)
+      pid_log.actualLateralAccel = float(measurement)
+      pid_log.desiredLateralAccel = float(setpoint)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
       if nn_log is not None:
         pid_log.nnLog = [float(x) for x in nn_log]
