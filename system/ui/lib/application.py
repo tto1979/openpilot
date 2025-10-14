@@ -30,6 +30,10 @@ SCALE = float(os.getenv("SCALE", "1.0"))
 DEFAULT_TEXT_SIZE = 60
 DEFAULT_TEXT_COLOR = rl.WHITE
 
+# Qt draws fonts accounting for ascent/descent differently, so compensate to match old styles
+# The real scales for the fonts below range from 1.212 to 1.266
+FONT_SCALE = 1.242
+
 ASSETS_DIR = files("openpilot.selfdrive").joinpath("assets")
 FONT_DIR = ASSETS_DIR.joinpath("fonts")
 
@@ -72,7 +76,7 @@ class MouseState:
     self._events: deque[MouseEvent] = deque(maxlen=MOUSE_THREAD_RATE)  # bound event list
     self._prev_mouse_event: list[MouseEvent | None] = [None] * MAX_TOUCH_SLOTS
 
-    self._rk = Ratekeeper(MOUSE_THREAD_RATE)
+    self._rk = Ratekeeper(MOUSE_THREAD_RATE, print_delay_threshold=None)
     self._lock = threading.Lock()
     self._exit_event = threading.Event()
     self._thread = None
@@ -156,7 +160,7 @@ class GuiApplication:
     HARDWARE.set_screen_brightness(65)
 
     self._set_log_callback()
-    rl.set_trace_log_level(rl.TraceLogLevel.LOG_ALL)
+    rl.set_trace_log_level(rl.TraceLogLevel.LOG_WARNING)
 
     flags = rl.ConfigFlags.FLAG_MSAA_4X_HINT
     if ENABLE_VSYNC:
@@ -173,6 +177,7 @@ class GuiApplication:
     self._target_fps = fps
     self._set_styles()
     self._load_fonts()
+    self._patch_text_functions()
 
     if not PC:
       self._mouse.start()
@@ -184,7 +189,8 @@ class GuiApplication:
 
     self._modal_overlay = ModalOverlay(overlay=overlay, callback=callback)
 
-  def texture(self, asset_path: str, width: int, height: int, alpha_premultiply=False, keep_aspect_ratio=True):
+  def texture(self, asset_path: str, width: int | None = None, height: int | None = None,
+              alpha_premultiply=False, keep_aspect_ratio=True):
     cache_key = f"{asset_path}_{width}_{height}_{alpha_premultiply}{keep_aspect_ratio}"
     if cache_key in self._textures:
       return self._textures[cache_key]
@@ -194,29 +200,31 @@ class GuiApplication:
     self._textures[cache_key] = texture_obj
     return texture_obj
 
-  def _load_texture_from_image(self, image_path: str, width: int, height: int, alpha_premultiply=False, keep_aspect_ratio=True):
+  def _load_texture_from_image(self, image_path: str, width: int | None = None, height: int | None = None,
+                               alpha_premultiply=False, keep_aspect_ratio=True):
     """Load and resize a texture, storing it for later automatic unloading."""
     image = rl.load_image(image_path)
 
     if alpha_premultiply:
       rl.image_alpha_premultiply(image)
 
-    # Resize with aspect ratio preservation if requested
-    if keep_aspect_ratio:
-      orig_width = image.width
-      orig_height = image.height
+    if width is not None and height is not None:
+      # Resize with aspect ratio preservation if requested
+      if keep_aspect_ratio:
+        orig_width = image.width
+        orig_height = image.height
 
-      scale_width = width / orig_width
-      scale_height = height / orig_height
+        scale_width = width / orig_width
+        scale_height = height / orig_height
 
-      # Calculate new dimensions
-      scale = min(scale_width, scale_height)
-      new_width = int(orig_width * scale)
-      new_height = int(orig_height * scale)
+        # Calculate new dimensions
+        scale = min(scale_width, scale_height)
+        new_width = int(orig_width * scale)
+        new_height = int(orig_height * scale)
 
-      rl.image_resize(image, new_width, new_height)
-    else:
-      rl.image_resize(image, width, height)
+        rl.image_resize(image, new_width, new_height)
+      else:
+        rl.image_resize(image, width, height)
 
     texture = rl.load_texture_from_image(image)
     # Set texture filtering to smooth the result
@@ -355,6 +363,16 @@ class GuiApplication:
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiDefaultProperty.BACKGROUND_COLOR, rl.color_to_int(rl.BLACK))
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.TEXT_COLOR_NORMAL, rl.color_to_int(DEFAULT_TEXT_COLOR))
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BASE_COLOR_NORMAL, rl.color_to_int(rl.Color(50, 50, 50, 255)))
+
+  def _patch_text_functions(self):
+    # Wrap pyray text APIs to apply a global text size scale so our px sizes match Qt
+    if not hasattr(rl, "_orig_draw_text_ex"):
+      rl._orig_draw_text_ex = rl.draw_text_ex
+
+    def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
+      return rl._orig_draw_text_ex(font, text, position, font_size * FONT_SCALE, spacing, tint)
+
+    rl.draw_text_ex = _draw_text_ex_scaled
 
   def _set_log_callback(self):
     ffi_libc = cffi.FFI()
