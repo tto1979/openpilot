@@ -250,6 +250,7 @@ class LatControlTorque(LatControl):
         nn_log = nn_input
       else:
         ff = gravity_adjusted_future_lateral_accel
+        # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
         ff -= self.torque_params.latAccelOffset
 
         if self.use_lateral_jerk and model_good:
@@ -257,12 +258,17 @@ class LatControlTorque(LatControl):
           friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
           ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
         else:
+          # TODO jerk is weighted by lat_delay for legacy reasons, but should be made independent of it
           ff += get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
         pid_log.error = float(error_lsf)
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-      output_lataccel = self.pid.update(pid_log.error, -measurement_rate, feedforward=ff, speed=CS.vEgo, freeze_integrator=freeze_integrator)
+      output_lataccel = self.pid.update(pid_log.error,
+                                       -measurement_rate,
+                                        feedforward=ff,
+                                        speed=CS.vEgo,
+                                        freeze_integrator=freeze_integrator)
       output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
 
       pid_log.active = True
@@ -270,7 +276,7 @@ class LatControlTorque(LatControl):
       pid_log.i = float(self.pid.i)
       pid_log.d = float(self.pid.d)
       pid_log.f = float(self.pid.f)
-      pid_log.output = float(-output_torque)
+      pid_log.output = float(-output_torque)  # TODO: log lat accel?
       pid_log.actualLateralAccel = float(measurement)
       pid_log.desiredLateralAccel = float(setpoint)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
