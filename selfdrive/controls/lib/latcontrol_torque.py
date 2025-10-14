@@ -151,7 +151,7 @@ class LatControlTorque(LatControl):
     if hasattr(self, 'previous_measurement'):
       self.previous_measurement = 0.0
     if hasattr(self, 'measurement_rate_filter'):
-      self.measurement_rate_filter.reset()
+      self.measurement_rate_filter.x = 0.0
 
   def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, model_data=None):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
