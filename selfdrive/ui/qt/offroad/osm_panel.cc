@@ -125,7 +125,7 @@ ButtonControl *OsmPanel::setupOsmDownloadButton(QWidget *parent) {
           }
         }
         if (params.get("OsmLocationName") == "US") {
-          usStatesBtn->click();
+          emit usStatesBtn->clicked();
           return;
         }
         if (selection != "== None ==") {

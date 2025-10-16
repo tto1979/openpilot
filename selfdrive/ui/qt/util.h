@@ -26,6 +26,7 @@ void initApp(int argc, char *argv[], bool disable_hidpi = true);
 QWidget* topWidget(QWidget* widget);
 QPixmap loadPixmap(const QString &fileName, const QSize &size = {}, Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio);
 QPixmap bootstrapPixmap(const QString &id);
+QStringList searchFromList(const QString &query, const QStringList &list);
 
 void drawRoundedRect(QPainter &painter, const QRectF &rect, qreal xRadiusTop, qreal yRadiusTop, qreal xRadiusBottom, qreal yRadiusBottom);
 QColor interpColor(float xv, std::vector<float> xp, std::vector<QColor> fp);
