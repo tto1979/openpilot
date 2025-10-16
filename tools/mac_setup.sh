@@ -29,8 +29,25 @@ if [[ $(command -v brew) == "" ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
   fi
 else
-    brew up
+  brew up
 fi
+
+# ---------- 🔧 Fix OpenSSL linking issue on GitHub macOS runners ----------
+if brew list --versions openssl@1.1 >/dev/null 2>&1; then
+  echo "⚙️ Unlinking old OpenSSL (1.1)..."
+  brew unlink openssl@1.1 || true
+fi
+
+if [ -L /opt/homebrew/bin/openssl ]; then
+  echo "🧹 Removing stale symlink: /opt/homebrew/bin/openssl"
+  rm -f /opt/homebrew/bin/openssl || true
+fi
+
+if brew list --versions openssl@3 >/dev/null 2>&1; then
+  echo "🔗 Linking OpenSSL 3..."
+  brew link --overwrite openssl@3 || true
+fi
+# -------------------------------------------------------------------------
 
 brew bundle --file=- <<-EOS
 brew "git-lfs"
