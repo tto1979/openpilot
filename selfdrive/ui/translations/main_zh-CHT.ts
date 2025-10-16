@@ -765,31 +765,31 @@ Warning: You are on a metered connection!</source>
     </message>
     <message>
         <source>Search Country</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋國家</translation>
     </message>
     <message>
         <source>Enter search keywords, or leave blank to list all countries.</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入搜尋關鍵字，或保持空白即可顯示所有國家列表。</translation>
     </message>
     <message>
         <source>Select Country</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇國家</translation>
     </message>
     <message>
         <source>Search State</source>
-        <translation type="unfinished"></translation>
+        <translation>搜尋州/省</translation>
     </message>
     <message>
         <source>Enter search keywords, or leave blank to list all states.</source>
-        <translation type="unfinished"></translation>
+        <translation>請輸入搜尋關鍵字，或保持空白即可顯示所有州/省列表。</translation>
     </message>
     <message>
         <source>Select State</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇州/省</translation>
     </message>
     <message>
         <source>No results found for keywords: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>沒有符合的搜尋結果： %1</translation>
     </message>
 </context>
 <context>
