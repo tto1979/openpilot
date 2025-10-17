@@ -763,6 +763,34 @@ Warning: You are on a metered connection!</source>
         <source>Configure speed limit settings including source policy, mode, and offset options.</source>
         <translation>設定速限相關選項，包括來源政策、運作模式和偏移值。</translation>
     </message>
+    <message>
+        <source>Search Country</source>
+        <translation>搜尋國家</translation>
+    </message>
+    <message>
+        <source>Enter search keywords, or leave blank to list all countries.</source>
+        <translation>請輸入搜尋關鍵字，或保持空白即可顯示所有國家列表。</translation>
+    </message>
+    <message>
+        <source>Select Country</source>
+        <translation>選擇國家</translation>
+    </message>
+    <message>
+        <source>Search State</source>
+        <translation>搜尋州/省</translation>
+    </message>
+    <message>
+        <source>Enter search keywords, or leave blank to list all states.</source>
+        <translation>請輸入搜尋關鍵字，或保持空白即可顯示所有州/省列表。</translation>
+    </message>
+    <message>
+        <source>Select State</source>
+        <translation>選擇州/省</translation>
+    </message>
+    <message>
+        <source>No results found for keywords: %1</source>
+        <translation>沒有符合的搜尋結果： %1</translation>
+    </message>
 </context>
 <context>
     <name>PairingPopup</name>

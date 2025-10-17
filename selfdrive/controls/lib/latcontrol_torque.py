@@ -182,7 +182,7 @@ class LatControlTorque(LatControl):
       low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y if not self.use_nn else LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
-      error_lsf = error + low_speed_factor * error
+      error_lsf = error + low_speed_factor / self.torque_params.kp * error
 
       lookahead_lateral_jerk = 0.0
       model_good = (model_data is not None and

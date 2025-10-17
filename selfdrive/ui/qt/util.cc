@@ -16,6 +16,8 @@
 #include <QPainterPath>
 #include <QTextStream>
 #include <QtXml/QDomDocument>
+#include <QRegularExpression>
+#include <algorithm>
 
 #include "common/swaglog.h"
 #include "common/util.h"
@@ -279,4 +281,24 @@ void ParamWatcher::fileChanged(const QString &path) {
 
 void ParamWatcher::addParam(const QString &param_name) {
   watcher->addPath(QString::fromStdString(params.getParamPath(param_name.toStdString())));
+}
+
+QStringList searchFromList(const QString &query, const QStringList &list) {
+  if (query.isEmpty()) {
+    return list;
+  }
+
+  QStringList search_terms = query.simplified().toLower().replace(QRegularExpression("[^a-zA-Z0-9\\s]"), " ").split(" ", QString::SkipEmptyParts);
+  QStringList search_results;
+
+  for (const QString &element : list) {
+    if (std::all_of(search_terms.begin(), search_terms.end(), [&](const QString &term) {
+          QString normalized_term = term.normalized(QString::NormalizationForm_KD).toLower();
+          QString normalized_element = element.normalized(QString::NormalizationForm_KD).toLower();
+          return normalized_element.contains(normalized_term, Qt::CaseInsensitive);
+        })) {
+      search_results << element;
+    }
+  }
+  return search_results;
 }
