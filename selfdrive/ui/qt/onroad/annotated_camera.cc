@@ -26,7 +26,9 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
   experimental_btn->updateState(s);
-  dmon.updateState(s);
+  if (!s.scene.lite) {
+    dmon.updateState(s);
+  }
   hud.updateState(s);
 }
 
@@ -143,7 +145,9 @@ void AnnotatedCameraWidget::paintGL() {
   painter.setPen(Qt::NoPen);
 
   model.draw(painter, rect());
-  dmon.draw(painter, rect());
+  if (!s->scene.lite) {
+    dmon.draw(painter, rect());
+  }
   hud.updateState(*s);
   hud.draw(painter, rect());
 
