@@ -72,6 +72,7 @@ void HudRenderer::updateState(const UIState &s) {
   speedLimitValid = lp_top.getSpeedLimit().getResolver().getSpeedLimitValid();
   speedLimitLastValid = lp_top.getSpeedLimit().getResolver().getSpeedLimitLastValid();
   speedLimitFinalLast = lp_top.getSpeedLimit().getResolver().getSpeedLimitFinalLast() * speedConv;
+  speedLimitSource = lp_top.getSpeedLimit().getResolver().getSource();
   speedLimitMode = static_cast<SpeedLimitMode>(s.scene.speed_limit_mode);
   speedLimitAssistState = lp_top.getSpeedLimit().getAssist().getState();
   speedLimitAssistActive = lp_top.getSpeedLimit().getAssist().getActive();
@@ -566,7 +567,8 @@ void HudRenderer::drawSpeedLimitSigns(QPainter &p, QRect &sign_rect) {
 }
 
 void HudRenderer::drawUpcomingSpeedLimit(QPainter &p) {
-  bool speed_limit_ahead = speedLimitAheadValid && speedLimitAhead > 0 && speedLimitAhead != speedLimit && speedLimitAheadValidFrame > 0;
+  bool speed_limit_ahead = speedLimitAheadValid && speedLimitAhead > 0 && speedLimitAhead != speedLimit && speedLimitAheadValidFrame > 0 &&
+                           speedLimitSource == cereal::LongitudinalPlanTOP::SpeedLimit::Source::MAP;
   if (!speed_limit_ahead) {
     return;
   }
