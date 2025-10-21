@@ -55,11 +55,13 @@ private slots:
   void poweroff();
   void reboot();
   void updateCalibDescription();
+  void flashPanda();
 
 private:
   Params params;
   ButtonControl *pair_device;
   ButtonControl *resetCalibBtn;
+  ButtonControl *flashPandaBtn;
 };
 
 class TogglesPanel : public ListWidget {

@@ -282,6 +282,11 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   });
   addItem(resetCalibBtn);
 
+  flashPandaBtn = new ButtonControl(tr("Flash Panda"), tr("FLASH"),
+                                    tr("<b>Reinstall the Panda firmware</b> to fix connection or reliability issues."));
+  connect(flashPandaBtn, &ButtonControl::clicked, this, &DevicePanel::flashPanda);
+  addItem(flashPandaBtn);
+
   auto retrainingBtn = new ButtonControl(tr("Review Training Guide"), tr("REVIEW"), tr("Review the rules, features, and limitations of openpilot"));
   connect(retrainingBtn, &ButtonControl::clicked, [=]() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to review the training guide?"), tr("Review"), this)) {
@@ -436,6 +441,38 @@ void DevicePanel::poweroff() {
     }
   } else {
     ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
+  }
+}
+
+void DevicePanel::flashPanda() {
+  if (!uiState()->engaged()) {
+    if (ConfirmationDialog::confirm(tr("Are you sure you want to flash the Panda firmware?"), tr("Flash"), this)) {
+      if (!uiState()->engaged()) {
+        std::thread([this]() {
+          flashPandaBtn->setEnabled(false);
+          flashPandaBtn->setValue(tr("Flashing..."));
+
+          int ret = std::system("cd /data/openpilot && python3 top/system/flash_panda.py");
+
+          if (ret == 0) {
+            flashPandaBtn->setValue(tr("Flashed!"));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+            flashPandaBtn->setValue(tr("Rebooting..."));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+
+            params.putBool("DoReboot", true);
+          } else {
+            flashPandaBtn->setValue(tr("Failed!"));
+            std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+            flashPandaBtn->setValue("");
+            flashPandaBtn->setEnabled(true);
+          }
+        }).detach();
+      }
+    }
+  } else {
+    ConfirmationDialog::alert(tr("Disengage to Flash Panda"), this);
   }
 }
 
