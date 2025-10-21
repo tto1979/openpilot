@@ -69,23 +69,20 @@ def test_firmware_version():
 
 def test_flash_log():
   """Test 3: Check flash log"""
-  # Check both temporary and persistent locations
-  log_paths = ["/data/flash_panda.log", "/tmp/flash_panda.log"]
+  log_path = "/data/flash_panda.log"
 
-  for log_path in log_paths:
-    if os.path.exists(log_path):
-      try:
-        with open(log_path, 'r') as f:
-          content = f.read()
-          if "successful" in content:
-            location = "persistent" if "data" in log_path else "temporary"
-            return {"passed": True, "message": f"Flash log shows success ({location})"}
-          else:
-            return {"passed": False, "message": f"Flash log exists but no success message"}
-      except Exception as e:
-        continue
-  
-  return {"passed": False, "message": "No flash log found (may not have flashed yet)"}
+  if not os.path.exists(log_path):
+    return {"passed": False, "message": "No flash log found (flash via UI to create log)"}
+
+  try:
+    with open(log_path, 'r') as f:
+      content = f.read()
+      if "successful" in content:
+        return {"passed": True, "message": "Flash log shows success"}
+      else:
+        return {"passed": False, "message": "Flash log exists but no success message"}
+  except Exception as e:
+    return {"passed": False, "message": f"Error reading log: {e}"}
 
 
 def test_panda_signatures():
@@ -131,7 +128,7 @@ result3 = test_flash_log()
 if result3["passed"]:
   print(f"  ✅ PASS: {result3['message']}")
 else:
-  print(f"  ⚠️  WARNING: {result3['message']}")
+  print(f"  ⚠️  INFO: {result3['message']}")
 
 print("\n[Test 4/4] Checking Stored Signatures...")
 result4 = test_panda_signatures()
@@ -158,8 +155,6 @@ if result1["passed"]:
     print("🎉 Perfect! All tests passed!")
   elif total >= 2:
     print("⚠️  Flash succeeded but some secondary checks failed")
-    if not result3["passed"]:
-      print("    Note: No flash log found - flash may have been done before log feature was added")
 
   sys.exit(0)
 else:
