@@ -454,7 +454,7 @@ void DevicePanel::flashPanda() {
           flashPandaBtn->setEnabled(false);
           flashPandaBtn->setValue(tr("Flashing..."));
 
-          int ret = std::system("cd /data/openpilot && python3 top/system/flash_panda.py 2>&1 | tee /tmp/flash_panda.log");
+          int ret = std::system("cd /data/openpilot && python3 top/system/flash_panda.py 2>&1 | tee /tmp/flash_panda.log && cp /tmp/flash_panda.log /data/flash_panda.log");
 
           if (ret == 0) {
             flashPandaBtn->setValue(tr("Flashed!"));

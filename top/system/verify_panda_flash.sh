@@ -69,20 +69,23 @@ def test_firmware_version():
 
 def test_flash_log():
   """Test 3: Check flash log"""
-  log_path = "/tmp/flash_panda.log"
+  # Check both temporary and persistent locations
+  log_paths = ["/data/flash_panda.log", "/tmp/flash_panda.log"]
 
-  if not os.path.exists(log_path):
-    return {"passed": False, "message": "No flash log found (may not have flashed yet)"}
-
-  try:
-    with open(log_path, 'r') as f:
-      content = f.read()
-      if "successful" in content:
-        return {"passed": True, "message": "Flash log shows success"}
-      else:
-        return {"passed": False, "message": "Flash log exists but no success message"}
-  except Exception as e:
-    return {"passed": False, "message": f"Error reading log: {e}"}
+  for log_path in log_paths:
+    if os.path.exists(log_path):
+      try:
+        with open(log_path, 'r') as f:
+          content = f.read()
+          if "successful" in content:
+            location = "persistent" if "data" in log_path else "temporary"
+            return {"passed": True, "message": f"Flash log shows success ({location})"}
+          else:
+            return {"passed": False, "message": f"Flash log exists but no success message"}
+      except Exception as e:
+        continue
+  
+  return {"passed": False, "message": "No flash log found (may not have flashed yet)"}
 
 
 def test_panda_signatures():
@@ -156,7 +159,7 @@ if result1["passed"]:
   elif total >= 2:
     print("⚠️  Flash succeeded but some secondary checks failed")
     if not result3["passed"]:
-      print("    Note: No flash log found - you may need to flash first")
+      print("    Note: No flash log found - flash may have been done before log feature was added")
 
   sys.exit(0)
 else:
@@ -166,7 +169,7 @@ else:
   print("1. Run flash again through UI")
   print("2. Manually recover: python3 -c 'from panda import Panda; Panda().recover()'")
   print("3. Check USB connection")
-  print("4. Check logs: cat /tmp/flash_panda.log")
+  print("4. Check logs: cat /data/flash_panda.log")
   sys.exit(1)
 PYEOF
 
