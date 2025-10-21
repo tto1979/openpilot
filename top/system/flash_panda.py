@@ -23,7 +23,7 @@ def flash_all_pandas():
       print("Resetting into bootstub mode...")
       panda.reset(enter_bootstub=True)
       time.sleep(2)
-      
+
       print("Flashing firmware...")
       panda = Panda(serial)
       panda.flash()
@@ -39,7 +39,7 @@ def flash_all_pandas():
   print(f"\n{'='*50}")
   print(f"Flashing complete: {success_count}/{len(serials)} successful")
   print(f"{'='*50}")
-  
+
   return success_count == len(serials)
 
 if __name__ == "__main__":

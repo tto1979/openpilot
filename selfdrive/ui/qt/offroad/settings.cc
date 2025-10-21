@@ -230,7 +230,7 @@ void TogglesPanel::updateToggles() {
   }
 }
 
-DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
+DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent), parentWindow(parent) {
   setSpacing(50);
 
   auto footagePopup = new MyFootagePopup(this);
@@ -255,10 +255,10 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
 
   // offroad-only buttons
   if (!lite) {
-  auto dcamBtn = new ButtonControl(tr("Driver Camera"), tr("PREVIEW"),
-                                   tr("Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"));
-  connect(dcamBtn, &ButtonControl::clicked, [=]() { emit showDriverView(); });
-  addItem(dcamBtn);
+    auto dcamBtn = new ButtonControl(tr("Driver Camera"), tr("PREVIEW"),
+                                     tr("Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"));
+    connect(dcamBtn, &ButtonControl::clicked, [=]() { emit showDriverView(); });
+    addItem(dcamBtn);
   }
   resetCalibBtn = new ButtonControl(tr("Reset Calibration"), tr("RESET"), "");
   connect(resetCalibBtn, &ButtonControl::showDescriptionEvent, this, &DevicePanel::updateCalibDescription);
@@ -449,22 +449,24 @@ void DevicePanel::flashPanda() {
     if (ConfirmationDialog::confirm(tr("Are you sure you want to flash the Panda firmware?"), tr("Flash"), this)) {
       if (!uiState()->engaged()) {
         std::thread([this]() {
+          parentWindow->keepScreenOn = true;
+
           flashPandaBtn->setEnabled(false);
           flashPandaBtn->setValue(tr("Flashing..."));
 
-          int ret = std::system("cd /data/openpilot && python3 top/system/flash_panda.py");
+          int ret = std::system("cd /data/openpilot && python3 top/system/flash_panda.py 2>&1 | tee /tmp/flash_panda.log");
 
           if (ret == 0) {
             flashPandaBtn->setValue(tr("Flashed!"));
-            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+            util::sleep_for(2500);
 
             flashPandaBtn->setValue(tr("Rebooting..."));
-            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+            util::sleep_for(2500);
 
             params.putBool("DoReboot", true);
           } else {
             flashPandaBtn->setValue(tr("Failed!"));
-            std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+            util::sleep_for(3000);
             flashPandaBtn->setValue("");
             flashPandaBtn->setEnabled(true);
           }
