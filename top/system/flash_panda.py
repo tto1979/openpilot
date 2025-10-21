@@ -1,39 +1,66 @@
 #!/usr/bin/env python3
+import os
+import signal
 import subprocess
 import sys
 import time
+
 from panda import Panda
 
 
 def stop_pandad():
-  """Stop pandad service to release USB"""
+  """Stop only pandad subprocess, not the entire comma service"""
   try:
-    print("Stopping pandad service...")
-    subprocess.run(["sudo", "systemctl", "stop", "comma"], check=True, timeout=10)
-    time.sleep(3)
-    print("Pandad stopped successfully")
-    return True
+    print("Stopping pandad subprocess...")
+    result = subprocess.run(
+      ["pgrep", "-f", "selfdrive/pandad/pandad"],
+      capture_output=True,
+      text=True
+    )
+    
+    if result.returncode == 0 and result.stdout.strip():
+      pids = result.stdout.strip().split('\n')
+      for pid in pids:
+        try:
+          os.kill(int(pid), signal.SIGINT)
+          print(f"Sent SIGINT to pandad process {pid}")
+        except ProcessLookupError:
+          pass
+      
+      time.sleep(3)
+      print("Pandad stopped successfully")
+      return True
+    else:
+      print("Pandad not running")
+      return False
+      
   except Exception as e:
     print(f"Warning: Failed to stop pandad: {e}")
     return False
 
 
-def start_pandad():
-  """Start pandad service"""
-  try:
-    print("Starting pandad service...")
-    subprocess.run(["sudo", "systemctl", "start", "comma"], check=True, timeout=10)
-    time.sleep(3)
-    print("Pandad started successfully")
-    return True
-  except Exception as e:
-    print(f"Error: Failed to start pandad: {e}")
-    return False
+def wait_for_pandad_exit():
+  """Wait for pandad to fully exit"""
+  max_wait = 10
+  while max_wait > 0:
+    result = subprocess.run(
+      ["pgrep", "-f", "selfdrive/pandad/pandad"],
+      capture_output=True
+    )
+    if result.returncode != 0:
+      return True
+    time.sleep(1)
+    max_wait -= 1
+  return False
 
 
 def flash_all_pandas():
-  # Stop pandad first
+  # Stop only pandad, not the entire comma service
   pandad_was_stopped = stop_pandad()
+
+  if pandad_was_stopped:
+    if not wait_for_pandad_exit():
+      print("Warning: pandad may still be running")
   
   try:
     serials = Panda.list()
@@ -74,18 +101,17 @@ def flash_all_pandas():
 
     return success_count == len(serials)
 
-  finally:
-    # Always restart pandad
-    if pandad_was_stopped:
-      start_pandad()
+  except Exception as e:
+    print(f"Error during flash: {e}")
+    return False
 
 
 if __name__ == "__main__":
   try:
     success = flash_all_pandas()
+    # Don't restart pandad - manager will handle it
+    print("\nFlash completed. System will reboot...")
     sys.exit(0 if success else 1)
   except Exception as e:
     print(f"Fatal error: {e}")
-    # Ensure pandad is restarted
-    start_pandad()
     sys.exit(1)
