@@ -344,43 +344,43 @@ Steering lag calibration is complete.</source>
     </message>
     <message>
         <source>Flash Panda</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新 Panda</translation>
     </message>
     <message>
         <source>FLASH</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新</translation>
     </message>
     <message>
         <source>&lt;b&gt;Reinstall the Panda firmware&lt;/b&gt; to fix connection or reliability issues.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;刷新 Panda 韌體&lt;/b&gt; 用以修復連線或可靠性問題。</translation>
     </message>
     <message>
         <source>Are you sure you want to flash the Panda firmware?</source>
-        <translation type="unfinished"></translation>
+        <translation>是否確認要刷新 Panda 韌體？</translation>
     </message>
     <message>
         <source>Flash</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新</translation>
     </message>
     <message>
         <source>Flashing...</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新中</translation>
     </message>
     <message>
         <source>Flashed!</source>
-        <translation type="unfinished"></translation>
+        <translation>已刷新！</translation>
     </message>
     <message>
         <source>Rebooting...</source>
-        <translation type="unfinished"></translation>
+        <translation>重新開機中…</translation>
     </message>
     <message>
         <source>Failed!</source>
-        <translation type="unfinished"></translation>
+        <translation>失敗！</translation>
     </message>
     <message>
         <source>Disengage to Flash Panda</source>
-        <translation type="unfinished"></translation>
+        <translation>解除控制狀態以刷新 Panda</translation>
     </message>
 </context>
 <context>
