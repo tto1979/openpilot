@@ -342,6 +342,46 @@ Steering lag calibration is complete.</source>
         <source> Steering torque response calibration is complete.</source>
         <translation> 轉向扭矩反應校準已完成。</translation>
     </message>
+    <message>
+        <source>Flash Panda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FLASH</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Reinstall the Panda firmware&lt;/b&gt; to fix connection or reliability issues.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure you want to flash the Panda firmware?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flashing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Flashed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rebooting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disengage to Flash Panda</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
