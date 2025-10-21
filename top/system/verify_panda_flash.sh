@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Panda Flash Verification Tool
 # Verifies that Panda firmware has been successfully flashed
 
