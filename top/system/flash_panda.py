@@ -1,117 +1,102 @@
 #!/usr/bin/env python3
-import os
 import signal
 import subprocess
 import sys
 import time
 
-from panda import Panda
+from openpilot.common.params import Params
 
 
-def stop_pandad():
-  """Stop only pandad subprocess, not the entire comma service"""
-  try:
-    print("Stopping pandad subprocess...")
-    result = subprocess.run(
-      ["pgrep", "-f", "selfdrive/pandad/pandad"],
-      capture_output=True,
-      text=True
-    )
-    
-    if result.returncode == 0 and result.stdout.strip():
-      pids = result.stdout.strip().split('\n')
-      for pid in pids:
-        try:
-          os.kill(int(pid), signal.SIGINT)
-          print(f"Sent SIGINT to pandad process {pid}")
-        except ProcessLookupError:
-          pass
-      
-      time.sleep(3)
-      print("Pandad stopped successfully")
-      return True
-    else:
-      print("Pandad not running")
+def trigger_panda_flash():
+  """
+  Trigger pandad to reflash pandas by:
+  1. Clearing PandaSignatures to force signature mismatch
+  2. Sending SIGHUP to pandad to restart its connection loop
+  """
+  params = Params()
+
+  print("Triggering Panda reflash via pandad...")
+  print("")
+
+  # Step 1: Clear PandaSignatures to force reflash
+  print("[Step 1/2] Clearing PandaSignatures...")
+  params.remove("PandaSignatures")
+  time.sleep(1)
+  print("✓ PandaSignatures cleared")
+  print("")
+
+  # Step 2: Find pandad process
+  print("[Step 2/2] Signaling pandad to reconnect...")
+  result = subprocess.run(
+    ["pgrep", "-f", "^./pandad"],
+    capture_output=True,
+    text=True,
+    cwd="/data/openpilot/selfdrive/pandad"
+  )
+
+  if result.returncode == 0 and result.stdout.strip():
+    pandad_pid = result.stdout.strip().split('\n')[0]
+    try:
+      # Send SIGINT to gracefully stop pandad
+      # Manager will restart it, and it will reflash due to missing signatures
+      print(f"Sending SIGINT to pandad (PID: {pandad_pid})...")
+      subprocess.run(["kill", "-INT", pandad_pid], check=True)
+      print("✓ Signal sent")
+      print("")
+      print("Waiting for pandad to restart and reflash Panda...")
+      print("This may take 30-60 seconds...")
+
+      # Wait for pandad to restart and complete flash
+      time.sleep(5)
+
+      # Check if PandaSignatures was restored (meaning flash completed)
+      max_wait = 60
+      while max_wait > 0:
+        sigs = params.get("PandaSignatures")
+        if sigs:
+          print("")
+          print("✓ Panda reflashed successfully!")
+          return True
+        time.sleep(1)
+        max_wait -= 1
+
+        # Show progress
+        if max_wait % 10 == 0:
+          print(f"  Still waiting... ({60 - max_wait}s elapsed)")
+
+      print("")
+      print("⚠ Timeout waiting for flash completion")
+      print("Panda may still be flashing, please wait...")
       return False
-      
-  except Exception as e:
-    print(f"Warning: Failed to stop pandad: {e}")
-    return False
 
-
-def wait_for_pandad_exit():
-  """Wait for pandad to fully exit"""
-  max_wait = 10
-  while max_wait > 0:
-    result = subprocess.run(
-      ["pgrep", "-f", "selfdrive/pandad/pandad"],
-      capture_output=True
-    )
-    if result.returncode != 0:
-      return True
-    time.sleep(1)
-    max_wait -= 1
-  return False
-
-
-def flash_all_pandas():
-  # Stop only pandad, not the entire comma service
-  pandad_was_stopped = stop_pandad()
-
-  if pandad_was_stopped:
-    if not wait_for_pandad_exit():
-      print("Warning: pandad may still be running")
-  
-  try:
-    serials = Panda.list()
-
-    if not serials:
-      print("No Panda devices found!")
+    except Exception as e:
+      print(f"Error signaling pandad: {e}")
       return False
-
-    print(f"Found {len(serials)} Panda device(s): {serials}")
-
-    success_count = 0
-    for serial in serials:
-      try:
-        print(f"\n{'='*50}")
-        print(f"Flashing Panda: {serial}")
-        print(f"{'='*50}")
-
-        panda = Panda(serial)
-        print("Resetting into bootstub mode...")
-        panda.reset(enter_bootstub=True)
-        time.sleep(2)
-
-        print("Flashing firmware...")
-        panda = Panda(serial)
-        panda.flash()
-
-        print(f"Successfully flashed {serial}")
-        panda.close()
-        success_count += 1
-
-      except Exception as e:
-        print(f"Error flashing {serial}: {e}")
-        continue
-
-    print(f"\n{'='*50}")
-    print(f"Flashing complete: {success_count}/{len(serials)} successful")
-    print(f"{'='*50}")
-
-    return success_count == len(serials)
-
-  except Exception as e:
-    print(f"Error during flash: {e}")
-    return False
+  else:
+    print("⚠ pandad not found")
+    print("Manager will start pandad and it will reflash automatically")
+    return True
 
 
 if __name__ == "__main__":
   try:
-    success = flash_all_pandas()
-    # Don't restart pandad - manager will handle it
-    print("\nFlash completed. System will reboot...")
+    print("=" * 50)
+    print("Panda Flash via pandad")
+    print("=" * 50)
+    print("")
+
+    success = trigger_panda_flash()
+
+    print("")
+    print("=" * 50)
+    if success:
+      print("Flash trigger completed successfully")
+    else:
+      print("Flash trigger completed (please check system status)")
+    print("=" * 50)
+
     sys.exit(0 if success else 1)
+
   except Exception as e:
     print(f"Fatal error: {e}")
     sys.exit(1)
