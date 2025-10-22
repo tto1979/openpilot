@@ -17,19 +17,20 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 # wheel slip, or to speed.
 
 # This controller applies torque to achieve desired lateral
-# accelerations. To compensate for the low speed effects we
-# use a LOW_SPEED_FACTOR in the error. Additionally, there is
-# friction in the steering wheel that needs to be overcome to
-# move it at all, this is compensated for too.
+# accelerations. To compensate for the low speed effects the
+# proportional gain is increased at low speeds by the PID controller.
+# Additionally, there is friction in the steering wheel that needs
+# to be overcome to move it at all, this is compensated for too.
 
 LOW_SPEED_X = [0, 10, 20, 30]
-LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
+
 KP = 1.0
 KI = 0.3
 KD = 0.0
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
+
 LP_FILTER_CUTOFF_HZ = 1.2
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 VERSION = 0
@@ -70,23 +71,30 @@ def get_lookahead_value(future_vals, current_val):
 def roll_pitch_adjust(roll, pitch):
   return roll * math.cos(pitch)
 
+
 class LatControlTorque(LatControl):
   def __init__(self, CP, CI, dt):
     super().__init__(CP, CI, dt)
     self.torque_params = CP.lateralTuning.torque.as_builder()
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
-    self.pid = PIDController(KP, KI, KD, rate=1/self.dt)
-    self.update_limits()
-    self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
-    self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / self.dt)
-    self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len , maxlen=self.lat_accel_request_buffer_len)
-    self.previous_measurement = 0.0
-    self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
 
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
+
+    # Use speed-dependent Kp for standard mode, fixed Kp for NNFF mode
+    if self.use_nn or self.use_lateral_jerk:
+      self.pid = PIDController(KP, KI, KD, rate=1/self.dt)
+    else:
+      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, KD, rate=1/self.dt)
+
+    self.update_limits()
+    self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
+    self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / self.dt)
+    self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
+    self.previous_measurement = 0.0
+    self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
 
     # NNFF: Lateral jerk lookahead configuration
     if self.use_nn or self.use_lateral_jerk:
@@ -147,10 +155,10 @@ class LatControlTorque(LatControl):
   def reset(self):
     super().reset()
     # Clear buffer to avoid stale data after disengagement
-    if hasattr(self, 'requested_lateral_accel_buffer'):
-      self.requested_lateral_accel_buffer.clear()
-      for _ in range(self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES):
-        self.requested_lateral_accel_buffer.append(0.0)
+    if hasattr(self, 'lat_accel_request_buffer'):
+      self.lat_accel_request_buffer.clear()
+      for _ in range(self.lat_accel_request_buffer_len):
+        self.lat_accel_request_buffer.append(0.0)
 
     if hasattr(self, 'previous_measurement'):
       self.previous_measurement = 0.0
@@ -159,6 +167,7 @@ class LatControlTorque(LatControl):
 
   def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, model_data=None):
     pid_log = log.ControlsState.LateralTorqueState.new_message()
+    pid_log.version = VERSION
     nn_log = None
 
     if not active:
@@ -179,14 +188,19 @@ class LatControlTorque(LatControl):
       desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
 
       measurement = measured_curvature * CS.vEgo ** 2
-      raw_measurement_rate = (measurement - self.previous_measurement) / self.dt
-      measurement_rate = self.measurement_rate_filter.update(raw_measurement_rate)
+      measurement_rate = self.measurement_rate_filter.update((measurement - self.previous_measurement) / self.dt)
       self.previous_measurement = measurement
 
-      low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y if not self.use_nn else LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
-      error_lsf = error + low_speed_factor / KP * error
+
+      # For NNFF modes, calculate low_speed_factor and error_lsf
+      # For standard mode, use raw error (PID handles speed compensation via Kp interpolation)
+      if self.use_nn or self.use_lateral_jerk:
+        low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
+        error_lsf = error + low_speed_factor / KP * error
+      else:
+        error_lsf = error
 
       lookahead_lateral_jerk = 0.0
       model_good = (model_data is not None and
@@ -280,9 +294,10 @@ class LatControlTorque(LatControl):
       pid_log.i = float(self.pid.i)
       pid_log.d = float(self.pid.d)
       pid_log.f = float(self.pid.f)
-      pid_log.output = float(-output_torque)  # TODO: log lat accel?
+      pid_log.output = float(-output_torque) # TODO: log lat accel?
       pid_log.actualLateralAccel = float(measurement)
       pid_log.desiredLateralAccel = float(setpoint)
+      pid_log.desiredLateralJerk = float(desired_lateral_jerk)
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
       if nn_log is not None:
         pid_log.nnLog = [float(x) for x in nn_log]
