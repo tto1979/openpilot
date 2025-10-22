@@ -26,7 +26,7 @@ def get_language_files(languages: list[str] = None) -> dict[str, pathlib.Path]:
 
     for filename in language_dict.values():
       path = TRANSLATIONS_DIR / f"{filename}.ts"
-      language = path.stem
+      language = path.stem.split("main_")[1]
 
       if languages is None or language in languages:
         files[language] = path

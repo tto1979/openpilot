@@ -7,7 +7,7 @@ from openpilot.common.basedir import BASEDIR
 from openpilot.system.ui.lib.multilang import UI_DIR, TRANSLATIONS_DIR, LANGUAGES_FILE
 
 TRANSLATIONS_INCLUDE_FILE = os.path.join(TRANSLATIONS_DIR, "alerts_generated.h")
-PLURAL_ONLY = ["en"]  # base language, only create entries for strings with plural forms
+PLURAL_ONLY = ["main_en"]  # base language, only create entries for strings with plural forms
 
 
 def generate_translations_include():
