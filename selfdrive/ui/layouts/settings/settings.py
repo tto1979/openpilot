@@ -8,7 +8,6 @@ from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
 from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
-from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.wifi_manager import WifiManager
 from openpilot.system.ui.widgets import Widget
@@ -59,12 +58,12 @@ class SettingsLayout(Widget):
     wifi_manager.set_active(False)
 
     self._panels = {
-      PanelType.DEVICE: PanelInfo(tr("Device"), DeviceLayout()),
-      PanelType.NETWORK: PanelInfo(tr("Network"), NetworkUI(wifi_manager)),
-      PanelType.TOGGLES: PanelInfo(tr("Toggles"), TogglesLayout()),
-      PanelType.SOFTWARE: PanelInfo(tr("Software"), SoftwareLayout()),
-      PanelType.FIREHOSE: PanelInfo(tr("Firehose"), FirehoseLayout()),
-      PanelType.DEVELOPER: PanelInfo(tr("Developer"), DeveloperLayout()),
+      PanelType.DEVICE: PanelInfo("Device", DeviceLayout()),
+      PanelType.NETWORK: PanelInfo("Network", NetworkUI(wifi_manager)),
+      PanelType.TOGGLES: PanelInfo("Toggles", TogglesLayout()),
+      PanelType.SOFTWARE: PanelInfo("Software", SoftwareLayout()),
+      PanelType.FIREHOSE: PanelInfo("Firehose", FirehoseLayout()),
+      PanelType.DEVELOPER: PanelInfo("Developer", DeveloperLayout()),
     }
 
     self._font_medium = gui_app.font(FontWeight.MEDIUM)

@@ -5,7 +5,6 @@ from openpilot.selfdrive.ui.onroad.cameraview import CameraView
 from openpilot.selfdrive.ui.onroad.driver_state import DriverStateRenderer
 from openpilot.selfdrive.ui.ui_state import ui_state, device
 from openpilot.system.ui.lib.application import gui_app, FontWeight
-from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets.label import gui_label
 
 
@@ -31,7 +30,7 @@ class DriverCameraDialog(CameraView):
     if not self.frame:
       gui_label(
         rect,
-        tr("camera starting"),
+        "camera starting",
         font_size=100,
         font_weight=FontWeight.BOLD,
         alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,

@@ -5,7 +5,6 @@ from openpilot.system.ui.widgets.list_view import multiple_button_item, toggle_i
 from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
 
@@ -13,24 +12,24 @@ PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
 # Description constants
 DESCRIPTIONS = {
-  "OpenpilotEnabledToggle": tr(
+  "OpenpilotEnabledToggle": (
     "Use the openpilot system for adaptive cruise control and lane keep driver assistance. " +
     "Your attention is required at all times to use this feature."
   ),
-  "DisengageOnAccelerator": tr("When enabled, pressing the accelerator pedal will disengage openpilot."),
-  "LongitudinalPersonality": tr(
+  "DisengageOnAccelerator": "When enabled, pressing the accelerator pedal will disengage openpilot.",
+  "LongitudinalPersonality": (
     "Standard is recommended. In aggressive mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. " +
     "In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with " +
     "your steering wheel distance button."
   ),
-  "IsLdwEnabled": tr(
+  "IsLdwEnabled": (
     "Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line " +
     "without a turn signal activated while driving over 31 mph (50 km/h)."
   ),
-  "AlwaysOnDM": tr("Enable driver monitoring even when openpilot is not engaged."),
-  'RecordFront': tr("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
-  "IsMetric": tr("Display speed in km/h instead of mph."),
-  "RecordAudio": tr("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+  "AlwaysOnDM": "Enable driver monitoring even when openpilot is not engaged.",
+  'RecordFront': "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
+  "IsMetric": "Display speed in km/h instead of mph.",
+  "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
 }
 
 
@@ -43,49 +42,49 @@ class TogglesLayout(Widget):
     # param, title, desc, icon, needs_restart
     self._toggle_defs = {
       "OpenpilotEnabledToggle": (
-        tr("Enable openpilot"),
+        "Enable openpilot",
         DESCRIPTIONS["OpenpilotEnabledToggle"],
         "chffr_wheel.png",
         True,
       ),
       "ExperimentalMode": (
-        tr("Experimental Mode"),
+        "Experimental Mode",
         "",
         "experimental_white.png",
         False,
       ),
       "DisengageOnAccelerator": (
-        tr("Disengage on Accelerator Pedal"),
+        "Disengage on Accelerator Pedal",
         DESCRIPTIONS["DisengageOnAccelerator"],
         "disengage_on_accelerator.png",
         False,
       ),
       "IsLdwEnabled": (
-        tr("Enable Lane Departure Warnings"),
+        "Enable Lane Departure Warnings",
         DESCRIPTIONS["IsLdwEnabled"],
         "warning.png",
         False,
       ),
       "AlwaysOnDM": (
-        tr("Always-On Driver Monitoring"),
+        "Always-On Driver Monitoring",
         DESCRIPTIONS["AlwaysOnDM"],
         "monitoring.png",
         False,
       ),
       "RecordFront": (
-        tr("Record and Upload Driver Camera"),
+        "Record and Upload Driver Camera",
         DESCRIPTIONS["RecordFront"],
         "monitoring.png",
         True,
       ),
       "RecordAudio": (
-        tr("Record and Upload Microphone Audio"),
+        "Record and Upload Microphone Audio",
         DESCRIPTIONS["RecordAudio"],
         "microphone.png",
         True,
       ),
       "IsMetric": (
-        tr("Use Metric System"),
+        "Use Metric System",
         DESCRIPTIONS["IsMetric"],
         "metric.png",
         False,
@@ -93,9 +92,9 @@ class TogglesLayout(Widget):
     }
 
     self._long_personality_setting = multiple_button_item(
-      tr("Driving Personality"),
+      "Driving Personality",
       DESCRIPTIONS["LongitudinalPersonality"],
-      buttons=[tr("Aggressive"), tr("Standard"), tr("Relaxed")],
+      buttons=["Aggressive", "Standard", "Relaxed"],
       button_width=255,
       callback=self._set_longitudinal_personality,
       selected_index=self._params.get("LongitudinalPersonality", return_default=True),
@@ -120,7 +119,7 @@ class TogglesLayout(Widget):
       toggle.action_item.set_enabled(not locked)
 
       if needs_restart and not locked:
-        toggle.set_description(toggle.description + tr(" Changing this setting will restart openpilot if the car is powered on."))
+        toggle.set_description(toggle.description + " Changing this setting will restart openpilot if the car is powered on.")
 
       # track for engaged state updates
       if locked:
@@ -151,7 +150,7 @@ class TogglesLayout(Widget):
   def _update_toggles(self):
     ui_state.update_params()
 
-    e2e_description = tr(
+    e2e_description = (
       "openpilot defaults to driving in chill mode. Experimental mode enables alpha-level features that aren't ready for chill mode. " +
       "Experimental features are listed below:<br>" +
       "<h4>End-to-End Longitudinal Control</h4><br>" +
@@ -175,15 +174,15 @@ class TogglesLayout(Widget):
         self._long_personality_setting.action_item.set_enabled(False)
         self._params.remove("ExperimentalMode")
 
-        unavailable = tr("Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.")
+        unavailable = "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
 
-        long_desc = unavailable + " " + tr("openpilot longitudinal control may come in a future update.")
+        long_desc = unavailable + " openpilot longitudinal control may come in a future update."
         if ui_state.CP.alphaLongitudinalAvailable:
           if self._is_release:
-            long_desc = unavailable + " " + tr("An alpha version of openpilot longitudinal control can be tested, along with " +
-                                               "Experimental mode, on non-release branches.")
+            long_desc = unavailable + " " + ("An alpha version of openpilot longitudinal control can be tested, along with " +
+                                             "Experimental mode, on non-release branches.")
           else:
-            long_desc = tr("Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode.")
+            long_desc = "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
 
         self._toggles["ExperimentalMode"].set_description("<b>" + long_desc + "</b><br><br>" + e2e_description)
     else:
@@ -222,7 +221,7 @@ class TogglesLayout(Widget):
       # show confirmation dialog
       content = (f"<h1>{self._toggles['ExperimentalMode'].title}</h1><br>" +
                  f"<p>{self._toggles['ExperimentalMode'].description}</p>")
-      dlg = ConfirmDialog(content, tr("Enable"), rich=True)
+      dlg = ConfirmDialog(content, "Enable", rich=True)
       gui_app.set_modal_overlay(dlg, callback=confirm_callback)
     else:
       self._update_experimental_mode_icon()

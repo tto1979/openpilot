@@ -5,7 +5,6 @@ from cereal import messaging, log
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.hardware import TICI
 from openpilot.system.ui.lib.application import gui_app, FontWeight
-from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.label import Label
@@ -48,22 +47,22 @@ class Alert:
 
 # Pre-defined alert instances
 ALERT_STARTUP_PENDING = Alert(
-  text1=tr("openpilot Unavailable"),
-  text2=tr("Waiting to start"),
+  text1="openpilot Unavailable",
+  text2="Waiting to start",
   size=AlertSize.mid,
   status=AlertStatus.normal,
 )
 
 ALERT_CRITICAL_TIMEOUT = Alert(
-  text1=tr("TAKE CONTROL IMMEDIATELY"),
-  text2=tr("System Unresponsive"),
+  text1="TAKE CONTROL IMMEDIATELY",
+  text2="System Unresponsive",
   size=AlertSize.full,
   status=AlertStatus.critical,
 )
 
 ALERT_CRITICAL_REBOOT = Alert(
-  text1=tr("System Unresponsive"),
-  text2=tr("Reboot Device"),
+  text1="System Unresponsive",
+  text2="Reboot Device",
   size=AlertSize.mid,
   status=AlertStatus.normal,
 )
