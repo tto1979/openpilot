@@ -26,6 +26,9 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
+KP = 1.0
+KI = 0.3
+KD = 0.0
 
 LAT_PLAN_MIN_IDX = 5
 LATERAL_LAG_MOD = 0.1
@@ -69,8 +72,7 @@ class LatControlTorque(LatControl):
     self.torque_params = CP.lateralTuning.torque.as_builder()
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
-    self.pid = PIDController(self.torque_params.kp, self.torque_params.ki,
-                             k_f=self.torque_params.kf, rate=1/self.dt)
+    self.pid = PIDController(KP, KI, k_d=KD, rate=1/self.dt)
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
     self.LATACCEL_REQUEST_BUFFER_NUM_FRAMES = int(1 / self.dt)
@@ -182,7 +184,7 @@ class LatControlTorque(LatControl):
       low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y if not self.use_nn else LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
-      error_lsf = error + low_speed_factor / self.torque_params.kp * error
+      error_lsf = error + low_speed_factor / KP * error
 
       lookahead_lateral_jerk = 0.0
       model_good = (model_data is not None and
