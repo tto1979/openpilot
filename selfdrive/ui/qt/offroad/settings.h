@@ -24,6 +24,7 @@ class SettingsWindow : public QFrame {
 public:
   explicit SettingsWindow(QWidget *parent = 0);
   void setCurrentPanel(int index, const QString &param = "");
+  bool keepScreenOn = false;
 
 protected:
   void showEvent(QShowEvent *event) override;
@@ -55,11 +56,14 @@ private slots:
   void poweroff();
   void reboot();
   void updateCalibDescription();
+  void flashPanda();
 
 private:
   Params params;
   ButtonControl *pair_device;
   ButtonControl *resetCalibBtn;
+  ButtonControl *flashPandaBtn;
+  SettingsWindow *parentWindow;
 };
 
 class TogglesPanel : public ListWidget {
