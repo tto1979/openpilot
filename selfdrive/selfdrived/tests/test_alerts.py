@@ -37,9 +37,6 @@ class TestAlerts:
       # NN test lateralTuning.torque
       cls.CP.lateralTuning.init('torque')
       cls.CP.lateralTuning.torque.nnModelName = ""
-      cls.CP.lateralTuning.torque.kp = 1.0
-      cls.CP.lateralTuning.torque.ki = 0.1
-      cls.CP.lateralTuning.torque.kf = 1.0
       cls.CP.lateralTuning.torque.friction = 0.01
       cls.CP.lateralTuning.torque.latAccelFactor = 1.0
       cls.CP.lateralTuning.torque.latAccelOffset = 0.0
