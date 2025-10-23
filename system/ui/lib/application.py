@@ -2,8 +2,6 @@ import atexit
 import cffi
 import os
 import time
-import signal
-import sys
 import pyray as rl
 import threading
 from collections.abc import Callable
@@ -156,11 +154,7 @@ class GuiApplication:
     self._window_close_requested = True
 
   def init_window(self, title: str, fps: int = _DEFAULT_FPS):
-    def _close(sig, frame):
-      self.close()
-      sys.exit(0)
-    signal.signal(signal.SIGINT, _close)
-    atexit.register(self.close)
+    atexit.register(self.close)  # Automatically call close() on exit
 
     HARDWARE.set_display_power(True)
     HARDWARE.set_screen_brightness(65)
