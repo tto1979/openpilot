@@ -124,7 +124,7 @@ procs = [
 
   PythonProcess("sensord", "system.sensord.sensord", only_onroad, enabled=not PC),
   NativeProcess("ui", "selfdrive/ui", ["./ui"], always_run),
-  PythonProcess("ui", "selfdrive.ui.ui", always_run),
+  # PythonProcess("ui", "selfdrive.ui.ui", always_run),
   PythonProcess("soundd", "selfdrive.ui.soundd", only_onroad),
   PythonProcess("locationd", "selfdrive.locationd.locationd", only_onroad),
   NativeProcess("_pandad", "selfdrive/pandad", ["./pandad"], always_run, enabled=False),
