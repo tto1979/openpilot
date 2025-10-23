@@ -22,19 +22,27 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 # Additionally, there is friction in the steering wheel that needs
 # to be overcome to move it at all, this is compensated for too.
 
-LOW_SPEED_X = [0, 10, 20, 30]
-LOW_SPEED_Y_NN = [12, 3, 1, 0]
-
+# Standard mode (official) parameters
 KP = 1.0
-KI = 0.3
-KD = 0.0
+KI = 0.1
+KD = 0.3
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
-LP_FILTER_CUTOFF_HZ = 1.2
-LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
-VERSION = 0
+# NNFF mode parameters (legacy)
+KI_NNFF = 0.3
+KD_NNFF = 0.0
+LOW_SPEED_X = [0, 10, 20, 30]
+LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
+# Common parameters
+LP_FILTER_CUTOFF_HZ = 1.2
+JERK_LOOKAHEAD_SECONDS = 0.19
+JERK_GAIN = 0.3
+LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
+VERSION = 1  # bump this when changing controller
+
+# NNFF specific parameters
 LAT_PLAN_MIN_IDX = 5
 LATERAL_LAG_MOD = 0.1
 
@@ -83,18 +91,28 @@ class LatControlTorque(LatControl):
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
 
-    # Use speed-dependent Kp for standard mode, fixed Kp for NNFF mode
+    # Initialize PID with appropriate parameters based on mode
     if self.use_nn or self.use_lateral_jerk:
-      self.pid = PIDController(KP, KI, KD, rate=1/self.dt)
+      # NNFF mode: use legacy parameters with fixed Kp
+      self.pid = PIDController(KP, KI_NNFF, KD_NNFF, rate=1/self.dt)
     else:
+      # Standard mode: use official new parameters with speed-dependent Kp
       self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, KD, rate=1/self.dt)
 
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
+
+    # Official new jerk lookahead (for standard mode)
+    self.lookahead_frames = int(JERK_LOOKAHEAD_SECONDS / self.dt)
+
     self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / self.dt)
     self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
-    self.previous_measurement = 0.0
+
+    # Official new jerk filter (for standard mode)
+    self.jerk_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
+
     self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
+    self.previous_measurement = 0.0
 
     # NNFF: Lateral jerk lookahead configuration
     if self.use_nn or self.use_lateral_jerk:
@@ -185,23 +203,36 @@ class LatControlTorque(LatControl):
       future_desired_lateral_accel = desired_curvature * CS.vEgo ** 2
       self.lat_accel_request_buffer.append(future_desired_lateral_accel)
       gravity_adjusted_future_lateral_accel = future_desired_lateral_accel - roll_compensation
-      desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
+
+      # Branch: Calculate jerk differently based on mode
+      if self.use_nn or self.use_lateral_jerk:
+        # NNFF mode: use legacy delay-based jerk calculation
+        desired_lateral_jerk = (future_desired_lateral_accel - expected_lateral_accel) / lat_delay
+      else:
+        # Standard mode: use official new buffer-based jerk calculation
+        lookahead_idx = int(np.clip(-delay_frames + self.lookahead_frames, -self.lat_accel_request_buffer_len+1, -2))
+        raw_lateral_jerk = (self.lat_accel_request_buffer[lookahead_idx+1] - self.lat_accel_request_buffer[lookahead_idx-1]) / (2 * self.dt)
+        desired_lateral_jerk = self.jerk_filter.update(raw_lateral_jerk)
 
       measurement = measured_curvature * CS.vEgo ** 2
       measurement_rate = self.measurement_rate_filter.update((measurement - self.previous_measurement) / self.dt)
       self.previous_measurement = measurement
 
-      setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
-      error = setpoint - measurement
-
-      # For NNFF modes, calculate low_speed_factor and error_lsf
-      # For standard mode, use raw error (PID handles speed compensation via Kp interpolation)
+      # Branch: Calculate setpoint differently based on mode
       if self.use_nn or self.use_lateral_jerk:
+        # NNFF mode: use legacy setpoint with jerk component
+        setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
+        # Calculate low speed factor for error_lsf
         low_speed_factor = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
+        error = setpoint - measurement
         error_lsf = error + low_speed_factor / KP * error
       else:
-        error_lsf = error
+        # Standard mode: use official new simplified setpoint
+        setpoint = expected_lateral_accel
+        error = setpoint - measurement
+        error_lsf = error  # No low speed factor in standard mode
 
+      # NNFF: Model-based lookahead jerk
       lookahead_lateral_jerk = 0.0
       model_good = (model_data is not None and
                     hasattr(model_data, 'orientation') and
@@ -209,7 +240,7 @@ class LatControlTorque(LatControl):
                     len(list(model_data.orientation.x)) >= CONTROL_N)
 
       if model_good and (self.use_nn or self.use_lateral_jerk):
-        # prepare "look-ahead" desired lateral jerk
+        # prepare "look-ahead" desired lateral jerk from model
         lookahead = np.interp(CS.vEgo, self.friction_look_ahead_bp, self.friction_look_ahead_v)
         friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
         predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
@@ -218,6 +249,7 @@ class LatControlTorque(LatControl):
 
       lat_accel_friction_factor = (self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0) if (self.use_nn or self.use_lateral_jerk) else 1.0
 
+      # Branch: Neural network path
       if self.use_nn and model_good:
         pitch = 0.0
         roll = params.roll
@@ -267,26 +299,23 @@ class LatControlTorque(LatControl):
         pid_log.error = float(error_lsf)
         nn_log = nn_input
       else:
+        # Standard path or lateral_jerk path
         ff = gravity_adjusted_future_lateral_accel
-        # latAccelOffset corrects roll compensation bias from device roll misalignment relative to car roll
         ff -= self.torque_params.latAccelOffset
 
         if self.use_lateral_jerk and model_good:
+          # NNFF lateral jerk mode (non-NN)
           friction_input = (lat_accel_friction_factor * error_lsf + self.lat_jerk_friction_factor * lookahead_lateral_jerk)
           friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
           ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
         else:
-          # TODO jerk is weighted by lat_delay for legacy reasons, but should be made independent of it
-          ff += get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+          # Standard mode: use official new jerk-weighted friction
+          ff += get_friction(error + JERK_GAIN * desired_lateral_jerk, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
         pid_log.error = float(error_lsf)
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-      output_lataccel = self.pid.update(pid_log.error,
-                                       -measurement_rate,
-                                        feedforward=ff,
-                                        speed=CS.vEgo,
-                                        freeze_integrator=freeze_integrator)
+      output_lataccel = self.pid.update(pid_log.error, -measurement_rate, CS.vEgo, ff, freeze_integrator)
       output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
 
       pid_log.active = True
