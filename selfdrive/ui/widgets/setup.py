@@ -64,7 +64,8 @@ class SetupWidget(Widget):
     spacing = 42
 
     # Title with fire emojis
-    self._firehose_label.render(rl.Rectangle(rect.x, y, rect.width, 64))
+    # TODO: fix Label centering with emojis
+    self._firehose_label.render(rl.Rectangle(x - 48, y, w, 64))
     y += 64 + spacing
 
     # Description
