@@ -14,7 +14,6 @@ from openpilot.selfdrive.locationd.calibrationd import MIN_SPEED_FILTER
 from openpilot.system.micd import SAMPLE_RATE, SAMPLE_BUFFER
 from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
 from openpilot.top.selfdrive.controls.lib.speed_limit import PCM_LONG_REQUIRED_MAX_SET_SPEED, CONFIRM_SPEED_THRESHOLD
-from openpilot.top.selfdrive.controls.lib.speed_limit.helpers import compare_cluster_target
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -433,7 +432,7 @@ def speed_limit_pre_active_alert(CP: car.CarParams, CS: car.CarState, sm: messag
     alert_1_str,
     alert_2_str,
     AlertStatus.normal, alert_size,
-    Priority.LOW, VisualAlert.none, AudibleAlertSP.promptSingleLow, .1)
+    Priority.LOW, VisualAlert.none, AudibleAlert.none, .1)
 
 
 EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
