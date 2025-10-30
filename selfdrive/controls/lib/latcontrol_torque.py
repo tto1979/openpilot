@@ -25,7 +25,7 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 # Standard mode (official) parameters
 KP = 1.0
 KI = 0.1
-KD = 0.3
+KD = 0.2
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
@@ -36,7 +36,7 @@ LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
 # Common parameters
-LP_FILTER_CUTOFF_HZ = 1.2
+LP_FILTER_CUTOFF_HZ = 0.9
 JERK_LOOKAHEAD_SECONDS = 0.19
 JERK_GAIN = 0.3
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
