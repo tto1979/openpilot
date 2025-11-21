@@ -30,8 +30,6 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
 # NNFF mode parameters (legacy)
-KI_NNFF = 0.3
-KD_NNFF = 0.0
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
@@ -44,7 +42,7 @@ VERSION = 1  # bump this when changing controller
 
 # NNFF specific parameters
 LAT_PLAN_MIN_IDX = 5
-LATERAL_LAG_MOD = 0.1
+LATERAL_LAG_MOD = 0.0
 
 def get_predicted_lateral_jerk(lat_accels, t_diffs):
   # compute finite difference between subsequent model_data.acceleration.y values
@@ -90,14 +88,7 @@ class LatControlTorque(LatControl):
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
-
-    # Initialize PID with appropriate parameters based on mode
-    if self.use_nn or self.use_lateral_jerk:
-      # NNFF mode: use legacy parameters with fixed Kp
-      self.pid = PIDController(KP, KI_NNFF, KD_NNFF, rate=1/self.dt)
-    else:
-      # Standard mode: use official new parameters with speed-dependent Kp
-      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
+    self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
 
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
@@ -111,13 +102,8 @@ class LatControlTorque(LatControl):
 
     # NNFF: Lateral jerk lookahead configuration
     if self.use_nn or self.use_lateral_jerk:
-      # Scaling the lateral acceleration "friction response" could be helpful for some.
-      # Increase for a stronger response, decrease for a weaker response.
-      nnff_lateral_jerk_factor = 1.0  # TODO: read from params
-      nnff_lateral_jerk_factor = max(0.0, min(1.0, nnff_lateral_jerk_factor))
-      self.lat_jerk_friction_factor = 0.4 * nnff_lateral_jerk_factor
-      # Increasing lat accel friction factor to account for any decrease of the lat jerk friction factor from default
-      self.lat_accel_friction_factor = 0.7 + (0.3 * (1.0 - nnff_lateral_jerk_factor))  # in [0, 3], in 0.05 increments. 3 is arbitrary safety limit
+      self.lat_jerk_friction_factor = 0.4
+      self.lat_accel_friction_factor = 0.7
 
       # Lookahead configuration (speed-dependent)
       self.friction_look_ahead_v = [1.4, 2.0]   # seconds
@@ -240,7 +226,7 @@ class LatControlTorque(LatControl):
         desired_lateral_jerk_model = (np.interp(self.desired_lat_jerk_time, ModelConstants.T_IDXS, model_data.acceleration.y) - future_desired_lateral_accel) / self.desired_lat_jerk_time
         lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk_model)
 
-      lat_accel_friction_factor = (self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0) if (self.use_nn or self.use_lateral_jerk) else 1.0
+      lat_accel_friction_factor_base = (self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0) if (self.use_nn or self.use_lateral_jerk) else 1.0
 
       # Branch: Neural network path
       if self.use_nn and model_good:
@@ -270,27 +256,40 @@ class LatControlTorque(LatControl):
             for t in adjusted_future_times
         ]
 
+        low_speed_factor_top = (np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN) / max(CS.vEgo, MIN_SPEED)) ** 2
+        # Curvature approximation from Accel/V^2
+        desired_curvature_approx = future_desired_lateral_accel / max(CS.vEgo ** 2, 0.01)
+        actual_curvature_approx = measurement / max(CS.vEgo ** 2, 0.01)
+
+        top_setpoint_accel = future_desired_lateral_accel + low_speed_factor_top * desired_curvature_approx
+        top_measurement_accel = measurement + low_speed_factor_top * actual_curvature_approx
+        error_raw = top_setpoint_accel - top_measurement_accel
+
+        # Ensure lat_accel_friction_factor logic is maintained (1.0 if no lookahead jerk)
+        lat_accel_friction_factor_nn = self.lat_accel_friction_factor if lookahead_lateral_jerk != 0.0 else 1.0
+
         friction_input = (
-            lat_accel_friction_factor * error_lsf +
+            lat_accel_friction_factor_nn * error_raw + # Use error_raw
             self.lat_jerk_friction_factor * lookahead_lateral_jerk
         )
-        nn_input = [CS.vEgo, future_desired_lateral_accel, friction_input, roll] + \
-                   past_lateral_accels_desired + future_planned_lateral_accels + \
-                   past_rolls + future_rolls
+        nnff_setpoint_input = [CS.vEgo, top_setpoint_accel, friction_input, roll] + \
+                              past_lateral_accels_desired + future_planned_lateral_accels + \
+                              past_rolls + future_rolls
 
-        nn_torque = self.torque_from_nn(nn_input)
-        nn_lat_accel = self.lateral_accel_from_torque(nn_torque, self.torque_params)
+        torque_from_setpoint = self.torque_from_nn(nnff_setpoint_input)
 
-        if self.nn_friction_override:
-          ff = nn_lat_accel
-        else:
-          friction_torque = get_friction(error, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-          friction_lat_accel = self.lateral_accel_from_torque(friction_torque, self.torque_params)
-          ff = nn_lat_accel + friction_lat_accel
+        nnff_measurement_input = [CS.vEgo, top_measurement_accel, friction_input, roll] + \
+                                 past_lateral_accels_desired + future_planned_lateral_accels + \
+                                 past_rolls + future_rolls
+
+        torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
+        pid_log.error = float(torque_from_setpoint - torque_from_measurement)
+        ff = gravity_adjusted_future_lateral_accel
 
         ff -= self.torque_params.latAccelOffset
-        pid_log.error = float(error_lsf)
-        nn_log = nn_input
+        ff += self.lateral_accel_from_torque(torque_from_setpoint, self.torque_params)
+
+        nn_log = nnff_setpoint_input
       else:
         # Standard path or lateral_jerk path
         ff = gravity_adjusted_future_lateral_accel
@@ -298,7 +297,7 @@ class LatControlTorque(LatControl):
 
         if self.use_lateral_jerk and model_good:
           # NNFF lateral jerk mode (non-NN)
-          friction_input = (lat_accel_friction_factor * error_lsf + self.lat_jerk_friction_factor * lookahead_lateral_jerk)
+          friction_input = (lat_accel_friction_factor_base * error_lsf + self.lat_jerk_friction_factor * lookahead_lateral_jerk)
           friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
           ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
         else:
