@@ -23,9 +23,9 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 # to be overcome to move it at all, this is compensated for too.
 
 # Standard mode (official) parameters
-KP = 1.0
-KI = 0.1
-KD = 0.3
+KP = 0.8
+KI = 0.15
+
 INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
@@ -97,22 +97,17 @@ class LatControlTorque(LatControl):
       self.pid = PIDController(KP, KI_NNFF, KD_NNFF, rate=1/self.dt)
     else:
       # Standard mode: use official new parameters with speed-dependent Kp
-      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, KD, rate=1/self.dt)
+      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
 
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
 
     # Official new jerk lookahead (for standard mode)
-    self.lookahead_frames = int(JERK_LOOKAHEAD_SECONDS / self.dt)
-
     self.lat_accel_request_buffer_len = int(LAT_ACCEL_REQUEST_BUFFER_SECONDS / self.dt)
     self.lat_accel_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
-
+    self.lookahead_frames = int(JERK_LOOKAHEAD_SECONDS / self.dt)
     # Official new jerk filter (for standard mode)
     self.jerk_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
-
-    self.measurement_rate_filter = FirstOrderFilter(0.0, 1 / (2 * np.pi * LP_FILTER_CUTOFF_HZ), self.dt)
-    self.previous_measurement = 0.0
 
     # NNFF: Lateral jerk lookahead configuration
     if self.use_nn or self.use_lateral_jerk:
@@ -215,8 +210,6 @@ class LatControlTorque(LatControl):
         desired_lateral_jerk = self.jerk_filter.update(raw_lateral_jerk)
 
       measurement = measured_curvature * CS.vEgo ** 2
-      measurement_rate = self.measurement_rate_filter.update((measurement - self.previous_measurement) / self.dt)
-      self.previous_measurement = measurement
 
       # Branch: Calculate setpoint differently based on mode
       if self.use_nn or self.use_lateral_jerk:
@@ -315,7 +308,7 @@ class LatControlTorque(LatControl):
         pid_log.error = float(error_lsf)
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-      output_lataccel = self.pid.update(pid_log.error, -measurement_rate, CS.vEgo, ff, freeze_integrator)
+      output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
       output_torque = self.torque_from_lateral_accel(output_lataccel, self.torque_params)
 
       pid_log.active = True
