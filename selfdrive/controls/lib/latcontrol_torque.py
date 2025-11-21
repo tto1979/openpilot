@@ -284,6 +284,22 @@ class LatControlTorque(LatControl):
 
         torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
         pid_log.error = float(torque_from_setpoint - torque_from_measurement)
+        error_blend_factor = float(np.interp(abs(future_desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
+
+        if error_blend_factor > 0.0:
+          error_accel_input = error_raw
+          friction_input_error = 0.0
+
+          nnff_error_accel_input = [CS.vEgo, error_accel_input, friction_input_error, roll] + \
+                                   past_lateral_accels_desired + future_planned_lateral_accels + \
+                                   past_rolls + future_rolls
+
+          torque_from_error = self.torque_from_nn(nnff_error_accel_input)
+          current_error = pid_log.error
+
+          if sign(current_error) == sign(torque_from_error) and abs(current_error) < abs(torque_from_error):
+            pid_log.error = current_error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor
+
         ff = gravity_adjusted_future_lateral_accel
 
         ff -= self.torque_params.latAccelOffset
