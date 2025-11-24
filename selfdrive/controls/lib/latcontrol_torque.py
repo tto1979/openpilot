@@ -30,6 +30,9 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
 # NNFF mode parameters (legacy)
+KP_NNFF = 1.0
+KI_NNFF = 0.2
+KD_NNFF = 0.3
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
@@ -42,7 +45,7 @@ VERSION = 1  # bump this when changing controller
 
 # NNFF specific parameters
 LAT_PLAN_MIN_IDX = 5
-LATERAL_LAG_MOD = 0.0
+LATERAL_LAG_MOD = 0.1
 
 def get_predicted_lateral_jerk(lat_accels, t_diffs):
   # compute finite difference between subsequent model_data.acceleration.y values
@@ -88,7 +91,13 @@ class LatControlTorque(LatControl):
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
-    self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
+    # Initialize PID with appropriate parameters based on mode
+    if self.use_nn or self.use_lateral_jerk:
+      # NNFF mode: use legacy parameters with fixed Kp
+      self.pid = PIDController(KP_NNFF, KI_NNFF, KD_NNFF, rate=1/self.dt)
+    else:
+      # Standard mode: use official new parameters with speed-dependent Kp
+      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
 
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
