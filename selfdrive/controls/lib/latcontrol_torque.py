@@ -30,7 +30,7 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
 # NNFF mode parameters (legacy)
-KP_NNFF = 0.8
+KP_NNFF = 0.65
 KI_NNFF = 0.05
 KD_NNFF = 0
 LOW_SPEED_X = [0, 10, 20, 30]
