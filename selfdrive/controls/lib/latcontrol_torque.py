@@ -217,6 +217,7 @@ class LatControlTorque(LatControl):
         setpoint = expected_lateral_accel
         error = setpoint - measurement
         error_lsf = error  # No low speed factor in standard mode
+        pid_log.error = float(error)
 
       # NNFF: Model-based lookahead jerk
       lookahead_lateral_jerk = 0.0
@@ -323,11 +324,10 @@ class LatControlTorque(LatControl):
           friction_input = (lat_accel_friction_factor_base * error_lsf + self.lat_jerk_friction_factor * lookahead_lateral_jerk)
           friction_torque = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
           ff += self.lateral_accel_from_torque(friction_torque, self.torque_params)
+          pid_log.error = float(error_lsf)
         else:
           # Standard mode: use official new jerk-weighted friction
           ff += get_friction(error + JERK_GAIN * desired_lateral_jerk, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
-
-        pid_log.error = float(error_lsf)
 
       freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
       output_lataccel = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=ff, freeze_integrator=freeze_integrator)
