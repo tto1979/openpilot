@@ -1,6 +1,6 @@
-from collections import deque
 import math
 import numpy as np
+from collections import deque
 
 from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
@@ -30,9 +30,7 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
 # NNFF mode parameters (legacy)
-KP_NNFF = 0.7
 KI_NNFF = 0.075
-KD_NNFF = 0
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
@@ -41,7 +39,7 @@ LP_FILTER_CUTOFF_HZ = 1.2
 JERK_LOOKAHEAD_SECONDS = 0.19
 JERK_GAIN = 0.3
 LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
-VERSION = 1  # bump this when changing controller
+VERSION = 1
 
 # NNFF specific parameters
 LAT_PLAN_MIN_IDX = 5
@@ -94,7 +92,7 @@ class LatControlTorque(LatControl):
     # Initialize PID with appropriate parameters based on mode
     if self.use_nn or self.use_lateral_jerk:
       # NNFF mode: use legacy parameters with fixed Kp
-      self.pid = PIDController(KP_NNFF, KI_NNFF, KD_NNFF, rate=1/self.dt)
+      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI_NNFF, rate=1/self.dt)
     else:
       # Standard mode: use official new parameters with speed-dependent Kp
       self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
