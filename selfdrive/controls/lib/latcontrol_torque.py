@@ -30,7 +30,6 @@ INTERP_SPEEDS = [1, 1.5, 2.0, 3.0, 5, 7.5, 10, 15, 30]
 KP_INTERP = [250, 120, 65, 30, 11.5, 5.5, 3.5, 2.0, KP]
 
 # NNFF mode parameters (legacy)
-KI_NNFF = 0.15
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
@@ -90,12 +89,7 @@ class LatControlTorque(LatControl):
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     self.use_lateral_jerk = False  # self.param_s.get_bool("TorqueLateralJerk")
     # Initialize PID with appropriate parameters based on mode
-    if self.use_nn or self.use_lateral_jerk:
-      # NNFF mode: use legacy parameters with fixed Kp
-      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI_NNFF, rate=1/self.dt)
-    else:
-      # Standard mode: use official new parameters with speed-dependent Kp
-      self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
+    self.pid = PIDController([INTERP_SPEEDS, KP_INTERP], KI, rate=1/self.dt)
 
     self.update_limits()
     self.steering_angle_deadzone_deg = self.torque_params.steeringAngleDeadzoneDeg
