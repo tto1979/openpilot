@@ -2,10 +2,11 @@ import numpy as np
 from numbers import Number
 
 class PIDController:
-  def __init__(self, k_p, k_i, k_d=0., pos_limit=1e308, neg_limit=-1e308, rate=100):
+  def __init__(self, k_p, k_i, k_f=0., k_d=0., pos_limit=1e308, neg_limit=-1e308, rate=100):
     self._k_p = k_p
     self._k_i = k_i
     self._k_d = k_d
+    self.k_f = k_f   # feedforward gain
     if isinstance(self._k_p, Number):
       self._k_p = [[0], [self._k_p]]
     if isinstance(self._k_i, Number):
@@ -15,7 +16,7 @@ class PIDController:
 
     self.set_limits(pos_limit, neg_limit)
 
-    self.i_dt = 1.0 / rate
+    self.i_rate = 1.0 / rate
     self.speed = 0.0
 
     self.reset()
@@ -45,12 +46,12 @@ class PIDController:
 
   def update(self, error, error_rate=0.0, speed=0.0, feedforward=0., freeze_integrator=False):
     self.speed = speed
-    self.p = self.k_p * float(error)
-    self.d = self.k_d * error_rate
-    self.f = feedforward
+    self.p = float(error) * self.k_p
+    self.f = feedforward * self.k_f
+    self.d = error_rate * self.k_d
 
     if not freeze_integrator:
-      i = self.i + self.k_i * self.i_dt * error
+      i = self.i + error * self.k_i * self.i_rate
 
       # Don't allow windup if already clipping
       test_control = self.p + i + self.d + self.f

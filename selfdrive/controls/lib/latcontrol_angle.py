@@ -8,12 +8,12 @@ STEER_ANGLE_SATURATION_THRESHOLD = 2.5  # Degrees
 
 
 class LatControlAngle(LatControl):
-  def __init__(self, CP, CI, dt):
-    super().__init__(CP, CI, dt)
+  def __init__(self, CP, CI):
+    super().__init__(CP, CI)
     self.sat_check_min_speed = 5.
     self.use_steer_limited_by_safety = CP.brand == "tesla"
 
-  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, lat_delay, model_data=None):
+  def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, curvature_limited, model_data=None):
     angle_log = log.ControlsState.LateralAngleState.new_message()
 
     if not active:
