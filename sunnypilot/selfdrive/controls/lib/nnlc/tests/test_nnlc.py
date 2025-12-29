@@ -9,7 +9,6 @@ from opendbc.car.hyundai.values import CAR as HYUNDAI
 from opendbc.car.toyota.values import CAR as TOYOTA
 from opendbc.car.vehicle_model import VehicleModel
 from openpilot.common.params import Params
-from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.car.helpers import convert_to_capnp
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.locationd.helpers import Pose
@@ -58,7 +57,7 @@ class TestNeuralNetworkLateralControl:
     CP_SP = convert_to_capnp(CP_SP)
     VM = VehicleModel(CP)
 
-    controller = LatControlTorque(CP.as_reader(), CP_SP.as_reader(), CI, DT_CTRL)
+    controller = LatControlTorque(CP.as_reader(), CP_SP.as_reader(), CI)
     torque_params = CP.lateralTuning.torque
 
     CS = car.CarState.new_message()
@@ -82,7 +81,7 @@ class TestNeuralNetworkLateralControl:
       controller.extension.update_lateral_lag(test_lag)
       controller.update_live_torque_params(torque_params.latAccelFactor, torque_params.latAccelOffset, torque_params.friction)
       controller.extension.update_limits()
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, True, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, True)
     assert lac_log.saturated
 
     for _ in range(1000):
@@ -90,7 +89,7 @@ class TestNeuralNetworkLateralControl:
       controller.extension.update_lateral_lag(test_lag)
       controller.update_live_torque_params(torque_params.latAccelFactor, torque_params.latAccelOffset, torque_params.friction)
       controller.extension.update_limits()
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, False, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, False)
     assert not lac_log.saturated
 
     for _ in range(1000):
@@ -98,5 +97,5 @@ class TestNeuralNetworkLateralControl:
       controller.extension.update_lateral_lag(test_lag)
       controller.update_live_torque_params(torque_params.latAccelFactor, torque_params.latAccelOffset, torque_params.friction)
       controller.extension.update_limits()
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, pose, False, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, pose, False)
     assert lac_log.saturated
