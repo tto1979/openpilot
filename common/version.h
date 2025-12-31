@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.10.1.1 DEV._C3 - 2025.12.24 (DS2 Model)"
+#define COMMA_VERSION "0.10.1.3 DEV._C3 - 2025.12.31 (WMI Model)"
