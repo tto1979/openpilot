@@ -54,8 +54,8 @@ class TestCarInterfaces:
     #  hypothesis also slows down significantly with just one more message draw
     LongControl(car_params)
     if car_params.steerControlType == CarParams.SteerControlType.angle:
-      LatControlAngle(car_params, car_interface, DT_CTRL)
+      LatControlAngle(car_params, car_interface)
     elif car_params.lateralTuning.which() == 'pid':
-      LatControlPID(car_params, car_interface, DT_CTRL)
+      LatControlPID(car_params, car_interface)
     elif car_params.lateralTuning.which() == 'torque':
-      LatControlTorque(car_params, car_interface, DT_CTRL)
+      LatControlTorque(car_params, car_interface)
