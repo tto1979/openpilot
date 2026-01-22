@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.10.1.4 DEV. - 2026.1.11 (SC Model)"
+#define COMMA_VERSION "0.10.1.5 DEV. - 2026.1.22 (WMI Model)"
