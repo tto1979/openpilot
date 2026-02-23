@@ -11,6 +11,8 @@ from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle
+from openpilot.selfdrive.locationd.helpers import Pose
+from openpilot.common.mock.generators import generate_livePose
 
 
 class TestLatControl:
@@ -31,15 +33,18 @@ class TestLatControl:
 
     params = log.LiveParametersData.new_message()
 
+    lp = generate_livePose()
+    pose = Pose.from_live_pose(lp.livePose)
+
     # Saturate for curvature limited and controller limited
     for _ in range(1000):
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, True, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, True, 0.2)
     assert lac_log.saturated
 
     for _ in range(1000):
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, False, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, False, 0.2)
     assert not lac_log.saturated
 
     for _ in range(1000):
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, False, 0.2)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, pose, False, 0.2)
     assert lac_log.saturated

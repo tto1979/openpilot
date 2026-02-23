@@ -132,7 +132,8 @@ class Controls:
     actuators.curvature = self.desired_curvature
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
                                                        self.steer_limited_by_safety, self.desired_curvature,
-                                                       curvature_limited, lat_delay, model_data=self.sm['modelV2'])
+                                                       self.calibrated_pose, curvature_limited, lat_delay,
+                                                       model_data=self.sm['modelV2'])
     actuators.torque = float(steer)
     actuators.steeringAngleDeg = float(steeringAngleDeg)
     # Ensure no NaNs/Infs
