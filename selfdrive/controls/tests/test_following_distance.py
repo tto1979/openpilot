@@ -4,6 +4,7 @@ from parameterized import parameterized_class
 
 from cereal import log
 
+from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import desired_follow_distance, get_T_FOLLOW, get_STOP_DISTANCE
 from openpilot.selfdrive.test.longitudinal_maneuvers.maneuver import Maneuver
 
@@ -32,6 +33,20 @@ def run_following_distance_simulation(v_lead, t_end=100.0, e2e=False, personalit
                        log.LongitudinalPersonality.aggressive],
                       [0,10,35])) # speed
 class TestFollowingDistance:
+  def setup_method(self):
+    # Ensure ToyotaTune is OFF so stop_distance in MPC matches get_STOP_DISTANCE(personality)
+    # without the +0.5 offset, keeping simulation and expected value consistent.
+    self._params = Params()
+    self._toyota_tune_prev = self._params.get("ToyotaTune")
+    self._params.put_bool("ToyotaTune", False)
+
+  def teardown_method(self):
+    # Restore ToyotaTune to its original value after each test
+    if self._toyota_tune_prev is None:
+      self._params.remove("ToyotaTune")
+    else:
+      self._params.put("ToyotaTune", self._toyota_tune_prev)
+
   def test_following_distance(self):
     v_lead = float(self.speed)
     simulation_steady_state = run_following_distance_simulation(v_lead, e2e=self.e2e, personality=self.personality)
