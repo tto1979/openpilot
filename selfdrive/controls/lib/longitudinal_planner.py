@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 import math
 import numpy as np
-from openpilot.common.params import Params
 import cereal.messaging as messaging
+from openpilot.common.params import Params
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.common.constants import CV
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, LongitudinalPlanSource
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 from openpilot.top.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlannerTOP
 
-LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 # A_CRUISE_MAX_VALS_TOYOTA = [2.0, 1.7, 1.3,  .95,  .75, .70, .65, .45, .32, .20, .085]  # Sets the limits of the planner accel, PID may exceed
@@ -63,8 +62,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
     self.mpc = LongitudinalMpc(CP, dt=dt)
-    # TODO remove mpc modes when TR released
-    self.mpc.mode = 'acc'
     LongitudinalPlannerTOP.__init__(self, self.CP)
     self.fcw = False
     self.dt = dt
@@ -79,7 +76,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     self.v_desired_trajectory = np.zeros(CONTROL_N)
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
-    self.solverExecutionTime = 0.0
     self.params = Params()
     self.dynamic_follow = False
     self.dynamic_follow = self.params.get_bool("Dynamic_Follow")
@@ -276,8 +272,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
       self.standstill_prev = self.standstill_current
 
-    mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
-
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
       pitch_rad = sm['carControl'].orientationNED[1]
@@ -301,27 +295,20 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    if mode == 'acc':
-      if self.CP.brand == "toyota":
-        accel_clip = [ACCEL_MIN, get_max_accel_toyota(v_ego)]
-      else:
-        accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
-      steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
-      accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
+    if self.CP.brand == "toyota":
+      accel_clip = [ACCEL_MIN, get_max_accel_toyota(v_ego)]
     else:
-      accel_clip = [ACCEL_MIN, ACCEL_MAX]
+      accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
+    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+    accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
 
     if self.accel_controller.is_personality_enabled():
       max_limit = self.accel_controller._get_max_accel_for_speed(v_ego)
-
-      if mode == 'acc':
-        # Use the accel controller limits directly
-        accel_clip = [ACCEL_MIN, max_limit]
-        # Recalculate limit turn according to the new max limit
-        steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
-        accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
-      else:
-        accel_clip = [ACCEL_MIN, ACCEL_MAX]
+      # Use the accel controller limits directly
+      accel_clip = [ACCEL_MIN, max_limit]
+      # Recalculate limit turn according to the new max limit
+      steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+      accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -330,7 +317,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
-    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
+    _, _, _, _, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
@@ -351,7 +338,7 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     v_lead1 = lead_xv_1[0,1]
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality, v_lead0=v_lead0, v_lead1=v_lead1)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality, dynamic_follow=self.dynamic_follow, pitch_rad=pitch_rad)
+    self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality, dynamic_follow=self.dynamic_follow, pitch_rad=pitch_rad)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -373,12 +360,14 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    if mode == 'acc':
+    if sm['selfdriveState'].experimentalMode:
+      output_a_target = min(output_a_target_e2e, output_a_target_mpc)
+      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
+      if output_a_target < output_a_target_mpc:
+        self.mpc.source = LongitudinalPlanSource.e2e
+    else:
       output_a_target = output_a_target_mpc
       self.output_should_stop = output_should_stop_mpc
-    else:
-      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
-      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
     for idx in range(2):
       accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
