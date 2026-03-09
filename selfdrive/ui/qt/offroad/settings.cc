@@ -231,7 +231,7 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent), parentWin
   setSpacing(50);
 
   auto footagePopup = new MyFootagePopup(this);
-  auto qrcodeBtn = new ButtonControl(tr("DashCam footage"), "QR-Code",
+  auto qrcodeBtn = new ButtonControl(tr("DashCam footage"), tr("QR-Code"),
                                      tr("Watch and/or download recordings from comma device cameras"));
   connect(qrcodeBtn, &ButtonControl::clicked, [=] {
       footagePopup->exec();
