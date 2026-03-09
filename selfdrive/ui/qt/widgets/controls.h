@@ -369,7 +369,7 @@ public:
 
     QHBoxLayout *controls_layout = new QHBoxLayout();
 
-    minus_btn = new QPushButton("-");
+    minus_btn = new QPushButton(tr("-"));
     minus_btn->setFixedSize(60, 60);
     minus_btn->setStyleSheet(R"(
       QPushButton {
@@ -384,7 +384,7 @@ public:
       }
     )");
 
-    plus_btn = new QPushButton("+");
+    plus_btn = new QPushButton(tr("+"));
     plus_btn->setFixedSize(60, 60);
     plus_btn->setStyleSheet(minus_btn->styleSheet());
 
