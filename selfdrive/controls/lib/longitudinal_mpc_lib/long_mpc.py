@@ -116,11 +116,11 @@ def get_stopped_equivalence_factor(v_lead, v_ego):
   # KRKeegan this offset rapidly decreases the following distance when the lead pulls
   # away, resulting in an early demand for acceleration.
   v_diff_offset = 0
-  v_diff_offset_max = 10
-  speed_to_reach_max_v_diff_offset = 15 # in kp/h
+  v_diff_offset_max = 12
+  speed_to_reach_max_v_diff_offset = 26 # in kp/h
   speed_to_reach_max_v_diff_offset = speed_to_reach_max_v_diff_offset * CV.KPH_TO_MS
   delta_speed = v_lead - v_ego
-  if np.all(delta_speed > 0.3):
+  if np.all(delta_speed > 0):
     v_diff_offset = delta_speed * 2
     v_diff_offset = np.clip(v_diff_offset, 0, v_diff_offset_max)
     v_diff_offset = np.maximum(v_diff_offset * ((speed_to_reach_max_v_diff_offset - v_ego)/speed_to_reach_max_v_diff_offset), 0)
@@ -325,8 +325,8 @@ class LongitudinalMpc:
     j_ego_v_ego = 1
     a_change_v_ego = 1
     if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
-      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.9, 1.])
-      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.9, 1.])
+      j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.55, 1.])
+      a_change_v_ego = np.interp(v_ego, v_ego_bps, [.55, 1.])
     a_change_cost = A_CHANGE_COST if a_prevccel_constraint else 0
     cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego]
     constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
