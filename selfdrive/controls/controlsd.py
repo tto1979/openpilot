@@ -60,6 +60,7 @@ class Controls:
       self.LaC = LatControlTorque(self.CP, self.CI, DT_CTRL)
 
     self.dp_atl = self.params.get_bool("dp_atl")
+    self.bypass_lagd = self.params.get_bool("bypass_lagd")
     self.alka_active = False
 
   def update(self):
@@ -79,6 +80,7 @@ class Controls:
     sr = max(lp.steerRatio, 0.1)
     self.VM.update_params(x, sr)
     self.live_torque = self.params.get_bool("NNFF")
+    self.bypass_lagd = self.params.get_bool("bypass_lagd")
 
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - lp.angleOffsetDeg)
     self.curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo, lp.roll)
@@ -90,8 +92,11 @@ class Controls:
         self.LaC.update_live_torque_params(torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered,
                                            torque_params.frictionCoefficientFiltered)
 
-      if self.sm.all_checks(['liveDelay']):
+      if self.bypass_lagd:
+        self.LaC.update_lateral_lag(self.CP.steerActuatorDelay)
+      elif self.sm.all_checks(['liveDelay']):
         self.LaC.update_lateral_lag(self.sm['liveDelay'].lateralDelay)
+
     long_plan = self.sm['longitudinalPlan']
     model_v2 = self.sm['modelV2']
 
@@ -127,7 +132,11 @@ class Controls:
     # Reset desired curvature to current to avoid violating the limits on engage
     new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
     self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
-    lat_delay = self.CP.steerActuatorDelay + LAT_SMOOTH_SECONDS
+
+    if self.bypass_lagd:
+      lat_delay = self.CP.steerActuatorDelay + LAT_SMOOTH_SECONDS
+    else:
+      lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
 
     actuators.curvature = self.desired_curvature
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
