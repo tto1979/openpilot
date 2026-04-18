@@ -53,7 +53,12 @@ class TorqueBuckets(PointBuckets):
 class TorqueEstimator(ParameterEstimator):
   def __init__(self, CP, decimated=False, track_all_points=False):
     self.hist_len = int(HISTORY / DT_MDL)
-    self.lag = 0.0
+    self._params = Params()
+    self.disable_lag_learning = self._params.get_bool("DisableLagLearning")
+    self._param_check_frame = 0
+    self._static_lag = CP.steerActuatorDelay + 0.2
+    self.lag = self._static_lag if self.disable_lag_learning else 0.0
+
     self.track_all_points = track_all_points  # for offline analysis, without max lateral accel or max steer torque filters
     if decimated:
       self.min_bucket_points = MIN_BUCKET_POINTS / 10
@@ -177,7 +182,16 @@ class TorqueEstimator(ParameterEstimator):
     elif which == "liveCalibration":
       self.calibrator.feed_live_calib(msg)
     elif which == "liveDelay":
-      self.lag = msg.lateralDelay
+      self._param_check_frame += 1
+      if self._param_check_frame >= 20:
+        self._param_check_frame = 0
+        self.disable_lag_learning = self._params.get_bool("DisableLagLearning")
+
+      if self.disable_lag_learning:
+        self.lag = self._static_lag
+      else:
+        self.lag = msg.lateralDelay
+
     # calculate lateral accel from past steering torque
     elif which == "livePose":
       is_valid = msg.angularVelocityDevice.valid and msg.orientationNED.valid and msg.inputsOK and msg.sensorsOK and msg.posenetOK

@@ -133,12 +133,12 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     // TOP
     {"AccelPersonality", {PERSISTENT, INT}},
     {"AleSato_AutomaticBrakeHold", {PERSISTENT, BOOL}},
-    {"Dynamic_Follow", {PERSISTENT, BOOL}},
     {"CarModel", {PERSISTENT, STRING, "[-Not selected-]"}},
-    {"ToyotaTune", {PERSISTENT, BOOL}},
+    {"DisableLagLearning", {PERSISTENT, BOOL, "1"}},
     {"dp_device_offroad", {CLEAR_ON_MANAGER_START, BOOL}},
     {"dp_atl", {PERSISTENT, BOOL}},
     {"DrivingPersonalitiesUIWheel", {PERSISTENT, BOOL, "1"}},
+    {"Dynamic_Follow", {PERSISTENT, BOOL}},
     {"e2e_link", {PERSISTENT, BOOL, "1"}},
     {"LastGPSPositionLLK", {PERSISTENT, STRING}},
     {"fleetmanager", {PERSISTENT, BOOL, "1"}},
@@ -151,7 +151,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"PrimeAd", {PERSISTENT, BOOL}},
     {"QuietDrive", {PERSISTENT, BOOL}},
     {"ReverseAccChange", {PERSISTENT, BOOL, "1"}},
-    {"road_edge_detection", {PERSISTENT, BOOL, "1"}},
+    {"road_edge_detection", {PERSISTENT, BOOL, "0"}},
     {"SecondBoot", {PERSISTENT, BOOL}},
     {"sng_e2e", {PERSISTENT, BOOL}},
     {"StandstillMode", {PERSISTENT, BOOL}},
@@ -162,6 +162,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"toyota_bsm", {PERSISTENT, BOOL}},
     {"ToyotaDriveMode", {PERSISTENT, BOOL}},
     {"toyota_stock_long", {PERSISTENT, BOOL}},
+    {"ToyotaTune", {PERSISTENT, BOOL}},
     {"UserExperimentalMode", {CLEAR_ON_MANAGER_START, BOOL}},
 
     // mapd

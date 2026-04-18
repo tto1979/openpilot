@@ -91,6 +91,9 @@ class Controls:
 
       if self.sm.all_checks(['liveDelay']):
         self.LaC.update_lateral_lag(self.sm['liveDelay'].lateralDelay)
+      else:
+        self.LaC.update_lateral_lag(self.CP.steerActuatorDelay + 0.2)
+
     long_plan = self.sm['longitudinalPlan']
     model_v2 = self.sm['modelV2']
 

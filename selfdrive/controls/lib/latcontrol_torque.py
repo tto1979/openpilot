@@ -4,9 +4,10 @@ from collections import deque
 
 from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
-from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
+from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.params import Params
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
 from openpilot.selfdrive.modeld.constants import ModelConstants
@@ -127,9 +128,21 @@ class LatControlTorque(LatControl):
       self.lateral_accel_desired_deque = deque(maxlen=history_check_frames[0])
       self.roll_deque = deque(maxlen=history_check_frames[0])
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
+
+    self._params = Params()
+    self.disable_lag_learning = self._params.get_bool("DisableLagLearning")
+    self._param_check_frame = 0
     self.update_limits()
 
   def update_lateral_lag(self, lag):
+    self._param_check_frame += 1
+    if self._param_check_frame >= 100:
+      self._param_check_frame = 0
+      self.disable_lag_learning = self._params.get_bool("DisableLagLearning")
+
+    if self.disable_lag_learning:
+      return
+
     self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
 
     if self.use_nn:
