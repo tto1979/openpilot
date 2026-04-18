@@ -28,7 +28,8 @@ LOW_SPEED_Y = [15, 13, 10, 5]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 
 LAT_PLAN_MIN_IDX = 5
-LATERAL_LAG_MOD = 0.1
+LATERAL_LAG_MOD = 0.3
+NN_TIME_OFFSET_MOD = 0.2
 
 def get_predicted_lateral_jerk(lat_accels, t_diffs):
   # compute finite difference between subsequent model_data.acceleration.y values
@@ -92,7 +93,6 @@ class LatControlTorque(LatControl):
     # precompute time differences between ModelConstants.T_IDXS
     self.t_diffs = np.diff(ModelConstants.T_IDXS)
     self.desired_lat_jerk_time = CP.steerActuatorDelay + LATERAL_LAG_MOD
-
     if self.use_nn or self.use_lateral_jerk:
       # Scaling the lateral acceleration "friction response" could be helpful for some.
       # Increase for a stronger response, decrease for a weaker response.
@@ -118,7 +118,8 @@ class LatControlTorque(LatControl):
 
       # setup future time offsets
       self.future_times = [0.3, 0.6, 1.0, 1.5]  # seconds in the future
-      self.nn_future_times = [i + self.desired_lat_jerk_time for i in self.future_times]
+      nn_offset = CP.steerActuatorDelay + NN_TIME_OFFSET_MOD
+      self.nn_future_times = [t + nn_offset for t in self.future_times]
       self.nn_future_times_np = np.array(self.nn_future_times)
 
       # setup past time offsets
@@ -143,10 +144,12 @@ class LatControlTorque(LatControl):
     if self.disable_lag_learning:
       return
 
-    self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+    effective_lag = max(0.01, lag)
+    self.desired_lat_jerk_time = effective_lag + LATERAL_LAG_MOD
 
     if self.use_nn:
-      self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
+      nn_offset = effective_lag + NN_TIME_OFFSET_MOD
+      self.nn_future_times = [t + nn_offset for t in self.future_times]
       self.nn_future_times_np = np.array(self.nn_future_times)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
