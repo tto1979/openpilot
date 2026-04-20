@@ -60,6 +60,8 @@ class Controls:
 
     self.dp_atl = self.params.get_bool("dp_atl")
     self.alka_active = False
+    self.disable_lag_learning = self.params.get_bool("DisableLagLearning")
+    self._param_check_frame = 0
 
   def update(self):
     self.sm.update(15)
@@ -81,11 +83,17 @@ class Controls:
 
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - lp.angleOffsetDeg)
     self.curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo, lp.roll)
+    self._param_check_frame += 1
+    if self._param_check_frame >= 100:
+      self._param_check_frame = 0
+      self.disable_lag_learning = self.params.get_bool("DisableLagLearning")
 
     # Update Torque Params
     if self.CP.lateralTuning.which() == 'torque':
       torque_params = self.sm['liveTorqueParameters']
-      if self.sm.all_checks(['liveTorqueParameters']) and (torque_params.useParams or self.live_torque):
+      if (not self.disable_lag_learning and 
+          self.sm.all_checks(['liveTorqueParameters']) and 
+          (torque_params.useParams or self.live_torque)):
         self.LaC.update_live_torque_params(torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered,
                                            torque_params.frictionCoefficientFiltered)
 
