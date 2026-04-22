@@ -5,6 +5,7 @@ from collections import deque
 from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
@@ -65,6 +66,7 @@ def roll_pitch_adjust(roll, pitch):
 class LatControlTorque(LatControl):
   def __init__(self, CP, CI):
     super().__init__(CP, CI)
+    self.steerActuatorDelay = CP.steerActuatorDelay
     self.torque_params = CP.lateralTuning.torque.as_builder()
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
@@ -109,6 +111,7 @@ class LatControlTorque(LatControl):
     if self.use_nn:
       self.pitch = FirstOrderFilter(0.0, 0.5, 0.01)
       self.pitch_last = 0.0
+      self.actual_lateral_jerk_filter = FirstOrderFilter(0.0, 0.1, 0.01)
       # NN model takes current v_ego, lateral_accel, lat accel/jerk error, roll, and past/future/planned data
       # of lat accel and roll
       # Past value is computed using previous desired lat accel and observed roll
@@ -130,11 +133,19 @@ class LatControlTorque(LatControl):
     self.update_limits()
 
   def update_lateral_lag(self, lag):
-    self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+    if Params().get_bool("NNFF"):
+      self.desired_lat_jerk_time = self.steerActuatorDelay + 0.3
 
-    if self.use_nn:
-      self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
-      self.nn_future_times_np = np.array(self.nn_future_times)
+      if self.use_nn:
+        nn_time_offset = self.steerActuatorDelay + 0.2
+        self.nn_future_times = [t + nn_time_offset for t in self.future_times]
+        self.nn_future_times_np = np.array(self.nn_future_times)
+
+    else:
+      self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+      if self.use_nn:
+        self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
+        self.nn_future_times_np = np.array(self.nn_future_times)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -169,7 +180,8 @@ class LatControlTorque(LatControl):
     model_good = model_data is not None and len(list(model_data.orientation.x)) >= CONTROL_N
     if model_good and (self.use_nn or self.use_lateral_jerk):
       actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
-      actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
+      raw_jerk = actual_curvature_rate * CS.vEgo ** 2
+      actual_lateral_jerk = self.actual_lateral_jerk_filter.update(raw_jerk)
       # prepare "look-ahead" desired lateral jerk
       lookahead = np.interp(CS.vEgo, self.friction_look_ahead_bp, self.friction_look_ahead_v)
       friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
@@ -208,7 +220,7 @@ class LatControlTorque(LatControl):
 
       if self.use_nn and model_good:
         # Build past/future context for NN input
-        adjusted_future_times = [t + 0.5 * CS.aEgo * (t / max(CS.vEgo, 1.0)) for t in self.nn_future_times]
+        adjusted_future_times = self.nn_future_times
         past_rolls = [self.roll_deque[min(len(self.roll_deque) - 1, i)] for i in self.history_frame_offsets]
         future_rolls = [roll_pitch_adjust(np.interp(t, ModelConstants.T_IDXS, model_data.orientation.x) + roll,
                         np.interp(t, ModelConstants.T_IDXS, model_data.orientation.y) + self.pitch_last) for t in adjusted_future_times]
