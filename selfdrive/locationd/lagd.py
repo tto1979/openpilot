@@ -304,6 +304,9 @@ class LateralLagEstimator:
     self.points.update(self.t, la_desired, la_actual_pose, okay)
 
   def update_estimate(self):
+    if Params().get_bool("DisableLagLearning"):
+      return
+
     if not self.points_enough():
       return
 
@@ -392,7 +395,10 @@ def main():
   lag_learner = LateralLagEstimator(CP, 1. / SERVICE_LIST['livePose'].frequency)
   if (initial_lag_params := retrieve_initial_lag(params, CP)) is not None:
     lag, valid_blocks = initial_lag_params
-    lag_learner.reset(lag, valid_blocks)
+    if not params.get_bool("DisableLagLearning"):
+      lag_learner.reset(lag, valid_blocks)
+    else:
+      cloudlog.info("DisableLagLearning is ON: skipped loading cached lag.")
 
   while True:
     sm.update()

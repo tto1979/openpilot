@@ -6,6 +6,7 @@ from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
@@ -79,6 +80,7 @@ def roll_pitch_adjust(roll, pitch):
 class LatControlTorque(LatControl):
   def __init__(self, CP, CI, dt):
     super().__init__(CP, CI, dt)
+    self.steerActuatorDelay = CP.steerActuatorDelay
     self.torque_params = CP.lateralTuning.torque.as_builder()
     self.torque_from_lateral_accel = CI.torque_from_lateral_accel()
     self.lateral_accel_from_torque = CI.lateral_accel_from_torque()
@@ -110,6 +112,7 @@ class LatControlTorque(LatControl):
 
       # Precompute time differences for jerk calculation
       self.t_diffs = np.diff(ModelConstants.T_IDXS)
+      self.steerActuatorDelay = CP.steerActuatorDelay
       self.desired_lat_jerk_time = CP.steerActuatorDelay + LATERAL_LAG_MOD
     else:
       self.lat_jerk_friction_factor = 0.0
@@ -120,6 +123,7 @@ class LatControlTorque(LatControl):
     if self.use_nn:
       self.pitch = FirstOrderFilter(0.0, 0.5, 0.01)
       self.pitch_last = 0.0
+      self.actual_lateral_jerk_filter = FirstOrderFilter(0.0, 0.1, self.dt)
       # NN model takes current v_ego, lateral_accel, lat accel/jerk error, roll, and past/future/planned data
       # of lat accel and roll
       # Past value is computed using previous desired lat accel and observed roll
@@ -140,11 +144,19 @@ class LatControlTorque(LatControl):
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
 
   def update_lateral_lag(self, lag):
-    self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+    if Params().get_bool("DisableLagLearning"):
+      self.desired_lat_jerk_time = self.steerActuatorDelay + 0.3
 
-    if self.use_nn:
-      self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
-      self.nn_future_times_np = np.array(self.nn_future_times)
+      if self.use_nn:
+        nn_time_offset = self.steerActuatorDelay + 0.2
+        self.nn_future_times = [t + nn_time_offset for t in self.future_times]
+        self.nn_future_times_np = np.array(self.nn_future_times)
+    else:
+      self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
+
+      if self.use_nn:
+        self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
+        self.nn_future_times_np = np.array(self.nn_future_times)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -203,7 +215,8 @@ class LatControlTorque(LatControl):
 
     if model_good and (self.use_nn or self.use_lateral_jerk):
       actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
-      actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
+      raw_jerk = actual_curvature_rate * CS.vEgo ** 2
+      actual_lateral_jerk = self.actual_lateral_jerk_filter.update(raw_jerk)
       lookahead = np.interp(CS.vEgo, self.friction_look_ahead_bp, self.friction_look_ahead_v)
       friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
       predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
@@ -238,7 +251,7 @@ class LatControlTorque(LatControl):
         past_rolls = [self.roll_deque[min(len(self.roll_deque)-1, i)] for i in self.history_frame_offsets]
         past_lateral_accels_desired = [self.lateral_accel_desired_deque[min(len(self.lateral_accel_desired_deque)-1, i)]
                                        for i in self.history_frame_offsets]
-        adjusted_future_times = [t + 0.5 * CS.aEgo * (t / max(CS.vEgo, 1.0)) for t in self.nn_future_times]
+        adjusted_future_times = self.nn_future_times
 
         future_rolls = [
             roll_pitch_adjust(
