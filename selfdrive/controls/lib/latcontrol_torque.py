@@ -123,7 +123,6 @@ class LatControlTorque(LatControl):
     if self.use_nn:
       self.pitch = FirstOrderFilter(0.0, 0.5, 0.01)
       self.pitch_last = 0.0
-      self.actual_lateral_jerk_filter = FirstOrderFilter(0.0, 0.1, self.dt)
       # NN model takes current v_ego, lateral_accel, lat accel/jerk error, roll, and past/future/planned data
       # of lat accel and roll
       # Past value is computed using previous desired lat accel and observed roll
@@ -215,8 +214,7 @@ class LatControlTorque(LatControl):
 
     if model_good and (self.use_nn or self.use_lateral_jerk):
       actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
-      raw_jerk = actual_curvature_rate * CS.vEgo ** 2
-      actual_lateral_jerk = self.actual_lateral_jerk_filter.update(raw_jerk)
+      actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
       lookahead = np.interp(CS.vEgo, self.friction_look_ahead_bp, self.friction_look_ahead_v)
       friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
       predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
@@ -251,7 +249,7 @@ class LatControlTorque(LatControl):
         past_rolls = [self.roll_deque[min(len(self.roll_deque)-1, i)] for i in self.history_frame_offsets]
         past_lateral_accels_desired = [self.lateral_accel_desired_deque[min(len(self.lateral_accel_desired_deque)-1, i)]
                                        for i in self.history_frame_offsets]
-        adjusted_future_times = self.nn_future_times
+        adjusted_future_times = [t + 0.5 * CS.aEgo * (t / max(CS.vEgo, 1.0)) for t in self.nn_future_times]
 
         future_rolls = [
             roll_pitch_adjust(
