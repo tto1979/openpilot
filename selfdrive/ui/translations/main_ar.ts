@@ -1411,7 +1411,8 @@ Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.</source>
+        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.
+Changing this setting will restart openpilot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
