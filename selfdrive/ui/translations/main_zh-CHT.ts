@@ -1397,8 +1397,10 @@ Data</source>
         <translation>開啟 NNFF 控制器</translation>
     </message>
     <message>
-        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.</source>
-        <translation>使用 Twilsonco 的神經網絡前饋扭矩系統可實現更精確的橫向控制。</translation>
+        <source>Use Twilsonco&apos;s Neural Network Feedforward torque system for more precise lateral control.
+Changing this setting will restart openpilot.</source>
+        <translation>使用 Twilsonco 的神經網絡前饋扭矩系統可實現更精確的橫向控制。
+變更這個設定將會重新啟動openpilot。</translation>
     </message>
     <message>
         <source>Stop And Go</source>

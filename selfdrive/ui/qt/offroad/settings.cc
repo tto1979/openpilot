@@ -682,11 +682,24 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/road.png",
                                   this));
 
-  toggles.append(new ParamControl("NNFF",
+  ParamControl *nnff_toggle = new ParamControl("NNFF",
                                   tr("NNFF Torque Control"),
-                                  tr("Use Twilsonco's Neural Network Feedforward torque system for more precise lateral control."),
+                                  tr("Use Twilsonco's Neural Network Feedforward torque system for more precise lateral control.\nChanging this setting will restart openpilot."),
                                   "../assets/icons/road.png",
-                                  this));
+                                  this);
+
+  QObject::connect(nnff_toggle, &ParamControl::toggleFlipped, [=](bool state) {
+    Params params;
+    params.remove("LiveTorqueParameters");
+    params.remove("LiveDelay");
+    params.putBool("OnroadCycleRequested", true);
+  });
+
+  QObject::connect(uiState(), &UIState::engagedChanged, [nnff_toggle](bool engaged) {
+    nnff_toggle->setEnabled(!engaged);
+  });
+
+  toggles.append(nnff_toggle);
 
   toggles.append(new ParamControl("topsng",
                                   tr("Stop And Go"),
