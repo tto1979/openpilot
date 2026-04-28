@@ -98,7 +98,7 @@ class TorqueEstimator(ParameterEstimator):
     params = Params()
     params_cache = params.get("CarParamsPrevRoute")
     torque_cache = params.get("LiveTorqueParameters")
-    if params_cache is not None and torque_cache is not None and not params.get_bool("DisableLagLearning"):
+    if params_cache is not None and torque_cache is not None:
       try:
         with log.Event.from_bytes(torque_cache) as log_evt:
           cache_ltp = log_evt.liveTorqueParameters
@@ -157,9 +157,6 @@ class TorqueEstimator(ParameterEstimator):
     return slope, offset, friction_coeff
 
   def update_params(self, params):
-    if Params().get_bool("DisableLagLearning"):
-      return
-
     self.decay = min(self.decay + DT_MDL, MAX_FILTER_DECAY)
     for param, value in params.items():
       self.filtered_params[param].update(value)
