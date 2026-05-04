@@ -19,7 +19,6 @@ LongitudinalPlanSource = custom.LongitudinalPlanTOP.LongitudinalPlanSource
 class LongitudinalPlannerTOP:
   def __init__(self, CP: structs.CarParams):
     self.events = Events()
-    self.resolver = SpeedLimitResolver()
     self.accel_controller = AccelController()
     self.scc = SmartCruiseControl()
     self.resolver = SpeedLimitResolver()
@@ -28,7 +27,18 @@ class LongitudinalPlannerTOP:
 
     self.output_v_target = 0.
     self.output_a_target = 0.
-  def update_targets(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
+
+  def update(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
+    self.events.clear()
+
+    if hasattr(sm, 'updated') and sm.updated['carState']:
+      self.accel_controller.update(sm['carState'])
+    else:
+      self.accel_controller.update()
+
+    return self._update_targets(sm, v_ego, a_ego, v_cruise)
+
+  def _update_targets(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
     CS = sm['carState']
     v_cruise_cluster_kph = min(CS.vCruiseCluster, V_CRUISE_MAX)
     v_cruise_cluster = v_cruise_cluster_kph * CV.KPH_TO_MS
@@ -48,7 +58,7 @@ class LongitudinalPlannerTOP:
                     self.resolver.speed_limit_final_last, has_speed_limit, self.resolver.distance, self.events)
 
     targets = {
-      LongitudinalPlanSource.cruise: (v_cruise, a_ego),
+      LongitudinalPlanSource.cruise: (v_cruise, 0.),
       LongitudinalPlanSource.sccVision: (self.scc.vision.output_v_target, self.scc.vision.output_a_target),
       LongitudinalPlanSource.sccMap: (self.scc.map.output_v_target, self.scc.map.output_a_target),
       LongitudinalPlanSource.speedLimitAssist: (self.sla.output_v_target, self.sla.output_a_target),
@@ -57,15 +67,6 @@ class LongitudinalPlannerTOP:
     self.source = min(targets, key=lambda k: targets[k][0])
     self.output_v_target, self.output_a_target = targets[self.source]
     return self.output_v_target, self.output_a_target
-
-  def update(self, sm: messaging.SubMaster) -> None:
-    self.events.clear()
-
-    if hasattr(sm, 'updated') and sm.updated['carState']:
-      carstate = sm['carState']
-      self.accel_controller.update(carstate)
-    else:
-      self.accel_controller.update()
 
   def publish_longitudinal_plan_top(self, sm: messaging.SubMaster, pm: messaging.PubMaster) -> None:
     plan_top_send = messaging.new_message('longitudinalPlanTOP')

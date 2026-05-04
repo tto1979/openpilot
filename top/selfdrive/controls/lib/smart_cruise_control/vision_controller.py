@@ -71,7 +71,10 @@ class SmartCruiseControlVision:
 
   def get_v_target_from_control(self) -> float:
     if self.is_active:
-      return max(self.v_target, MIN_V) + self.a_target * _NO_OVERSHOOT_TIME_HORIZON
+      if self.state == VisionState.entering:
+        return max(self.v_target, MIN_V) + self.a_target * _NO_OVERSHOOT_TIME_HORIZON
+      else:
+        return max(self.v_target, MIN_V)
 
     return V_CRUISE_UNSET
 
@@ -86,11 +89,12 @@ class SmartCruiseControlVision:
       rate_plan = np.array(np.abs(sm['modelV2'].orientationRate.z))
       vel_plan = np.array(sm['modelV2'].velocity.x)
 
-      self.current_lat_acc = self.v_ego ** 2 * abs(sm['controlsState'].curvature)
+      current_yaw_rate = abs(sm['modelV2'].orientationRate.z[0])
+      self.current_lat_acc = current_yaw_rate * max(self.v_ego, 0.1)
 
       # get the maximum lat accel from the model
       predicted_lat_accels = rate_plan * vel_plan
-      self.max_pred_lat_acc = np.amax(predicted_lat_accels)
+      self.max_pred_lat_acc = np.percentile(predicted_lat_accels, 97)
 
       # get the maximum curve based on the current velocity
       v_ego = max(self.v_ego, 0.1)  # ensure a value greater than 0 for calculations

@@ -94,7 +94,10 @@ class SmartCruiseControlMap:
     return V_CRUISE_UNSET
 
   def get_a_target_from_control(self) -> float:
-    return self.a_ego
+    if self.state == MapState.turning:
+      return TARGET_ACCEL
+
+    return 0.
 
   def update_params(self):
     if self.frame % int(PARAMS_UPDATE_PERIOD / DT_MDL) == 0:
