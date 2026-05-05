@@ -268,6 +268,7 @@ class LongitudinalMpc:
     self.reset()
     self.source = LongitudinalPlanSource.cruise
     self.accel_controller = AccelController()
+    self.toyota_tune = Params().get_bool("ToyotaTune")
 
   def reset(self):
     self.solver.reset()
@@ -316,7 +317,7 @@ class LongitudinalMpc:
     for i in range(N):
       self.solver.cost_set(i, 'Zl', Zl)
 
-  def set_weights(self, a_prevccel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0):
+  def set_weights(self, prev_accel_constraint=True, personality=log.LongitudinalPersonality.standard, v_lead0=0, v_lead1=0):
     jerk_factor = get_jerk_factor(personality)
     v_ego = self.x0[1]
     v_ego_bps = [0, 10]
@@ -327,7 +328,7 @@ class LongitudinalMpc:
     if (v_lead0 - v_ego >= 0) and (v_lead1 - v_ego >= 0):
       j_ego_v_ego = np.interp(v_ego, v_ego_bps, [.55, 1.])
       a_change_v_ego = np.interp(v_ego, v_ego_bps, [.55, 1.])
-    a_change_cost = A_CHANGE_COST if a_prevccel_constraint else 0
+    a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
     cost_weights = [X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, jerk_factor * a_change_cost * a_change_v_ego, jerk_factor * J_EGO_COST * j_ego_v_ego]
     constraint_cost_weights = [LIMIT_COST, LIMIT_COST, LIMIT_COST, DANGER_ZONE_COST]
     self.set_cost_weights(cost_weights, constraint_cost_weights)
@@ -380,7 +381,7 @@ class LongitudinalMpc:
     if self.downhill:
       t_follow += 0.5
 
-    if Params().get_bool("ToyotaTune") and not (self.CP.flags & ToyotaFlags.SMART_DSU):
+    if self.toyota_tune and not (self.CP.flags & ToyotaFlags.SMART_DSU):
       stop_distance += 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
