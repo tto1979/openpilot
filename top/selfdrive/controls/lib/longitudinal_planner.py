@@ -58,7 +58,7 @@ class LongitudinalPlannerTOP:
                     self.resolver.speed_limit_final_last, has_speed_limit, self.resolver.distance, self.events)
 
     targets = {
-      LongitudinalPlanSource.cruise: (v_cruise, 0.),
+      LongitudinalPlanSource.cruise: (v_cruise, a_ego),
       LongitudinalPlanSource.sccVision: (self.scc.vision.output_v_target, self.scc.vision.output_a_target),
       LongitudinalPlanSource.sccMap: (self.scc.map.output_v_target, self.scc.map.output_a_target),
       LongitudinalPlanSource.speedLimitAssist: (self.sla.output_v_target, self.sla.output_a_target),
