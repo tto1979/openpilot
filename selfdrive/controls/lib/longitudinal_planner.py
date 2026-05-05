@@ -15,6 +15,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 from openpilot.top.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlannerTOP
+from openpilot.top.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanSource as TopLongitudinalPlanSource
 
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
@@ -210,8 +211,6 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
     return x, v, a, j, throttle_prob
 
   def update(self, sm):
-    carstate = sm['carState']
-
     # standstill e2e
     v_ego = sm['carState'].vEgo
     red_light_detected = self.detect_traffic_light(sm, v_ego) if self.sng_e2e else False
@@ -326,7 +325,10 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
     # Get new v_cruise and a_desired from Smart Cruise Control and Speed Limit Assist.
     # LongitudinalPlannerTOP.update() handles: events.clear(), accel_controller.update(), and all target calculations.
-    v_cruise, self.a_desired = LongitudinalPlannerTOP.update(self, sm, self.v_desired_filter.x, self.a_desired, v_cruise)
+    v_cruise, a_target_top = LongitudinalPlannerTOP.update(self, sm, self.v_desired_filter.x, self.a_desired, v_cruise)
+
+    if self.source != TopLongitudinalPlanSource.cruise:
+      self.a_desired = a_target_top
 
     if force_slow_decel:
       v_cruise = 0.0
