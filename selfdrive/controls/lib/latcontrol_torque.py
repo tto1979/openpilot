@@ -227,6 +227,13 @@ class LatControlTorque(LatControl):
         torque_from_measurement = self.torque_from_nn(nnff_measurement_input)
         pid_log.error = torque_from_setpoint - torque_from_measurement
 
+        error_blend_factor = float(np.interp(abs(desired_lateral_accel), [1.0, 2.0], [0.0, 1.0]))
+        if error_blend_factor > 0.0:
+          nnff_error_input = [CS.vEgo, setpoint - measurement, lateral_jerk_setpoint - lateral_jerk_measurement, 0.0]
+          torque_from_error = self.torque_from_nn(nnff_error_input)
+          if sign(pid_log.error) == sign(torque_from_error) and abs(pid_log.error) < abs(torque_from_error):
+            pid_log.error = pid_log.error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor
+
         nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + past_lateral_accels_desired + future_planned_lateral_accels + past_rolls + future_rolls
         nn_torque = self.torque_from_nn(nn_input)
         scaled_nn_torque = nn_torque * self.torque_params.kf
