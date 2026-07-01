@@ -117,7 +117,7 @@ def get_stopped_equivalence_factor(v_lead, v_ego):
   # away, resulting in an early demand for acceleration.
   v_diff_offset = 0
   v_diff_offset_max = 10
-  speed_to_reach_max_v_diff_offset = 20 # in kp/h
+  speed_to_reach_max_v_diff_offset = 15 # in kp/h
   speed_to_reach_max_v_diff_offset = speed_to_reach_max_v_diff_offset * CV.KPH_TO_MS
   delta_speed = v_lead - v_ego
   if np.all(delta_speed > 0.3):
