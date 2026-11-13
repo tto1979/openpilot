@@ -1548,6 +1548,14 @@ NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
         <source>Use map data to estimate the appropriate speed to drive through turns ahead.</source>
         <translation>利用地圖資料計算前方轉彎處的合適車速進行減速。</translation>
     </message>
+    <message>
+        <source>Smooth Stops</source>
+        <translation>平滑煞停</translation>
+    </message>
+    <message>
+        <source>Eases off the brake in the final moments of a stop for a gentle landing. Planned braking is never softened. Requires openpilot longitudinal control.</source>
+        <translation>停車前的最後一刻會逐漸放鬆煞車，讓車子平穩停下。系統規劃的煞車力道不會因此減弱。需搭配 openpilot 縱向控制。</translation>
+    </message>
 </context>
 <context>
     <name>TogglesPanel</name>

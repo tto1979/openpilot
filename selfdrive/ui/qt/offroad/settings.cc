@@ -725,6 +725,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/road.png",
                                   this));
 
+  toggles.append(new ParamControl("SmoothStops",
+                                  tr("Smooth Stops"),
+                                  tr("Eases off the brake in the final moments of a stop for a gentle landing. Planned braking is never softened. Requires openpilot longitudinal control."),
+                                  "../assets/icons/road.png",
+                                  this));
+
   toggles.append(new ParamControl("NudgelessLaneChange",
                                   tr("Blinker Lane Change"),
                                   tr("Change lanes without the need to nudge the steering wheel first.\nDisabled: Need to nudge the steering wheel to change lanes.\nEnabled: Nudgeless.\nSpeed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above 35mph."),

@@ -1520,6 +1520,14 @@ NOTE: This will show &apos;Car Detected in Blindspot&apos; warning.</source>
         <source>Use map data to estimate the appropriate speed to drive through turns ahead.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Smooth Stops</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eases off the brake in the final moments of a stop for a gentle landing. Planned braking is never softened. Requires openpilot longitudinal control.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TogglesPanel</name>
