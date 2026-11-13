@@ -21,6 +21,10 @@ SPEED, ACCEL = 0, 1     # Kalman filter states enum
 
 # stationary qualification parameters
 V_EGO_STATIONARY = 4.   # no stationary object flag below this speed
+LOW_SPEED_LEAD_MIN_CNT = 20  # ~1s at 20Hz, Smooth Stops only: the unconfirmed low-speed override only trusts
+                             # tracks that were tracked in from a distance. Clutter / crossing traffic popping
+                             # up at close range would otherwise drive the settle lead floor to max braking.
+                             # Toggle off = 0 = stock.
 
 RADAR_TO_CENTER = 2.7   # (deprecated) RADAR is ~ 2.7m ahead from center of car
 RADAR_TO_CAMERA = 1.52  # RADAR is ~ 1.5m ahead from center of mesh frame
@@ -97,10 +101,10 @@ class Track:
       "radarTrackId": self.identifier,
     }
 
-  def potential_low_speed_lead(self, v_ego: float):
+  def potential_low_speed_lead(self, v_ego: float, min_cnt: int = 0):
     # stop for stuff in front of you and low speed, even without model confirmation
     # Radar points closer than 0.75, are almost always glitches on toyota radars
-    return abs(self.yRel) < 1.0 and (v_ego < V_EGO_STATIONARY) and (0.75 < self.dRel < 25)
+    return abs(self.yRel) < 1.0 and (v_ego < V_EGO_STATIONARY) and (0.75 < self.dRel < 25) and (self.cnt >= min_cnt)
 
   def is_potential_fcw(self, model_prob: float):
     return model_prob > .9
@@ -157,7 +161,7 @@ def get_RadarState_from_vision(lead_msg: capnp._DynamicStructReader, v_ego: floa
 
 
 def get_lead(v_ego: float, ready: bool, tracks: dict[int, Track], lead_msg: capnp._DynamicStructReader,
-             model_v_ego: float, low_speed_override: bool = True) -> dict[str, Any]:
+             model_v_ego: float, low_speed_override: bool = True, low_speed_min_cnt: int = 0) -> dict[str, Any]:
   # Determine leads, this is where the essential logic happens
   if len(tracks) > 0 and ready and lead_msg.prob > .5:
     track = match_vision_to_track(v_ego, lead_msg, tracks)
@@ -171,7 +175,7 @@ def get_lead(v_ego: float, ready: bool, tracks: dict[int, Track], lead_msg: capn
     lead_dict = get_RadarState_from_vision(lead_msg, v_ego, model_v_ego)
 
   if low_speed_override:
-    low_speed_tracks = [c for c in tracks.values() if c.potential_low_speed_lead(v_ego)]
+    low_speed_tracks = [c for c in tracks.values() if c.potential_low_speed_lead(v_ego, low_speed_min_cnt)]
     if len(low_speed_tracks) > 0:
       closest_track = min(low_speed_tracks, key=lambda c: c.dRel)
 
@@ -198,7 +202,15 @@ class RadarD:
 
     self.ready = False
 
+    self.params = Params()
+    self.frame = 0
+    self.low_speed_min_cnt = 0
+
   def update(self, sm: messaging.SubMaster, rr: car.RadarData):
+    if self.frame % int(1. / DT_MDL) == 0:
+      self.low_speed_min_cnt = LOW_SPEED_LEAD_MIN_CNT if self.params.get_bool("SmoothStops") else 0
+    self.frame += 1
+
     self.ready = sm.seen['modelV2']
     self.current_time = 1e-9*max(sm.logMonoTime.values())
 
@@ -239,7 +251,8 @@ class RadarD:
       model_v_ego = self.v_ego
     leads_v3 = sm['modelV2'].leadsV3
     if len(leads_v3) > 1:
-      self.radar_state.leadOne = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[0], model_v_ego, low_speed_override=True)
+      self.radar_state.leadOne = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[0], model_v_ego, low_speed_override=True,
+                                          low_speed_min_cnt=self.low_speed_min_cnt)
       self.radar_state.leadTwo = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[1], model_v_ego, low_speed_override=False)
 
   def publish(self, pm: messaging.PubMaster):
