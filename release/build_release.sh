@@ -16,6 +16,12 @@ if [ -z "$RELEASE_BRANCH" ]; then
   exit 1
 fi
 
+# prebuilt must be compiled on the comma device (larch64 + Adreno GPU for tinygrad DEV=QCOM)
+if [ ! -f /TICI ]; then
+  echo "build_release.sh must run on a comma device. From WSL use release/remote_release.sh"
+  exit 1
+fi
+
 
 # set git identity
 source $DIR/identity.sh
@@ -25,19 +31,26 @@ rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 git init
-git remote add origin git@github.com:commaai/openpilot.git
+git remote add origin ${RELEASE_REMOTE:-https://github.com/tto1979/openpilot.git}
 git checkout --orphan $RELEASE_BRANCH
 
 # do the files copy
 echo "[-] copying files T=$SECONDS"
 cd $SOURCE_DIR
-cp -pR --parents $(./release/release_files.py) $BUILD_DIR/
+# files_common adds back NNFF lat_models, which release_files.py blacklists
+cp -pR --parents $(./release/release_files.py; cat release/files_*) $BUILD_DIR/
 
 # in the directory
 cd $BUILD_DIR
 
 rm -f panda/board/obj/panda.bin.signed
 rm -f panda/board/obj/panda_h7.bin.signed
+
+# make sure LFS objects were pulled, not just pointer files
+if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_vision.onnx; then
+  echo "driving_vision.onnx is an LFS pointer, run 'git lfs pull' in $SOURCE_DIR first"
+  exit 1
+fi
 
 VERSION=$(cat common/version.h | awk -F[\"-]  '{print $2}')
 echo "[-] committing version $VERSION T=$SECONDS"
@@ -57,9 +70,10 @@ else
 fi
 
 # Ensure no submodules in release
-if test "$(git submodule--helper list | wc -l)" -gt "0"; then
+# (git submodule--helper list was removed in git 2.38)
+if [ -n "$(git ls-files -s | awk '$1 == "160000"')" ]; then
   echo "submodules found:"
-  git submodule--helper list
+  git ls-files -s | awk '$1 == "160000"'
   exit 1
 fi
 git submodule status
@@ -72,8 +86,8 @@ find . -name '*.pyc' -delete
 find . -name 'moc_*' -delete
 find . -name '__pycache__' -delete
 rm -rf .sconsign.dblite Jenkinsfile release/
-rm selfdrive/modeld/models/driving_vision.onnx
-rm selfdrive/modeld/models/driving_policy.onnx
+rm -f selfdrive/modeld/models/driving_vision.onnx
+rm -f selfdrive/modeld/models/driving_policy.onnx
 
 find third_party/ -name '*x86*' -exec rm -r {} +
 find third_party/ -name '*Darwin*' -exec rm -r {} +
@@ -89,12 +103,22 @@ touch prebuilt
 git add -f .
 git commit --amend -m "openpilot v$VERSION"
 
-# Run tests
-cd $BUILD_DIR
-RELEASE=1 pytest -n0 -s selfdrive/test/test_onroad.py
-#pytest selfdrive/car/tests/test_car_interfaces.py
+# GitHub rejects files over 100MB
+BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M)"
+if [ -n "$BIG_FILES" ]; then
+  echo "Found files exceeding GitHub's 100MB limit:"
+  echo "$BIG_FILES"
+  exit 1
+fi
 
-if [ ! -z "$RELEASE_BRANCH" ]; then
+# Run tests (opt-in)
+if [ -n "$RUN_TESTS" ]; then
+  cd $BUILD_DIR
+  RELEASE=1 pytest -n0 -s selfdrive/test/test_onroad.py
+fi
+
+# Push from device (opt-in). Default flow pushes from WSL via release/remote_release.sh
+if [ -n "$PUSH" ]; then
   echo "[-] pushing release T=$SECONDS"
   git push -f origin $RELEASE_BRANCH:$RELEASE_BRANCH
 fi
