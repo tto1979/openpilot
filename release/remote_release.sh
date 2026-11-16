@@ -22,6 +22,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 case "${1:-}" in
   build)
     if ! ssh "$DEVICE" "SRC_BRANCH='$SRC_BRANCH' RELEASE_BRANCH='$RELEASE_BRANCH' SRC_REPO='$SRC_REPO' bash -s" <<'EOF'
+source /etc/profile
 set -ex
 git lfs version > /dev/null || { echo "git-lfs not found on device"; exit 1; }
 
