@@ -12,8 +12,8 @@
 set -euo pipefail
 
 DEVICE="${DEVICE:?set DEVICE, e.g. DEVICE=comma@192.168.1.50}"
-SRC_BRANCH="${SRC_BRANCH:-cd210-c3}"
-RELEASE_BRANCH="${RELEASE_BRANCH:-cd210-c3-prebuilt}"
+SRC_BRANCH="${SRC_BRANCH:-tqb}"
+RELEASE_BRANCH="${RELEASE_BRANCH:-tqb-prebuilt}"
 SRC_REPO="${SRC_REPO:-https://github.com/tto1979/openpilot.git}"
 PUSH_REMOTE="${PUSH_REMOTE:-git@github.com:tto1979/openpilot.git}"
 
