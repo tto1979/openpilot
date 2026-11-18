@@ -15,16 +15,41 @@ import sys
 import pickle
 import subprocess
 import tempfile
+import time
 import numpy as np
 # same defaults as tinygrad's examples/openpilot/compile3.py
 for k, v in {"FLOAT16": "1", "IMAGE": "2", "NOLOCALS": "1", "JIT_BATCH_SIZE": "0"}.items():
   os.environ.setdefault(k, v)
 
 from tinygrad import Tensor, TinyJit, Device, GlobalCounters, dtypes
+from tinygrad.device import CompileError
 from tinygrad.dtype import _to_np_dtype
+from tinygrad.engine import realize
 from tinygrad.frontend.onnx import OnnxRunner
+from tinygrad.helpers import BEAM, Context, getenv
 
 VISION_INPUTS = ('img', 'big_img')
+
+# The C3's Adreno OpenCL compiler crashes on some of the hand-optimized kernels of the newer models
+# ("QGPURegAlloc.cpp ... Didn't check all interferences"). Those kernels get a BEAM search instead, which only keeps
+# variants that compile; every other kernel keeps the normal optimizations. FALLBACK_BEAM=0 turns this off.
+FALLBACK_BEAM = getenv("FALLBACK_BEAM", 2)
+_orig_get_program = realize.get_program
+fallback_kernels: list[str] = []
+
+def _get_program_with_fallback(ast, renderer=None, opts=None):
+  prg = _orig_get_program(ast, renderer, opts)
+  if FALLBACK_BEAM and BEAM.value == 0 and opts is None:
+    try:
+      Device[prg.device].compiler.compile_cached(prg.src)  # cached, CompiledRunner reuses the result
+    except CompileError:
+      print(f"*** {prg.name} doesn't compile on {prg.device}, BEAM={FALLBACK_BEAM} searching it instead", flush=True)
+      with Context(BEAM=FALLBACK_BEAM):
+        prg = _orig_get_program(ast, renderer, opts)
+      fallback_kernels.append(prg.name)
+  return prg
+
+realize.get_program = _get_program_with_fallback  # get_runner looks it up at call time
 
 
 def host_dtype(dt):
@@ -83,7 +108,7 @@ def compile_model(onnx_path, output_path):
     ret = run_jit(**make_inputs(input_specs, npy_names, state_pairs, 42)).numpy()
     if i == 1:
       test_val = np.copy(ret)
-  print(f"captured {len(run_jit.captured.jit_cache)} kernels")
+  print(f"captured {len(run_jit.captured.jit_cache)} kernels, {len(fallback_kernels)} compiled with the BEAM fallback")
   np.testing.assert_equal(test_val, ret, "JIT run failed")
   # the history has to carry over between runs: once the queues fill up (frames t-4 and t both hold the input), the
   # output with the same inputs has to change
@@ -110,9 +135,17 @@ def compile_model(onnx_path, output_path):
 def verify(pkl_path, expected_path):
   with open(pkl_path, "rb") as f:
     art = pickle.load(f)
-  out = art['run'](**make_inputs(art['input_specs'], art['npy_inputs'], art['state_pairs'], 42)).numpy()
-  np.testing.assert_equal(out, np.load(expected_path), "pickled JIT run failed")
+  inputs = make_inputs(art['input_specs'], art['npy_inputs'], art['state_pairs'], 42)
+  np.testing.assert_equal(art['run'](**inputs).numpy(), np.load(expected_path), "pickled JIT run failed")
   print("pickled jit validated")
+  # modeld has 50 ms per frame at 20 Hz
+  tms = []
+  for _ in range(30):
+    st = time.perf_counter()
+    art['run'](**inputs).numpy()
+    tms.append((time.perf_counter() - st) * 1e3)
+  tms = sorted(tms[5:])
+  print(f"model run time: median {tms[len(tms)//2]:.1f} ms, max {tms[-1]:.1f} ms")
 
 
 if __name__ == "__main__":
