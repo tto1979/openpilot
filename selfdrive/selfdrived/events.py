@@ -281,6 +281,16 @@ def audio_feedback_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubM
     priority=Priority.LOW)
 
 
+def too_distracted_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
+  if sm['driverMonitoringState'].lockout:
+    mins_left = sm['driverMonitoringState'].lockoutMinutesRemaining
+    alert = NoEntryAlert(f"{mins_left} 分鐘後才能啟用", alert_text_1="注意力分散程度過高")
+  else:
+    alert = NoEntryAlert("請專注駕駛後再啟用")
+  alert.priority = Priority.HIGH
+  return alert
+
+
 # *** debug alerts ***
 
 def out_of_space_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
@@ -556,7 +566,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.prompt, 1.8),
   },
 
-  EventName.preDriverDistracted: {
+  EventName.driverDistracted1: {
     ET.PERMANENT: Alert(
       "注意",
       "",
@@ -564,7 +574,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
   },
 
-  EventName.promptDriverDistracted: {
+  EventName.driverDistracted2: {
     ET.PERMANENT: Alert(
       "注意",
       "偵測到駕駛分心",
@@ -572,7 +582,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.promptDistracted, .1),
   },
 
-  EventName.driverDistracted: {
+  EventName.driverDistracted3: {
     ET.PERMANENT: Alert(
       "立刻手動接管車輛",
       "駕駛分心",
@@ -580,7 +590,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
   },
 
-  EventName.preDriverUnresponsive: {
+  EventName.driverUnresponsive1: {
     ET.PERMANENT: Alert(
       "手握方向盤：未檢測到人臉",
       "",
@@ -588,7 +598,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .1),
   },
 
-  EventName.promptDriverUnresponsive: {
+  EventName.driverUnresponsive2: {
     ET.PERMANENT: Alert(
       "手握方向盤",
       "駕駛無反應",
@@ -596,7 +606,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.promptDistracted, .1),
   },
 
-  EventName.driverUnresponsive: {
+  EventName.driverUnresponsive3: {
     ET.PERMANENT: Alert(
       "立即手動接管車輛",
       "駕駛無反應",
@@ -833,7 +843,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   EventName.tooDistracted: {
-    ET.NO_ENTRY: NoEntryAlert("注意力分散程度過高"),
+    ET.NO_ENTRY: too_distracted_alert,
   },
 
   EventName.excessiveActuation: {

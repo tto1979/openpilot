@@ -1,6 +1,7 @@
 import numpy as np
 import pyray as rl
 from dataclasses import dataclass
+from cereal import log
 from openpilot.selfdrive.ui.ui_state import ui_state, UI_BORDER_SIZE
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
@@ -115,7 +116,7 @@ class DriverStateRenderer(Widget):
 
     # Get monitoring state
     dm_state = sm["driverMonitoringState"]
-    self.is_active = dm_state.isActiveMode
+    self.is_active = dm_state.activePolicy == log.DriverMonitoringState.MonitoringPolicy.vision
     self.is_rhd = dm_state.isRHD
 
     # Update fade state (smoother transition between active/inactive)
