@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 import os
-from openpilot.system.hardware import TICI
-os.environ['DEV'] = 'QCOM' if TICI else 'CPU'
-USBGPU = "USBGPU" in os.environ
-if USBGPU:
-  os.environ['DEV'] = 'AMD'
-  os.environ['AMD_IFACE'] = 'USB'
+import base64
+import math
+from collections.abc import Callable
+from tinygrad.device import Buffer
+from tinygrad.dtype import DType, dtypes
+from tinygrad.engine.jit import CapturedJit
+from tinygrad.engine.realize import compile_linear, lower_and_compile
+from tinygrad.helpers import round_up
 from tinygrad.tensor import Tensor
-from tinygrad.dtype import dtypes
+from tinygrad.uop.ops import UOp
 import time
 import pickle
 import numpy as np
 import cereal.messaging as messaging
 from cereal import car, log
-from pathlib import Path
 from cereal.messaging import PubMaster, SubMaster
 from msgq.visionipc import VisionIpcClient, VisionStreamType, VisionBuf
 from opendbc.car.car_helpers import get_demo_car_params
@@ -23,21 +24,20 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.transformations.camera import DEVICE_CAMERAS
 from openpilot.common.transformations.model import get_warp_matrix
+from openpilot.system.camerad.cameras.nv12_info import get_nv12_info
 from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
 from openpilot.selfdrive.controls.lib.drive_helpers import get_accel_from_plan, smooth_value, get_curvature_from_plan
 from openpilot.selfdrive.modeld.parse_model_outputs import Parser
 from openpilot.selfdrive.modeld.fill_model_msg import fill_model_msg, fill_pose_msg, PublishState
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
-from openpilot.selfdrive.modeld.models.commonmodel_pyx import DrivingModelFrame, CLContext
-from openpilot.selfdrive.modeld.runners.tinygrad_helpers import qcom_tensor_from_opencl_address
+from openpilot.selfdrive.modeld.helpers import MODELS_DIR, load_oob
 from top.selfdrive.controls.lib.road_edge_detector import RoadEdgeDetector
 
 
 PROCESS_NAME = "selfdrive.modeld.modeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
-MODEL_PKL_PATH = Path(__file__).parent / 'models/driving_supercombo_tinygrad.pkl'  # built by compile_supercombo.py
-MODEL_METADATA_PATH = Path(__file__).parent / 'models/driving_supercombo_metadata.pkl'
+MODEL_PKL_PATH = MODELS_DIR / 'driving_tinygrad.pkl'
 
 LAT_SMOOTH_SECONDS = 0.0
 LONG_SMOOTH_SECONDS = 0.3
@@ -82,90 +82,97 @@ class FrameMeta:
     if vipc is not None:
       self.frame_id, self.timestamp_sof, self.timestamp_eof = vipc.frame_id, vipc.timestamp_sof, vipc.timestamp_eof
 
+def input_view(buffer: Buffer, shape: tuple[int, ...], dtype: DType, offset: int) -> Tensor:
+  view = buffer.view(math.prod(shape) * dtype.itemsize, offset).ensure_allocated()
+  return Tensor(UOp.from_buffer(view, dtype)).reshape(shape)
+
+
+def compile_copy(tensor: Tensor) -> Callable[[], Tensor]:
+  jit = CapturedJit(tensor, compile_linear(tensor.schedule_linear()), [], [])
+  return lambda: jit([], {})
+
+
 class ModelState:
-  frames: dict[str, DrivingModelFrame]
-  inputs: dict[str, np.ndarray]
-  output: np.ndarray
   prev_desire: np.ndarray  # for tracking the rising edge of the pulse
 
-  def __init__(self, context: CLContext):
-    # stateful combined model (upstream #38916): the image/desire/feature history queues live inside the ONNX
-    with open(MODEL_METADATA_PATH, 'rb') as f:
-      model_metadata = pickle.load(f)
-      self.output_slices = model_metadata['output_slices']
-      model_output_size = model_metadata['output_shapes']['outputs'][1]
+  def __init__(self, cam_w: int, cam_h: int):
+    # stateful combined model: the image/desire/feature history queues live inside the ONNX (state_* -> next_state_*)
+    jits = load_oob(MODEL_PKL_PATH)
+    self.model_device = jits['input_specs']['new_img'][2]
+    self.input_shapes = {name: (shape, np.dtype(dtype)) for name, (shape, dtype, _) in jits['input_specs'].items()}
+    self.state_pairs = {name: f'next_{name}' for name in self.input_shapes if f'next_{name}' in jits['metadata']['output_shapes']}
+    self.vision_input_names = ('img', 'big_img')
+    self.output_slices = pickle.loads(base64.b64decode(jits['metadata']['metadata']['output_slices']))
 
-    with open(MODEL_PKL_PATH, "rb") as f:
-      model = pickle.load(f)
-    self.model_run = model['run']
-    input_specs = {name: (tuple(shape), np.dtype(dtype)) for name, (shape, dtype) in model['input_specs'].items()}
-    self.vision_input_names = model['vision_inputs']  # ['img', 'big_img']: 12 channels = frames [t-4, t] from DrivingModelFrame
-    self.vision_input_shapes = {k: input_specs[k][0] for k in self.vision_input_names}
-
-    self.frames = {name: DrivingModelFrame(context, ModelConstants.MODEL_RUN_FREQ//ModelConstants.MODEL_CONTEXT_FREQ) for name in self.vision_input_names}
     self.prev_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
 
-    # desire, traffic_convention, action_t
-    self.numpy_inputs = {k: np.zeros(input_specs[k][0], dtype=input_specs[k][1]) for k in model['npy_inputs']}
-    self.policy_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
-    # history queues, kept on the device and updated in place by the JIT on every run
-    self.state = {k: Tensor(np.zeros(input_specs[k][0], dtype=input_specs[k][1])).realize() for k in model['state_pairs']}
-
-    # img buffers are managed in openCL transform code
-    self.vision_inputs: dict[str, Tensor] = {}
-    self.output = np.zeros(model_output_size, dtype=np.float32)
+    stride, y_height, uv_height, _ = get_nv12_info(cam_w, cam_h)
+    self.frame_copy_size = stride * (y_height + uv_height)
+    self.pack_inputs()
+    with open(MODELS_DIR / f'driving_warp_{cam_w}x{cam_h}_tinygrad.pkl', 'rb') as f:
+      self.run_warp = pickle.load(f)['run']
+    self.run_warp.captured._linear = lower_and_compile(self.run_warp.captured._linear)
+    self.run_model = jits['run']
+    self.run_model.captured._linear = lower_and_compile(self.run_model.captured._linear)
+    self.outputs = {name: Tensor(np.zeros(shape, dtype=dtype), device=device).realize() for name, (shape, dtype, device) in jits['output_specs'].items()}
+    # the next_state_* outputs are written straight into the state inputs
+    for name, next_name in self.state_pairs.items():
+      state = self.input_queues[name]
+      self.outputs[next_name] = input_view(state._buffer(), state.shape, state.dtype, 0)
+    self.copy_outputs = compile_copy(self.outputs['outputs'].to('CPU'))
     self.parser = Parser()
 
+  def pack_inputs(self) -> None:
+    # pack the host inputs (transforms, desire, traffic_convention, action_t and both frames) into one upload
+    self.input_queues = {name: Tensor(np.zeros(shape, dtype=dtype), device=self.model_device).realize()
+                         for name, (shape, dtype) in self.input_shapes.items() if name in self.state_pairs}
+    shapes = {'tfm': (2, 3, 3)} | {name: shape for name, (shape, _) in self.input_shapes.items()
+                                   if name not in self.state_pairs and name != 'new_img'}
+    npy_size = sum(round_up(math.prod(shape) * 4, 128) for shape in shapes.values())
+    self.packed_input = np.zeros(npy_size + 2 * self.frame_copy_size, dtype=np.uint8)
+    self.input_host = Tensor(self.packed_input, device='NPY')
+    self.input_device = self.input_host.to(self.model_device)
+    self.copy_inputs = compile_copy(self.input_device)
+    self.copy_inputs()
+    self.npy = {}
+    offset = 0
+    for name, shape in shapes.items():
+      self.npy[name] = np.ndarray(shape, dtype=np.float32, buffer=self.packed_input, offset=offset)
+      self.input_queues[name] = input_view(self.input_device._buffer(), shape, dtypes.float32, offset)
+      offset += round_up(self.npy[name].nbytes, 128)
+    self.frames = self.packed_input[npy_size:].reshape(2, self.frame_copy_size)
+    self.warp_inputs = {'input_frame': input_view(self.input_device._buffer(), self.frames.shape, dtypes.uint8, npy_size),
+                        'M_inv': self.input_queues.pop('tfm')}
+
   def slice_outputs(self, model_outputs: np.ndarray, output_slices: dict[str, slice]) -> dict[str, np.ndarray]:
-    parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
-    return parsed_model_outputs
+    return {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
 
   def run(self, bufs: dict[str, VisionBuf], transforms: dict[str, np.ndarray],
-                inputs: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+          inputs: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    for i, key in enumerate(self.vision_input_names):
+      np.copyto(self.frames[i], np.frombuffer(bufs[key].data, dtype=np.uint8, count=self.frame_copy_size))
+      self.npy['tfm'][i] = transforms[key]
+
     # Model decides when action is completed, so desire input is just a pulse triggered on rising edge
     inputs['desire_pulse'][0] = 0
-    new_desire = np.where(inputs['desire_pulse'] - self.prev_desire > .99, inputs['desire_pulse'], 0)
+    self.npy['desire'][:] = np.where(inputs['desire_pulse'] - self.prev_desire > .99, inputs['desire_pulse'], 0)
     self.prev_desire[:] = inputs['desire_pulse']
+    self.npy['traffic_convention'][:] = inputs['traffic_convention']
+    self.npy['action_t'][:] = inputs['action_t']
 
-    imgs_cl = {name: self.frames[name].prepare(bufs[name], transforms[name].flatten()) for name in self.vision_input_names}
-
-    if TICI and not USBGPU:
-      # The imgs tensors are backed by opencl memory, only need init once
-      for key in imgs_cl:
-        if key not in self.vision_inputs:
-          self.vision_inputs[key] = qcom_tensor_from_opencl_address(imgs_cl[key].mem_address, self.vision_input_shapes[key], dtype=dtypes.uint8)
-    else:
-      for key in imgs_cl:
-        frame_input = self.frames[key].buffer_from_cl(imgs_cl[key]).reshape(self.vision_input_shapes[key])
-        self.vision_inputs[key] = Tensor(frame_input, dtype=dtypes.uint8).realize()
-
-    self.numpy_inputs['desire'][:] = new_desire.reshape(self.numpy_inputs['desire'].shape)
-    self.numpy_inputs['traffic_convention'][:] = inputs['traffic_convention']
-    self.numpy_inputs['action_t'][:] = inputs['action_t']
-
-    self.output = self.model_run(**self.vision_inputs, **self.policy_inputs, **self.state).contiguous().realize().uop.base.buffer.numpy()
-    outputs_dict = self.parser.parse_outputs(self.slice_outputs(self.output, self.output_slices))
+    self.copy_inputs()
+    self.input_queues['new_img'] = self.run_warp(**self.warp_inputs)
+    self.run_model(output_buffers=self.outputs, **self.input_queues)
+    model_output = self.copy_outputs().numpy()[0]
+    outputs_dict = self.parser.parse_outputs(self.slice_outputs(model_output, self.output_slices))
 
     if SEND_RAW_PRED:
-      outputs_dict['raw_pred'] = self.output.copy()
-
+      outputs_dict['raw_pred'] = model_output.copy()
     return outputs_dict
 
 
 def main(demo=False):
   cloudlog.warning("modeld init")
-
-  if not USBGPU:
-    # USB GPU currently saturates a core so can't do this yet,
-    # also need to move the aux USB interrupts for good timings
-    config_realtime_process(7, 54)
-
-  st = time.monotonic()
-  cloudlog.warning("setting up CL context")
-  cl_context = CLContext()
-  cloudlog.warning("CL context ready; loading model")
-  model = ModelState(cl_context)
-  cloudlog.warning(f"models loaded in {time.monotonic() - st:.1f}s, modeld starting")
 
   # visionipc clients
   while True:
@@ -177,8 +184,8 @@ def main(demo=False):
     time.sleep(.1)
 
   vipc_client_main_stream = VisionStreamType.VISION_STREAM_WIDE_ROAD if main_wide_camera else VisionStreamType.VISION_STREAM_ROAD
-  vipc_client_main = VisionIpcClient("camerad", vipc_client_main_stream, True, cl_context)
-  vipc_client_extra = VisionIpcClient("camerad", VisionStreamType.VISION_STREAM_WIDE_ROAD, False, cl_context)
+  vipc_client_main = VisionIpcClient("camerad", vipc_client_main_stream, True)
+  vipc_client_extra = VisionIpcClient("camerad", VisionStreamType.VISION_STREAM_WIDE_ROAD, False)
   cloudlog.warning(f"vision stream set up, main_wide_camera: {main_wide_camera}, use_extra_client: {use_extra_client}")
 
   while not vipc_client_main.connect(False):
@@ -186,9 +193,18 @@ def main(demo=False):
   while use_extra_client and not vipc_client_extra.connect(False):
     time.sleep(0.1)
 
-  cloudlog.warning(f"connected main cam with buffer size: {vipc_client_main.buffer_len} ({vipc_client_main.width} x {vipc_client_main.height})")
+  cam_w, cam_h = vipc_client_main.width, vipc_client_main.height
+  assert cam_w is not None and cam_h is not None
+  cloudlog.warning(f"connected main cam with buffer size: {vipc_client_main.buffer_len} ({cam_w} x {cam_h})")
   if use_extra_client:
     cloudlog.warning(f"connected extra cam with buffer size: {vipc_client_extra.buffer_len} ({vipc_client_extra.width} x {vipc_client_extra.height})")
+
+  st = time.monotonic()
+  cloudlog.warning("loading model")
+  model = ModelState(cam_w, cam_h)
+  cloudlog.warning(f"models loaded in {time.monotonic() - st:.1f}s, modeld starting")
+
+  config_realtime_process(7, 54)
 
   # messaging
   pm = PubMaster(["modelV2", "drivingModelData", "cameraOdometry", "modelExt"])

@@ -9,9 +9,12 @@ from openpilot.common.transformations.camera import DEVICE_CAMERAS
 from openpilot.common.realtime import DT_MDL
 from openpilot.system.manager.process_config import managed_processes
 from openpilot.selfdrive.test.process_replay.vision_meta import meta_from_camera_state
+from openpilot.system.camerad.cameras.nv12_info import get_nv12_info
 
 CAM = DEVICE_CAMERAS[("tici", "ar0231")].fcam
-IMG = np.zeros(int(CAM.width*CAM.height*(3/2)), dtype=np.uint8)
+# modeld's tinygrad warps expect camerad's NV12 layout (padded stride and planes)
+STRIDE, Y_HEIGHT, _, BUF_SIZE = get_nv12_info(CAM.width, CAM.height)
+IMG = np.zeros(BUF_SIZE, dtype=np.uint8)
 IMG_BYTES = IMG.flatten().tobytes()
 
 
@@ -19,9 +22,8 @@ class TestModeld:
 
   def setup_method(self):
     self.vipc_server = VisionIpcServer("camerad")
-    self.vipc_server.create_buffers(VisionStreamType.VISION_STREAM_ROAD, 40, CAM.width, CAM.height)
-    self.vipc_server.create_buffers(VisionStreamType.VISION_STREAM_DRIVER, 40, CAM.width, CAM.height)
-    self.vipc_server.create_buffers(VisionStreamType.VISION_STREAM_WIDE_ROAD, 40, CAM.width, CAM.height)
+    for stream in (VisionStreamType.VISION_STREAM_ROAD, VisionStreamType.VISION_STREAM_DRIVER, VisionStreamType.VISION_STREAM_WIDE_ROAD):
+      self.vipc_server.create_buffers_with_sizes(stream, 40, CAM.width, CAM.height, BUF_SIZE, STRIDE, STRIDE * Y_HEIGHT)
     self.vipc_server.start_listener()
     Params().put("CarParams", get_demo_car_params().to_bytes())
 
