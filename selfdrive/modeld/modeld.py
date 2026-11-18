@@ -88,7 +88,7 @@ def input_view(buffer: Buffer, shape: tuple[int, ...], dtype: DType, offset: int
 
 
 def compile_copy(tensor: Tensor) -> Callable[[], Tensor]:
-  jit = CapturedJit(tensor, compile_linear(tensor.schedule_linear()), [], [])
+  jit: CapturedJit[Tensor] = CapturedJit(tensor, compile_linear(tensor.schedule_linear()), [], [])
   return lambda: jit([], {})
 
 
@@ -118,7 +118,7 @@ class ModelState:
     # the next_state_* outputs are written straight into the state inputs
     for name, next_name in self.state_pairs.items():
       state = self.input_queues[name]
-      self.outputs[next_name] = input_view(state._buffer(), state.shape, state.dtype, 0)
+      self.outputs[next_name] = input_view(state._buffer(), self.input_shapes[name][0], state.dtype, 0)
     self.copy_outputs = compile_copy(self.outputs['outputs'].to('CPU'))
     self.parser = Parser()
 
