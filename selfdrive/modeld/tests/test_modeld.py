@@ -76,7 +76,7 @@ class TestModeld:
 
   def test_dropped_frames(self):
     """
-      modeld should only run on consecutive road frames
+      modeld runs on every road frame, also right after dropped ones (the history queues live inside the model)
     """
     frame_id = -1
     road_frames = list()
@@ -89,8 +89,7 @@ class TestModeld:
         road_frames.append(n)
       self._wait()
 
-      if len(road_frames) < 3 or road_frames[-1] - road_frames[-2] == 1:
-        frame_id = road_frames[-1]
+      frame_id = road_frames[-1]
 
       mdl = self.sm['modelV2']
       odo = self.sm['cameraOdometry']
