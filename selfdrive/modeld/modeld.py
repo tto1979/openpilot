@@ -36,10 +36,8 @@ from top.selfdrive.controls.lib.road_edge_detector import RoadEdgeDetector
 PROCESS_NAME = "selfdrive.modeld.modeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
-VISION_PKL_PATH = Path(__file__).parent / 'models/driving_vision_tinygrad.pkl'
-POLICY_PKL_PATH = Path(__file__).parent / 'models/driving_policy_tinygrad.pkl'
-VISION_METADATA_PATH = Path(__file__).parent / 'models/driving_vision_metadata.pkl'
-POLICY_METADATA_PATH = Path(__file__).parent / 'models/driving_policy_metadata.pkl'
+MODEL_PKL_PATH = Path(__file__).parent / 'models/driving_supercombo_tinygrad.pkl'
+MODEL_METADATA_PATH = Path(__file__).parent / 'models/driving_supercombo_metadata.pkl'
 
 LAT_SMOOTH_SECONDS = 0.0
 LONG_SMOOTH_SECONDS = 0.3
@@ -48,18 +46,24 @@ MIN_LAT_CONTROL_SPEED = 0.3
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
                           lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
-    plan = model_output['plan'][0]
-    desired_accel, should_stop = get_accel_from_plan(plan[:,Plan.VELOCITY][:,0],
-                                                     plan[:,Plan.ACCELERATION][:,0],
-                                                     ModelConstants.T_IDXS,
-                                                     action_t=long_action_t)
+    if 'action' not in model_output:
+      plan = model_output['plan'][0]
+      desired_accel, should_stop = get_accel_from_plan(plan[:,Plan.VELOCITY][:,0],
+                                                       plan[:,Plan.ACCELERATION][:,0],
+                                                       ModelConstants.T_IDXS,
+                                                       action_t=long_action_t)
+      desired_curvature = get_curvature_from_plan(plan[:,Plan.T_FROM_CURRENT_EULER][:,2],
+                                                  plan[:,Plan.ORIENTATION_RATE][:,2],
+                                                  ModelConstants.T_IDXS,
+                                                  v_ego,
+                                                  lat_action_t)
+    else:
+      # models that output the action directly: [lateral accel, longitudinal accel]
+      desired_accel = model_output['action'][0,1]
+      desired_curvature = model_output['action'][0,0] / (max(1.0, v_ego))**2
+      should_stop = (v_ego < 0.3 and desired_accel < 0.1)
     desired_accel = smooth_value(desired_accel, prev_action.desiredAcceleration, LONG_SMOOTH_SECONDS)
 
-    desired_curvature = get_curvature_from_plan(plan[:,Plan.T_FROM_CURRENT_EULER][:,2],
-                                                plan[:,Plan.ORIENTATION_RATE][:,2],
-                                                ModelConstants.T_IDXS,
-                                                v_ego,
-                                                lat_action_t)
     if v_ego > MIN_LAT_CONTROL_SPEED:
       desired_curvature = smooth_value(desired_curvature, prev_action.desiredCurvature, LAT_SMOOTH_SECONDS)
     else:
@@ -132,8 +136,9 @@ class InputQueues:
           # any pulse within interval counts
           out[k] = self.q[k].reshape((shape[0], shape[1] * self.model_fps // self.env_fps, self.env_fps // self.model_fps, -1)).max(axis=2)
         else:
-          idxs = np.arange(-1, -shape[1], -self.env_fps // self.model_fps)[::-1]
-          out[k] = self.q[k][:, idxs]
+          # past values only, oldest first, one per model frame: with features_buffer (1, 24, 512) this is
+          # frames [t-96, t-92, ..., t-4]; the supercombo appends the current frame's feature (t) itself
+          out[k] = self.q[k][:, ::self.env_fps // self.model_fps]
       return out
 
 class ModelState:
@@ -143,18 +148,16 @@ class ModelState:
   prev_desire: np.ndarray  # for tracking the rising edge of the pulse
 
   def __init__(self, context: CLContext):
-    with open(VISION_METADATA_PATH, 'rb') as f:
-      vision_metadata = pickle.load(f)
-      self.vision_input_shapes =  vision_metadata['input_shapes']
-      self.vision_input_names = list(self.vision_input_shapes.keys())
-      self.vision_output_slices = vision_metadata['output_slices']
-      vision_output_size = vision_metadata['output_shapes']['outputs'][1]
+    # single combined model (vision + policy): img, big_img, features_buffer, desire_pulse, traffic_convention, action_t
+    with open(MODEL_METADATA_PATH, 'rb') as f:
+      model_metadata = pickle.load(f)
+      self.input_shapes = model_metadata['input_shapes']
+      self.output_slices = model_metadata['output_slices']
+      model_output_size = model_metadata['output_shapes']['outputs'][1]
 
-    with open(POLICY_METADATA_PATH, 'rb') as f:
-      policy_metadata = pickle.load(f)
-      self.policy_input_shapes =  policy_metadata['input_shapes']
-      self.policy_output_slices = policy_metadata['output_slices']
-      policy_output_size = policy_metadata['output_shapes']['outputs'][1]
+    self.vision_input_names = [k for k in self.input_shapes if 'img' in k]
+    self.vision_input_shapes = {k: self.input_shapes[k] for k in self.vision_input_names}
+    self.policy_input_shapes = {k: v for k, v in self.input_shapes.items() if k not in self.vision_input_names}
 
     self.frames = {name: DrivingModelFrame(context, ModelConstants.MODEL_RUN_FREQ//ModelConstants.MODEL_CONTEXT_FREQ) for name in self.vision_input_names}
     self.prev_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
@@ -165,19 +168,18 @@ class ModelState:
     for k in ['desire_pulse', 'features_buffer']:
       self.full_input_queues.update_dtypes_and_shapes({k: self.numpy_inputs[k].dtype}, {k: self.numpy_inputs[k].shape})
     self.full_input_queues.reset()
+    # features_buffer only holds past features, the model computes the current one from the images and outputs it
+    # as hidden_state, which is fed back in on the next run
+    self.prev_feat = np.zeros(self.policy_input_shapes['features_buffer'][2], dtype=np.float32)
 
     # img buffers are managed in openCL transform code
     self.vision_inputs: dict[str, Tensor] = {}
-    self.vision_output = np.zeros(vision_output_size, dtype=np.float32)
     self.policy_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
-    self.policy_output = np.zeros(policy_output_size, dtype=np.float32)
+    self.output = np.zeros(model_output_size, dtype=np.float32)
     self.parser = Parser()
 
-    with open(VISION_PKL_PATH, "rb") as f:
-      self.vision_run = pickle.load(f)
-
-    with open(POLICY_PKL_PATH, "rb") as f:
-      self.policy_run = pickle.load(f)
+    with open(MODEL_PKL_PATH, "rb") as f:
+      self.model_run = pickle.load(f)
 
   def slice_outputs(self, model_outputs: np.ndarray, output_slices: dict[str, slice]) -> dict[str, np.ndarray]:
     parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
@@ -205,22 +207,21 @@ class ModelState:
     if prepare_only:
       return None
 
-    self.vision_output = self.vision_run(**self.vision_inputs).contiguous().realize().uop.base.buffer.numpy()
-    vision_outputs_dict = self.parser.parse_vision_outputs(self.slice_outputs(self.vision_output, self.vision_output_slices))
-
-    self.full_input_queues.enqueue({'features_buffer': vision_outputs_dict['hidden_state'], 'desire_pulse': new_desire})
+    self.full_input_queues.enqueue({'features_buffer': self.prev_feat, 'desire_pulse': new_desire})
     for k in ['desire_pulse', 'features_buffer']:
       self.numpy_inputs[k][:] = self.full_input_queues.get(k)[k]
     self.numpy_inputs['traffic_convention'][:] = inputs['traffic_convention']
+    if 'action_t' in self.numpy_inputs:
+      self.numpy_inputs['action_t'][:] = inputs['action_t']
 
-    self.policy_output = self.policy_run(**self.policy_inputs).contiguous().realize().uop.base.buffer.numpy()
-    policy_outputs_dict = self.parser.parse_policy_outputs(self.slice_outputs(self.policy_output, self.policy_output_slices))
+    self.output = self.model_run(**self.vision_inputs, **self.policy_inputs).contiguous().realize().uop.base.buffer.numpy()
+    outputs_dict = self.parser.parse_outputs(self.slice_outputs(self.output, self.output_slices))
+    self.prev_feat[:] = self.output[self.output_slices['hidden_state']]
 
-    combined_outputs_dict = {**vision_outputs_dict, **policy_outputs_dict}
     if SEND_RAW_PRED:
-      combined_outputs_dict['raw_pred'] = np.concatenate([self.vision_output.copy(), self.policy_output.copy()])
+      outputs_dict['raw_pred'] = self.output.copy()
 
-    return combined_outputs_dict
+    return outputs_dict
 
 
 def main(demo=False):
@@ -364,9 +365,14 @@ def main(demo=False):
 
     bufs = {name: buf_extra if 'big' in name else buf_main for name in model.vision_input_names}
     transforms = {name: model_transform_extra if 'big' in name else model_transform_main for name in model.vision_input_names}
+    frame_delay = DT_MDL # compensate for time passed since the frame was captured: current_time - timestamp_eof is 50ms on average
+    action_delay = DT_MDL / 2 # middle of the interval between model output (current state) and next frame (expected state)
+    lat_action_t = lat_delay + frame_delay + action_delay
+    long_action_t = long_delay + frame_delay + action_delay
     inputs:dict[str, np.ndarray] = {
       'desire_pulse': vec_desire,
       'traffic_convention': traffic_convention,
+      'action_t': np.array([lat_action_t, long_action_t], dtype=np.float32),
     }
 
     mt1 = time.perf_counter()
@@ -380,9 +386,7 @@ def main(demo=False):
       posenet_send = messaging.new_message('cameraOdometry')
       model_ext_send = messaging.new_message('modelExt')
 
-      frame_delay = DT_MDL # compensate for time passed since the frame was captured: current_time - timestamp_eof is 50ms on average
-      action_delay = DT_MDL / 2 # middle of the interval between model output (current state) and next frame (expected state)
-      action = get_action_from_model(model_output, prev_action, lat_delay + frame_delay + action_delay, long_delay + frame_delay + action_delay, v_ego)
+      action = get_action_from_model(model_output, prev_action, lat_action_t, long_action_t, v_ego)
       prev_action = action
       fill_model_msg(drivingdata_send, modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,

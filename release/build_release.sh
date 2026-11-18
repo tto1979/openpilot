@@ -47,8 +47,8 @@ rm -f panda/board/obj/panda.bin.signed
 rm -f panda/board/obj/panda_h7.bin.signed
 
 # make sure LFS objects were pulled, not just pointer files
-if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_vision.onnx; then
-  echo "driving_vision.onnx is an LFS pointer, run 'git lfs pull' in $SOURCE_DIR first"
+if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_supercombo.onnx; then
+  echo "driving_supercombo.onnx is an LFS pointer, run 'git lfs pull' in $SOURCE_DIR first"
   exit 1
 fi
 
@@ -86,8 +86,7 @@ find . -name '*.pyc' -delete
 find . -name 'moc_*' -delete
 find . -name '__pycache__' -delete
 rm -rf .sconsign.dblite Jenkinsfile release/
-rm -f selfdrive/modeld/models/driving_vision.onnx
-rm -f selfdrive/modeld/models/driving_policy.onnx
+rm -f selfdrive/modeld/models/driving_supercombo.onnx
 
 find third_party/ -name '*x86*' -exec rm -r {} +
 find third_party/ -name '*Darwin*' -exec rm -r {} +
