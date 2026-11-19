@@ -313,7 +313,7 @@ void CameraWidget::vipcFrameReceived() {
 
 void CameraWidget::vipcThread() {
   VisionStreamType cur_stream = requested_stream_type;
-  std::unique_ptr<VisionIpcClient> vipc_client;
+  VisionIpcClient *vipc_client = nullptr;
   VisionIpcBufExtra meta_main = {0};
 
   while (!QThread::currentThread()->isInterruptionRequested()) {
@@ -321,7 +321,15 @@ void CameraWidget::vipcThread() {
       clearFrames();
       qDebug().nospace() << "connecting to stream " << requested_stream_type << ", was connected to " << cur_stream;
       cur_stream = requested_stream_type;
-      vipc_client.reset(new VisionIpcClient(stream_name, cur_stream, false));
+      // Reuse one subscriber per stream: msgq never frees the reader slot of a destroyed VisionIpcClient, and once a
+      // stream has more than NUM_READERS subscribers it evicts all of them, which makes modeld and encoderd skip a frame
+      auto &client = vipc_clients[cur_stream];
+      if (!client) {
+        client = std::make_unique<VisionIpcClient>(stream_name, cur_stream, false);
+      } else {
+        client->connected = false;  // reconnect, so the GL side imports this stream's buffers
+      }
+      vipc_client = client.get();
     }
     active_stream_type = cur_stream;
 
@@ -338,7 +346,12 @@ void CameraWidget::vipcThread() {
         QThread::msleep(100);
         continue;
       }
-      emit vipcThreadConnected(vipc_client.get());
+      // a reused client still has the frames that were queued while it wasn't read
+      while (vipc_client->recv(&meta_main, 0)) {}
+      if (!vipc_client->connected) {
+        continue;
+      }
+      emit vipcThreadConnected(vipc_client);
     }
 
     if (VisionBuf *buf = vipc_client->recv(&meta_main, 1000)) {
