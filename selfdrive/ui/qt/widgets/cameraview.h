@@ -75,6 +75,7 @@ protected:
   std::atomic<VisionStreamType> requested_stream_type;
   std::set<VisionStreamType> available_streams;
   QThread *vipc_thread = nullptr;
+  std::map<VisionStreamType, std::unique_ptr<VisionIpcClient>> vipc_clients;  // only used by the vipc thread
   std::recursive_mutex frame_lock;
   std::deque<std::pair<uint32_t, VisionBuf*>> frames;
   uint32_t draw_frame_id = 0;
