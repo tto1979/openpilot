@@ -52,15 +52,16 @@ static void update_state(UIState *s) {
   } else if ((s->sm->frame - s->sm->rcv_frame("pandaStates")) > 5*UI_FREQ) {
     scene.pandaType = cereal::PandaState::PandaType::UNKNOWN;
   }
-  if (sm.updated("carParams")) {
+  if (sm.updated("carParams") || sm.updated("carParamsTOP")) {
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
     if (scene.longitudinal_control) {
-      scene.experimental_mode_via_wheel = sm["carParams"].getCarParams().getExperimentalModeViaWheel();
+      // defaults to true until carParamsTOP arrives, as card always sets it
+      scene.experimental_mode_via_wheel = sm["carParamsTOP"].getCarParamsTOP().getExperimentalModeViaWheel();
     }
   }
   if (sm.updated("carState")) {
     if (scene.experimental_mode_via_wheel) {
-      scene.steering_wheel_car = sm["carState"].getCarState().getSteeringWheelCar();
+      scene.steering_wheel_car = sm["carStateTOP"].getCarStateTOP().getSteeringWheelCar();
     }
     if (scene.tim_signals) {
       scene.blind_spot_left = sm["carState"].getCarState().getLeftBlindspot();
@@ -148,6 +149,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
     "wideRoadCameraState", "managerState", "selfdriveState", "longitudinalPlan",
     "topControlsState", "longitudinalPlanTOP", "liveMapDataTOP", "carControl",
+    "carStateTOP", "carParamsTOP", "deviceStateTOP",
   });
   scene.wide_cam = false;
   scene.longitudinal_control = false;

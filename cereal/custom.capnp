@@ -134,6 +134,7 @@ struct CarStateTOP @0x80ae746ee2596b11 {
   speedLimit @0 :Float32;
   brakeholdGovernor @1 :Bool;
   accelProfile @2 :UInt8;
+  steeringWheelCar @3 :Bool;  # Toyota: UI moves the experimental mode / personality buttons to the steering wheel
 }
 
 struct CarParamsTOP @0xa5cd762cd951a455 {
