@@ -281,6 +281,7 @@ class Car:
     cs_top_send.valid = CS.canValid
     cs_top_send.carStateTOP.brakeholdGovernor = CS_TOP.brakeholdGovernor
     cs_top_send.carStateTOP.accelProfile = int(CS_TOP.accelProfile)
+    cs_top_send.carStateTOP.steeringWheelCar = self.CP.brand == "toyota"
     self.pm.send('carStateTOP', cs_top_send)
 
     # kick off controlsd step while we actuate the latest carControl packet

@@ -88,7 +88,7 @@ void Sidebar::updateState(const UIState &s) {
   setProperty("netType", tethering_on ? "Hotspot": network_type[deviceState.getNetworkType()]);
   int strength = tethering_on ? 4 : (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
-  setProperty("wifiAddr", deviceState.getWifiIpAddress().cStr());
+  setProperty("wifiAddr", sm["deviceStateTOP"].getDeviceStateTOP().getWifiIpAddress().cStr());
 
   ItemStatus connectStatus;
   auto last_ping = deviceState.getLastAthenaPingTime();
