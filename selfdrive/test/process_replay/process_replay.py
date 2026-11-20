@@ -492,7 +492,7 @@ CONFIGS = [
     pubs=[
       "cameraOdometry", "accelerometer", "gyroscope", "liveCalibration", "carState"
     ],
-    subs=["liveLocationKalman", "livePose"],
+    subs=["livePose"],
     ignore=["logMonoTime"],
     should_recv_callback=MessageBasedRcvCallback("cameraOdometry"),
     tolerance=NUMPY_TOLERANCE,
