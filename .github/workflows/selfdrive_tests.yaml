@@ -119,6 +119,11 @@ jobs:
         restore-keys: |
           scons-${{ runner.arch }}-macos-${{ env.CACHE_COMMIT_DATE }}
           scons-${{ runner.arch }}-macos
+    - name: Patch panda for arm-none-eabi-gcc 15
+      # Homebrew's gcc-arm-embedded is GCC 15, which rejects panda's NUL-less gitversion string
+      # (-Wunterminated-string-initialization). Backport of commaai/panda e42367d; no-op once panda has it.
+      run: |
+        perl -pi -e 's/gitversion\[\{len\(version\)\}\]/gitversion[{len(version)+1}]/g' panda/SConscript
     - name: Building openpilot
       run: . .venv/bin/activate && scons -j$(nproc)
 
