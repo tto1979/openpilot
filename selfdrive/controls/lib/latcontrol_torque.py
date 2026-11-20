@@ -235,7 +235,9 @@ class LatControlTorque(LatControl):
         nn_torque = self.torque_from_nn(nn_input)  # kf was 1.0
 
         if self.nn_friction_override:
-          pid_log.error += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+          # get_friction returns lateral accel (friction * latAccelFactor) for the official controller, this error is torque.
+          # Unconverted it was latAccelFactor times too strong (2.28x on the Prius v) and made the wheel hunt left and right
+          pid_log.error += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params) / self.torque_params.latAccelFactor
 
         self.pid.set_limits(self.steer_max, -self.steer_max)
         freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
