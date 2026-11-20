@@ -2,10 +2,11 @@
 import os
 import time
 import threading
+from dataclasses import asdict
 
 import cereal.messaging as messaging
 
-from cereal import car, log
+from cereal import car, custom, log
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
@@ -68,7 +69,7 @@ class Car:
   def __init__(self, CI=None, RI=None) -> None:
     self.can_sock = messaging.sub_sock('can', timeout=20)
     self.sm = messaging.SubMaster(['pandaStates', 'carControl', 'onroadEvents'] + ['longitudinalPlanTOP'])
-    self.pm = messaging.PubMaster(['sendcan', 'carState', 'carParams', 'carOutput', 'liveTracks'])
+    self.pm = messaging.PubMaster(['sendcan', 'carState', 'carParams', 'carOutput', 'liveTracks', 'carStateTOP', 'carParamsTOP'])
 
     self.can_rcv_cum_timeout_counter = 0
 
@@ -193,6 +194,10 @@ class Car:
     if prev_cp is not None:
       self.params.put("CarParamsPrevRoute", prev_cp)
 
+    # TOP params live outside car.CarParams. Written first: other processes block on CarParams
+    self.CP_TOP = custom.CarParamsTOP.new_message(**asdict(self.CI.CP_TOP))
+    self.params.put("CarParamsTOP", self.CP_TOP.to_bytes())
+
     # Write CarParams for controls and radard
     cp_bytes = self.CP.to_bytes()
     self.params.put("CarParams", cp_bytes)
@@ -259,11 +264,24 @@ class Car:
       cp_send.carParams = self.CP
       self.pm.send('carParams', cp_send)
 
+      cp_top_send = messaging.new_message('carParamsTOP')
+      cp_top_send.valid = True
+      cp_top_send.carParamsTOP = self.CP_TOP
+      self.pm.send('carParamsTOP', cp_top_send)
+
     # publish new carOutput
     co_send = messaging.new_message('carOutput')
     co_send.valid = self.sm.all_checks(['carControl'])
     co_send.carOutput.actuatorsOutput = self.last_actuators_output
     self.pm.send('carOutput', co_send)
+
+    # before carState, so it's already there when carState triggers selfdrived's step
+    CS_TOP = self.CI.CS.out_top
+    cs_top_send = messaging.new_message('carStateTOP')
+    cs_top_send.valid = CS.canValid
+    cs_top_send.carStateTOP.brakeholdGovernor = CS_TOP.brakeholdGovernor
+    cs_top_send.carStateTOP.accelProfile = int(CS_TOP.accelProfile)
+    self.pm.send('carStateTOP', cs_top_send)
 
     # kick off controlsd step while we actuate the latest carControl packet
     cs_send = messaging.new_message('carState')

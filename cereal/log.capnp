@@ -517,8 +517,6 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   fanSpeedPercentDesired @10 :UInt16;
   screenBrightnessPercent @37 :Int8;
 
-  wifiIpAddress @50 :Text;
-  
   struct ThermalZone {
     name @0 :Text;
     temp @1 :Float32;
@@ -933,7 +931,6 @@ struct ControlsState @0x97ff69c53601abf1 {
     desiredLateralAccel @10 :Float32;
     desiredLateralJerk @11 :Float32;
     version @12 :Int32;
-    nnLog @13 :List(Float32);
    }
 
   struct LateralLQRState {
@@ -2733,8 +2730,8 @@ struct Event {
     modelExt @109 :Custom.ModelExt;
     liveMapDataTOP @110 :Custom.LiveMapDataTOP;
     carStateTOP @111 :Custom.CarStateTOP;
-    customReserved5 @112 :Custom.CustomReserved5;
-    customReserved6 @113 :Custom.CustomReserved6;
+    carParamsTOP @112 :Custom.CarParamsTOP;
+    deviceStateTOP @113 :Custom.DeviceStateTOP;
     customReserved7 @114 :Custom.CustomReserved7;
     customReserved8 @115 :Custom.CustomReserved8;
     customReserved9 @116 :Custom.CustomReserved9;

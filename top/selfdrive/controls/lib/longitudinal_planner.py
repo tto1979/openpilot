@@ -31,8 +31,8 @@ class LongitudinalPlannerTOP:
   def update(self, sm: messaging.SubMaster, v_ego: float, a_ego: float, v_cruise: float) -> tuple[float, float]:
     self.events.clear()
 
-    if hasattr(sm, 'updated') and sm.updated['carState']:
-      self.accel_controller.update(sm['carState'])
+    if hasattr(sm, 'updated') and sm.updated['carStateTOP']:
+      self.accel_controller.update(sm['carStateTOP'])
     else:
       self.accel_controller.update()
 
