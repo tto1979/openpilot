@@ -4,6 +4,7 @@ import math
 import os
 from enum import IntEnum
 from collections.abc import Callable
+from functools import cache
 
 from cereal import log, car
 import cereal.messaging as messaging
@@ -15,6 +16,7 @@ from openpilot.system.micd import SAMPLE_RATE, SAMPLE_BUFFER
 from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
 from openpilot.top.selfdrive.controls.lib.speed_limit import PCM_LONG_REQUIRED_MAX_SET_SPEED, CONFIRM_SPEED_THRESHOLD
 from openpilot.top.selfdrive.controls.lib.speed_limit.helpers import compare_cluster_target
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -257,8 +259,13 @@ def calibration_incomplete_alert(CP: car.CarParams, CS: car.CarState, sm: messag
     Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2)
 
 
+@cache
+def _nn_model_name() -> str:
+  return str(get_car_params_top().nnModelName)
+
+
 def torque_nn_load_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
-  model_name = CP.lateralTuning.torque.nnModelName
+  model_name = _nn_model_name()
   if model_name == "":
     return Alert(
       "NN 扭矩控制器未載入",

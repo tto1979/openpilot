@@ -5,7 +5,7 @@ import copy
 import heapq
 import signal
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from itertools import islice
 from typing import Any
 from collections.abc import Callable, Iterable
@@ -14,7 +14,7 @@ import capnp
 from openpilot.system.hardware.hw import Paths
 
 import cereal.messaging as messaging
-from cereal import car
+from cereal import car, custom
 from cereal.services import SERVICE_LIST
 from msgq.visionipc import VisionIpcServer, get_endpoint_name as vipc_get_endpoint_name
 from opendbc.car.can_definitions import CanData
@@ -339,6 +339,7 @@ def get_car_params_callback(rc, pm, msgs, fingerprint):
   if fingerprint:
     CarInterface = interfaces[fingerprint]
     CP = CarInterface.get_non_essential_params(fingerprint)
+    CP_TOP = CarInterface.get_params_top(CP, 0)
   else:
     can_msgs = ([CanData(can.address, can.dat, can.src) for can in m.can] for m in msgs if m.which() == "can")
     cached_params_raw = params.get("CarParamsCache")
@@ -354,8 +355,10 @@ def get_car_params_callback(rc, pm, msgs, fingerprint):
       with car.CarParams.from_bytes(cached_params_raw) as _cached_params:
         cached_params = _cached_params
 
-    CP = get_car(can_recv, lambda _msgs: None, lambda obd: None, params.get_bool("AlphaLongitudinalEnabled"), False, cached_params=cached_params).CP
+    CI = get_car(can_recv, lambda _msgs: None, lambda obd: None, params.get_bool("AlphaLongitudinalEnabled"), False, cached_params=cached_params)
+    CP, CP_TOP = CI.CP, CI.CP_TOP
 
+  params.put("CarParamsTOP", custom.CarParamsTOP.new_message(**asdict(CP_TOP)).to_bytes())
   params.put("CarParams", CP.to_bytes())
 
 
@@ -421,7 +424,7 @@ CONFIGS = [
       "longitudinalPlan", "livePose", "liveDelay", "liveParameters", "radarState", "modelV2",
       "driverCameraState", "roadCameraState", "wideRoadCameraState", "managerState", "liveTorqueParameters",
       "accelerometer", "gyroscope", "carOutput", "gpsLocationExternal", "gpsLocation", "controlsState",
-      "carControl", "driverAssistance", "alertDebug", "audioFeedback", "longitudinalPlanTOP",
+      "carControl", "driverAssistance", "alertDebug", "audioFeedback", "longitudinalPlanTOP", "carStateTOP",
     ],
     subs=["selfdriveState", "onroadEvents"],
     ignore=["logMonoTime"],
@@ -464,7 +467,7 @@ CONFIGS = [
   ),
   ProcessConfig(
     proc_name="plannerd",
-    pubs=["modelV2", "carControl", "carState", "controlsState", "liveParameters", "radarState", "selfdriveState"],
+    pubs=["modelV2", "carControl", "carState", "controlsState", "liveParameters", "radarState", "selfdriveState", "carStateTOP"],
     subs=["longitudinalPlan", "driverAssistance"],
     ignore=["logMonoTime", "longitudinalPlan.processingDelay", "longitudinalPlan.solverExecutionTime"],
     init_callback=get_car_params_callback,

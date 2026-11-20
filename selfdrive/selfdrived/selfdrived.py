@@ -9,6 +9,7 @@ from cereal import car, custom, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 from opendbc.safety import ALTERNATIVE_EXPERIENCE
 from openpilot.top.selfdrive.car.cruise_helpers import CruiseHelper
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top
 
 
 from openpilot.common.params import Params
@@ -46,7 +47,7 @@ IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
 
 
 class SelfdriveD(CruiseHelper):
-  def __init__(self, CP=None):
+  def __init__(self, CP=None, CP_TOP=None):
     self.params = Params()
 
     # Ensure the current branch is cached, otherwise the first cycle lags
@@ -58,6 +59,8 @@ class SelfdriveD(CruiseHelper):
       cloudlog.info("selfdrived got CarParams")
     else:
       self.CP = CP
+    # card writes CarParamsTOP before CarParams, so it's there once CarParams is
+    self.CP_TOP = get_car_params_top(self.params) if CP_TOP is None else CP_TOP
 
     self.car_events = CarSpecificEvents(self.CP)
 
@@ -79,7 +82,7 @@ class SelfdriveD(CruiseHelper):
     # TODO: de-couple selfdrived with card/conflate on carState without introducing controls mismatches
     self.car_state_sock = messaging.sub_sock('carState', timeout=20)
 
-    ignore = self.sensor_packets + self.gps_packets + ['alertDebug'] + ['modelExt']
+    ignore = self.sensor_packets + self.gps_packets + ['alertDebug'] + ['modelExt', 'carStateTOP']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
     if REPLAY:
@@ -88,7 +91,7 @@ class SelfdriveD(CruiseHelper):
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
-                                   'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark', 'audioFeedback', 'modelExt', 'longitudinalPlanTOP'] + \
+                                   'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark', 'audioFeedback', 'modelExt', 'longitudinalPlanTOP', 'carStateTOP'] + \
                                    self.camera_packets + self.sensor_packets + self.gps_packets,
                                   ignore_alive=ignore, ignore_avg_freq=ignore,
                                   ignore_valid=ignore, frequency=int(1/DT_CTRL))
@@ -147,7 +150,7 @@ class SelfdriveD(CruiseHelper):
     elif self.CP.passive:
       self.events.add(EventName.dashcamMode, static=True)
 
-    CruiseHelper.__init__(self, self.CP)
+    CruiseHelper.__init__(self, self.CP, self.CP_TOP)
 
   def update_events(self, CS):
     """Compute onroadEvents from carState"""
@@ -215,7 +218,7 @@ class SelfdriveD(CruiseHelper):
       return
 
     # show alert to indicate whether NNFF is loaded
-    if not self.nn_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque' and self.CP.twilsoncoNNFF:
+    if not self.nn_alert_shown and self.sm.frame % 1000 == 0 and self.CP.lateralTuning.which() == 'torque' and self.CP_TOP.twilsoncoNNFF:
       self.nn_alert_shown = True
       self.events.add(EventName.torqueNNLoad)
 
@@ -252,7 +255,7 @@ class SelfdriveD(CruiseHelper):
 
     # Add car events, ignore if CAN isn't valid
     if CS.canValid:
-      car_events = self.car_events.update(CS, self.CS_prev, self.sm['carControl']).to_msg()
+      car_events = self.car_events.update(CS, self.CS_prev, self.sm['carControl'], self.sm['carStateTOP']).to_msg()
       self.events.add_from_msg(car_events)
 
       if self.CP.notCar:

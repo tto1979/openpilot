@@ -102,6 +102,8 @@ _services: dict[str, tuple] = {
   "liveMapDataTOP": (True, 1., 1),
   "liveLocationKalman": (True, 20.),
   "carStateTOP": (True, 100., 10),
+  "carParamsTOP": (True, 0.02, 1),
+  "deviceStateTOP": (True, 2., 1),
 }
 SERVICE_LIST = {name: Service(*vals) for
                 idx, (name, vals) in enumerate(_services.items())}

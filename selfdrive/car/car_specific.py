@@ -1,4 +1,4 @@
-from cereal import car, log
+from cereal import car, custom, log
 import cereal.messaging as messaging
 from openpilot.common.params import Params
 from opendbc.car import DT_CTRL, structs
@@ -40,7 +40,7 @@ class CarSpecificEvents:
     self.dp_atl = Params().get_bool("dp_atl")
     self.toyota_stock_long = Params().get_bool("toyota_stock_long")
 
-  def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
+  def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl, CS_TOP: 'custom.CarStateTOP | None' = None):
     if self.CP.brand in ('body', 'mock'):
       events = Events()
 
@@ -107,7 +107,7 @@ class CarSpecificEvents:
           Params().put_bool("LateralAllowed", False)
         self.prev_atl = CS_prev.cruiseState.available
 
-      if CS.brakeholdGovernor:
+      if CS_TOP is not None and CS_TOP.brakeholdGovernor:
         events.add(EventName.automaticBrakehold)
 
     elif self.CP.brand == 'gm':

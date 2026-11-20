@@ -132,12 +132,19 @@ struct LiveMapDataTOP @0xda96579883444c35 {
 
 struct CarStateTOP @0x80ae746ee2596b11 {
   speedLimit @0 :Float32;
+  brakeholdGovernor @1 :Bool;
+  accelProfile @2 :UInt8;
 }
 
-struct CustomReserved5 @0xa5cd762cd951a455 {
+struct CarParamsTOP @0xa5cd762cd951a455 {
+  experimentalModeViaWheel @0 :Bool = true;
+  twilsoncoNNFF @1 :Bool;
+  nnModelName @2 :Text;
+  nnModelFuzzyMatch @3 :Bool;
 }
 
-struct CustomReserved6 @0xf98d843bfd7004a3 {
+struct DeviceStateTOP @0xf98d843bfd7004a3 {
+  wifiIpAddress @0 :Text;
 }
 
 struct CustomReserved7 @0xb86e6369214c01c8 {

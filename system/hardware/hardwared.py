@@ -163,7 +163,7 @@ def hw_state_thread(end_event, hw_queue):
 
 
 def hardware_thread(end_event, hw_queue) -> None:
-  pm = messaging.PubMaster(['deviceState'])
+  pm = messaging.PubMaster(['deviceState', 'deviceStateTOP'])
   sm = messaging.SubMaster(["peripheralState", "gpsLocationExternal", "selfdriveState", "pandaStates"], poll="pandaStates")
 
   count = 0
@@ -272,7 +272,6 @@ def hardware_thread(end_event, hw_queue) -> None:
       msg.deviceState.networkInfo = last_hw_state.network_info
 
     msg.deviceState.modemTempC = last_hw_state.modem_temps
-    msg.deviceState.wifiIpAddress = last_hw_state.wifi_address
 
     msg.deviceState.screenBrightnessPercent = HARDWARE.get_screen_brightness()
 
@@ -415,6 +414,11 @@ def hardware_thread(end_event, hw_queue) -> None:
 
     msg.deviceState.thermalStatus = thermal_status
     pm.send("deviceState", msg)
+
+    top_msg = messaging.new_message('deviceStateTOP')
+    top_msg.valid = True
+    top_msg.deviceStateTOP.wifiIpAddress = last_hw_state.wifi_address
+    pm.send("deviceStateTOP", top_msg)
 
     # Log to statsd
     statlog.gauge("free_space_percent", msg.deviceState.freeSpacePercent)

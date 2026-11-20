@@ -5,7 +5,7 @@ This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
 
-from cereal import car, log
+from cereal import car, custom, log
 from opendbc.car import structs
 from openpilot.common.params import Params
 
@@ -17,7 +17,7 @@ DISTANCE_SHORT_PRESS = 50
 
 
 class CruiseHelper:
-  def __init__(self, CP: structs.CarParams):
+  def __init__(self, CP: structs.CarParams, CP_TOP: custom.CarParamsTOP):
     self.CP = CP
     self.params = Params()
 
@@ -25,7 +25,7 @@ class CruiseHelper:
     self._experimental_mode = False
     self.experimental_mode_switched = False
 
-    self.experimental_mode_via_wheel = self.CP.experimentalModeViaWheel
+    self.experimental_mode_via_wheel = CP_TOP.experimentalModeViaWheel
     self.ispressed_prev = False
     self.distance_button_hold = False
     self.gap_button_counter = 0
