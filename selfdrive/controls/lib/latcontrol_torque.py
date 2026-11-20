@@ -134,6 +134,9 @@ class LatControlTorque(LatControl):
       self.roll_deque = deque(maxlen=history_check_frames[0])
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
 
+      # desired_curvature requests, to compare the measurement with the one from lat_delay ago (see update)
+      self.curvature_request_buffer = deque([0.] * self.lat_accel_request_buffer_len, maxlen=self.lat_accel_request_buffer_len)
+
   def set_fixed_nn_lag(self):
     # NNFF runs on a fixed lag from steerActuatorDelay, lagd doesn't learn while it's active (see lagd.main)
     self.desired_lat_jerk_time = self.steerActuatorDelay + 0.3
@@ -177,7 +180,16 @@ class LatControlTorque(LatControl):
 
       desired_lateral_accel = desired_curvature * CS.vEgo ** 2
       low_speed_factor = float(np.interp(CS.vEgo, LOW_SPEED_X, LOW_SPEED_Y_NN)) ** 2
-      setpoint = desired_lateral_accel + low_speed_factor * desired_curvature
+
+      # Like the official path, compare the measurement with the request from lat_delay ago: desired_curvature is
+      # where the car should be lat_delay from now. Comparing it with now made the NN chase the model's reaction to
+      # the car's own wiggle (desired swings with the car through the vision loop), which locked into a ~1.5 Hz
+      # left-right limit cycle after a bump. The NN feedforward below still uses the current request and the plan.
+      self.curvature_request_buffer.append(desired_curvature)
+      delay_frames = int(np.clip(lat_delay / self.dt + 1, 1, self.lat_accel_request_buffer_len))
+      expected_curvature = self.curvature_request_buffer[-delay_frames]
+      expected_lateral_accel = expected_curvature * CS.vEgo ** 2
+      setpoint = expected_lateral_accel + low_speed_factor * expected_curvature
       measurement = actual_lateral_accel + low_speed_factor * measured_curvature
       actual_curvature_rate = -VM.calc_curvature(math.radians(CS.steeringRateDeg), CS.vEgo, 0.0)
       actual_lateral_jerk = actual_curvature_rate * CS.vEgo ** 2
@@ -247,7 +259,7 @@ class LatControlTorque(LatControl):
         pid_log.p, pid_log.i, pid_log.d, pid_log.f = float(self.pid.p), float(self.pid.i), float(self.pid.d), float(self.pid.f)
         pid_log.output = float(-output_torque)
         pid_log.actualLateralAccel = float(actual_lateral_accel)
-        pid_log.desiredLateralAccel = float(desired_lateral_accel)
+        pid_log.desiredLateralAccel = float(expected_lateral_accel)
         pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
 
     else:
