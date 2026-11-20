@@ -9,6 +9,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, DT_CTRL, Priority, Ratekeeper
 from openpilot.common.swaglog import cloudlog
 
+from opendbc.car import structs
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.vehicle_model import VehicleModel
 from openpilot.selfdrive.controls.lib.drive_helpers import clip_curvature
@@ -19,6 +20,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.modeld.modeld import LAT_SMOOTH_SECONDS
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top
 
 State = log.SelfdriveState.OpenpilotState
 LaneChangeState = log.LaneChangeState
@@ -34,7 +36,11 @@ class Controls:
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
 
-    self.CI = interfaces[self.CP.carFingerprint](self.CP)
+    # card writes CarParamsTOP before CarParams. Without the NNFF flag the interface
+    # never enables its NN model (has_lateral_torque_nn), so LatControlTorque can't use it
+    self.CP_TOP = get_car_params_top(self.params)
+    top_params = structs.TopFlags.NNFF if self.CP_TOP.twilsoncoNNFF else 0
+    self.CI = interfaces[self.CP.carFingerprint](self.CP, top_params)
 
     self.sm = messaging.SubMaster(['liveDelay', 'liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',

@@ -35,6 +35,10 @@ LAT_ACCEL_REQUEST_BUFFER_SECONDS = 1.0
 VERSION = 1
 
 # NNFF specific parameters
+# PID gains for the NN path, in torque space. These used to come from CarParams.lateralTuning.torque
+# (kp=1.0, ki=0.3, kf=1.0 for every car) until upstream deprecated those fields (commaai/opendbc#2851).
+NN_KP = 1.0
+NN_KI = 0.3
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 LAT_PLAN_MIN_IDX = 5
@@ -87,7 +91,7 @@ class LatControlTorque(LatControl):
     # Twilsonco's Lateral Neural Network Feedforward
     self.use_nn = CI.has_lateral_torque_nn if hasattr(CI, 'has_lateral_torque_nn') else False
     if self.use_nn:
-      self.pid_nnff = PIDController(self.torque_params.kp, self.torque_params.ki, rate=1/self.dt)
+      self.pid_nnff = PIDController(NN_KP, NN_KI, rate=1/self.dt)
 
     self.pid = self.pid_official
     self.update_limits()
@@ -235,15 +239,14 @@ class LatControlTorque(LatControl):
             pid_log.error = pid_log.error * (1.0 - error_blend_factor) + torque_from_error * error_blend_factor
 
         nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + past_lateral_accels_desired + future_planned_lateral_accels + past_rolls + future_rolls
-        nn_torque = self.torque_from_nn(nn_input)
-        scaled_nn_torque = nn_torque * self.torque_params.kf
+        nn_torque = self.torque_from_nn(nn_input)  # kf was 1.0
 
         if self.nn_friction_override:
           pid_log.error += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
 
         self.pid.set_limits(self.steer_max, -self.steer_max)
         freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
-        output_torque = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=scaled_nn_torque, freeze_integrator=freeze_integrator)
+        output_torque = self.pid.update(pid_log.error, speed=CS.vEgo, feedforward=nn_torque, freeze_integrator=freeze_integrator)
 
         pid_log.active = True
         pid_log.p, pid_log.i, pid_log.d, pid_log.f = float(self.pid.p), float(self.pid.i), float(self.pid.d), float(self.pid.f)
