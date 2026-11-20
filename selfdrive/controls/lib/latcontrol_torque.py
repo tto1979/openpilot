@@ -6,7 +6,6 @@ from cereal import log
 from opendbc.car.lateral import FRICTION_THRESHOLD, get_friction
 from openpilot.common.constants import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
@@ -115,7 +114,6 @@ class LatControlTorque(LatControl):
 
       # Precompute time differences for jerk calculation
       self.t_diffs = np.diff(ModelConstants.T_IDXS)
-      self.desired_lat_jerk_time = self.steerActuatorDelay + LATERAL_LAG_MOD
       self.pitch = FirstOrderFilter(0.0, 0.5, 0.01)
       self.pitch_last = 0.0
       # NN model takes current v_ego, lateral_accel, lat accel/jerk error, roll, and past/future/planned data
@@ -126,8 +124,7 @@ class LatControlTorque(LatControl):
 
       # setup future time offsets
       self.future_times = [0.3, 0.6, 1.0, 1.5]  # seconds in the future
-      self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
-      self.nn_future_times_np = np.array(self.nn_future_times)
+      self.set_fixed_nn_lag()
 
       # setup past time offsets
       self.past_times = [-0.3, -0.2, -0.1]
@@ -137,20 +134,18 @@ class LatControlTorque(LatControl):
       self.roll_deque = deque(maxlen=history_check_frames[0])
       self.past_future_len = len(self.past_times) + len(self.nn_future_times)
 
-  def update_lateral_lag(self, lag):
-    if Params().get_bool("DisableLagLearning"):
-      self.desired_lat_jerk_time = self.steerActuatorDelay + 0.3
+  def set_fixed_nn_lag(self):
+    # NNFF runs on a fixed lag from steerActuatorDelay, lagd doesn't learn while it's active (see lagd.main)
+    self.desired_lat_jerk_time = self.steerActuatorDelay + 0.3
+    nn_time_offset = self.steerActuatorDelay + 0.2
+    self.nn_future_times = [t + nn_time_offset for t in self.future_times]
+    self.nn_future_times_np = np.array(self.nn_future_times)
 
-      if self.use_nn:
-        nn_time_offset = self.steerActuatorDelay + 0.2
-        self.nn_future_times = [t + nn_time_offset for t in self.future_times]
-        self.nn_future_times_np = np.array(self.nn_future_times)
+  def update_lateral_lag(self, lag):
+    if self.use_nn:
+      self.set_fixed_nn_lag()
     else:
       self.desired_lat_jerk_time = max(0.01, lag) + LATERAL_LAG_MOD
-
-      if self.use_nn:
-        self.nn_future_times = [t + self.desired_lat_jerk_time for t in self.future_times]
-        self.nn_future_times_np = np.array(self.nn_future_times)
 
   def update_live_torque_params(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -177,9 +172,7 @@ class LatControlTorque(LatControl):
     model_good = (model_data is not None and hasattr(model_data, 'orientation') and
                   hasattr(model_data.orientation, 'x') and len(list(model_data.orientation.x)) >= CONTROL_N)
 
-    disable_lag = Params().get_bool("DisableLagLearning")
-
-    if disable_lag and self.use_nn and model_good:
+    if self.use_nn and model_good:
       self.pid = self.pid_nnff
 
       desired_lateral_accel = desired_curvature * CS.vEgo ** 2

@@ -9,7 +9,6 @@ from opendbc.car.toyota.values import CAR as TOYOTA
 from opendbc.car.nissan.values import CAR as NISSAN
 from opendbc.car.gm.values import CAR as GM
 from opendbc.car.vehicle_model import VehicleModel
-from openpilot.common.params import Params
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
@@ -63,7 +62,6 @@ class TestLatControl:
     CI = CarInterface(CP, structs.TopFlags.NNFF)
     assert CI.has_lateral_torque_nn
 
-    Params().put_bool("DisableLagLearning", True)  # the NN path only runs with lag learning disabled
     controller = LatControlTorque(CP.as_reader(), CI, DT_CTRL)
     assert controller.use_nn
 

@@ -13,6 +13,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose, fft_next_good_size, parabolic_peak_interp
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top, nnff_active
 
 BLOCK_SIZE = 100
 BLOCK_NUM = 50
@@ -176,8 +177,10 @@ class LateralLagEstimator:
                block_count: int = BLOCK_NUM, min_valid_block_count: int = BLOCK_NUM_NEEDED, block_size: int = BLOCK_SIZE,
                window_sec: float = MOVING_WINDOW_SEC, okay_window_sec: float = MIN_OKAY_WINDOW_SEC, min_recovery_buffer_sec: float = MIN_RECOVERY_BUFFER_SEC,
                min_vego: float = MIN_VEGO, min_yr: float = MIN_ABS_YAW_RATE, min_ncc: float = MIN_NCC,
-               max_lat_accel: float = MAX_LAT_ACCEL, max_lat_accel_diff: float = MAX_LAT_ACCEL_DIFF, min_confidence: float = MIN_CONFIDENCE):
+               max_lat_accel: float = MAX_LAT_ACCEL, max_lat_accel_diff: float = MAX_LAT_ACCEL_DIFF, min_confidence: float = MIN_CONFIDENCE,
+               learning_enabled: bool = True):
     self.dt = dt
+    self.learning_enabled = learning_enabled  # False keeps publishing initial_lag
     self.window_sec = window_sec
     self.okay_window_sec = okay_window_sec
     self.min_recovery_buffer_sec = min_recovery_buffer_sec
@@ -308,7 +311,7 @@ class LateralLagEstimator:
     self.points.update(self.t, la_desired, la_actual_pose, okay)
 
   def update_estimate(self):
-    if Params().get_bool("DisableLagLearning"):
+    if not self.learning_enabled:
       return
 
     if not self.points_enough():
@@ -397,13 +400,14 @@ def main():
   params = Params()
   CP = messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams)
 
-  lag_learner = LateralLagEstimator(CP, 1. / SERVICE_LIST['livePose'].frequency)
-  if (initial_lag_params := retrieve_initial_lag(params, CP)) is not None:
+  # TOP: NNFF runs on a fixed lag, a learned lag moving under it makes it jitter. The official torque controller learns as usual
+  learning_enabled = not nnff_active(CP, get_car_params_top(params))
+  lag_learner = LateralLagEstimator(CP, 1. / SERVICE_LIST['livePose'].frequency, learning_enabled=learning_enabled)
+  if not learning_enabled:
+    cloudlog.info("NNFF active: lag learning off, using the initial lag")
+  elif (initial_lag_params := retrieve_initial_lag(params, CP)) is not None:
     lag, valid_blocks = initial_lag_params
-    if not params.get_bool("DisableLagLearning"):
-      lag_learner.reset(lag, valid_blocks)
-    else:
-      cloudlog.info("DisableLagLearning is ON: skipped loading cached lag.")
+    lag_learner.reset(lag, valid_blocks)
 
   while True:
     sm.update()
