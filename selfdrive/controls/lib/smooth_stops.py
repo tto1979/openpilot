@@ -28,7 +28,7 @@ STANDSTILL_HOLD_SPEED = 0.15   # m/s, ceiling for trusting CS.standstill -- neve
 # --- the settle feather: a controlled deceleration to a true stop ---
 STOP_KISS_DECEL = 0.12    # m/s^2, residual decel right at the stop
 MIN_ENTRY_SPEED = 0.1     # m/s, floor on the latched entry speed (guards the taper division)
-STOP_GAP_MARGIN = 2.5     # m, settle brakes to stop at least this far behind the lead
+STOP_GAP_MARGIN = 3.0     # m, settle brakes to stop at least this far behind the lead
 MIN_GAP_BUDGET = 0.15     # m, floor on the gap budget -- only guards the division
 PROGRESS_EPS = 0.02       # m/s, speed drop (vs the running minimum) that counts as "still slowing"
 ANTI_CREEP_RATE = 0.50    # m/s^2 added per second the car is NOT slowing (kills creep / held creep)

@@ -268,6 +268,7 @@ class LongitudinalMpc:
     self.reset()
     self.source = LongitudinalPlanSource.cruise
     self.accel_controller = AccelController()
+    self.smooth_stops = Params().get_bool("SmoothStops")
     self.toyota_tune = Params().get_bool("ToyotaTune")
 
   def reset(self):
@@ -383,6 +384,9 @@ class LongitudinalMpc:
 
     if self.toyota_tune and not (self.CP.flags & ToyotaFlags.SMART_DSU):
       stop_distance += 0.5
+
+    if self.smooth_stops:
+      stop_distance -= 0.5
 
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
