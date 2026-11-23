@@ -692,15 +692,15 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
                                   "../assets/icons/road.png",
                                   this);
 
-  // Steering delay learning (lagd). NNFF always runs on a fixed delay, so with NNFF on this is switched off and locked.
-  ParamControl *lag_toggle = new ParamControl("LateralLagLearning",
-                                  tr("Learn Steering Delay"),
-                                  tr("Learn the steering response delay of the car while driving, as upstream openpilot does. Turn off to keep the fixed default delay: on cars whose steering wheel sticks, the learned delay comes out too long and the steering can wobble.\nAlways off with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive."),
+  // Steering delay learning (lagd). NNFF always runs on a fixed delay, so with NNFF on this is switched on and locked.
+  ParamControl *lag_toggle = new ParamControl("DisableLateralLagLearning",
+                                  tr("Disable Steering Delay Learning"),
+                                  tr("Keep the fixed default steering delay instead of learning the delay of the car while driving. Turn on for cars whose steering wheel sticks: the learned delay comes out too long and the steering can wobble.\nAlways on with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive."),
                                   "../assets/icons/road.png",
                                   this);
   auto lock_lag_toggle = [lag_toggle](bool nnff_on) {
     if (nnff_on) {
-      Params().putBool("LateralLagLearning", false);
+      Params().putBool("DisableLateralLagLearning", true);
       lag_toggle->refresh();
     }
     lag_toggle->setEnabled(!nnff_on);

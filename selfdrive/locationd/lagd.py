@@ -400,15 +400,15 @@ def main():
   params = Params()
   CP = messaging.log_from_bytes(params.get("CarParams", block=True), car.CarParams)
 
-  # TOP: learning is the user's choice (LateralLagLearning, on by default as upstream) and always off while NNFF runs: the NN
-  # path runs on a fixed lag and a learned lag moving under it makes it jitter. On a car whose steering wheel sticks the lag
-  # also learns long: replayed on the Prius v wobble segment, the official controller's 1.5 Hz margin is 47 deg at the
-  # initial 0.32 s, 30 at 0.45 s and 13 at 0.60 s.
+  # TOP: the user can turn learning off (DisableLateralLagLearning; learning stays on by default as upstream), and it is
+  # always off while NNFF runs: the NN path runs on a fixed lag and a learned lag moving under it makes it jitter. On a car
+  # whose steering wheel sticks the lag also learns long: replayed on the Prius v wobble segment, the official controller's
+  # 1.5 Hz margin is 47 deg at the initial 0.32 s, 30 at 0.45 s and 13 at 0.60 s.
   nnff = nnff_active(CP, get_car_params_top(params))
-  learning_enabled = params.get_bool("LateralLagLearning") and not nnff
+  learning_enabled = not params.get_bool("DisableLateralLagLearning") and not nnff
   lag_learner = LateralLagEstimator(CP, 1. / SERVICE_LIST['livePose'].frequency, learning_enabled=learning_enabled)
   if not learning_enabled:
-    cloudlog.info("NNFF active: lag learning off, using the initial lag" if nnff else "LateralLagLearning off: using the initial lag")
+    cloudlog.info("NNFF active: lag learning off, using the initial lag" if nnff else "DisableLateralLagLearning: using the initial lag")
   elif (initial_lag_params := retrieve_initial_lag(params, CP)) is not None:
     lag, valid_blocks = initial_lag_params
     lag_learner.reset(lag, valid_blocks)
