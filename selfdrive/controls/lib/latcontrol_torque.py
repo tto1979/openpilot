@@ -38,6 +38,11 @@ VERSION = 1
 # (kp=1.0, ki=0.3, kf=1.0 for every car) until upstream deprecated those fields (commaai/opendbc#2851).
 NN_KP = 1.0
 NN_KI = 0.3
+# Static friction on the NN path (models that set stuck_friction_gain). Below STUCK_STEER_RATE (deg/s) the wheel counts
+# as held; the Prius v reports the rate in 1 deg/s steps, so this means a reading of 0. The push fades in and out over
+# STUCK_FADE_TIME so it doesn't drop off the instant the wheel starts to turn.
+STUCK_STEER_RATE = 1.0
+STUCK_FADE_TIME = 0.15
 LOW_SPEED_X = [0, 10, 20, 30]
 LOW_SPEED_Y_NN = [12, 3, 1, 0]
 LAT_PLAN_MIN_IDX = 5
@@ -121,6 +126,8 @@ class LatControlTorque(LatControl):
       # Past value is computed using previous desired lat accel and observed roll
       self.torque_from_nn = CI.get_ff_nn
       self.nn_friction_override = CI.lat_torque_nn_model.friction_override
+      self.stuck_friction_gain = getattr(CI.lat_torque_nn_model, 'stuck_friction_gain', 0.0)
+      self.stuck_factor = 0.0
 
       # setup future time offsets
       self.future_times = [0.3, 0.6, 1.0, 1.5]  # seconds in the future
@@ -218,6 +225,7 @@ class LatControlTorque(LatControl):
       if not active:
         output_torque = 0.0
         pid_log.active = False
+        self.stuck_factor = 0.0
       else:
         past_rolls = [self.roll_deque[min(len(self.roll_deque)-1, i)] for i in self.history_frame_offsets]
         past_lateral_accels_desired = [self.lateral_accel_desired_deque[min(len(self.lateral_accel_desired_deque)-1, i)] for i in self.history_frame_offsets]
@@ -246,10 +254,23 @@ class LatControlTorque(LatControl):
         nn_input = [CS.vEgo, desired_lateral_accel, friction_input, roll] + past_lateral_accels_desired + future_planned_lateral_accels + past_rolls + future_rolls
         nn_torque = self.torque_from_nn(nn_input)  # kf was 1.0
 
+        friction = get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params)
+
+        # Static friction. On the Prius v the wheel holds still while the torque moves 0.2-0.4 of max (up to 0.55), so
+        # when the model asks to unwind it stays put for 1-5 s while the PID walks the torque across that band, and the
+        # car keeps turning toward the inside of the curve. While the wheel is held, add stuck_friction_gain x friction
+        # to the feedforward: replayed on three takeovers, the torque got across 0.6-3.3 s sooner. While it turns, the
+        # NN's own friction response covers it; adding friction then (sunnypilot's override) cuts the 1.5 Hz margin from
+        # 75 to 43 deg on the Prius v, gated like this it stays at 71.
+        if self.stuck_friction_gain > 0.0:
+          stuck = abs(CS.steeringRateDeg) < STUCK_STEER_RATE and not CS.steeringPressed
+          self.stuck_factor += (float(stuck) - self.stuck_factor) * min(1.0, self.dt / STUCK_FADE_TIME)
+          nn_torque += self.stuck_friction_gain * self.stuck_factor * friction
+
         if self.nn_friction_override:
           # get_friction returns lateral accel (friction * latAccelFactor) for the official controller, this error is torque.
           # Unconverted it was latAccelFactor times too strong (2.28x on the Prius v) and made the wheel hunt left and right
-          pid_log.error += get_friction(friction_input, lateral_accel_deadzone, FRICTION_THRESHOLD, self.torque_params) / self.torque_params.latAccelFactor
+          pid_log.error += friction / self.torque_params.latAccelFactor
 
         self.pid.set_limits(self.steer_max, -self.steer_max)
         freeze_integrator = steer_limited_by_safety or CS.steeringPressed or CS.vEgo < 5
