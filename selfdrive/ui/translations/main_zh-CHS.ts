@@ -1350,14 +1350,14 @@ Data</source>
 <context>
     <name>TimpilotPanel</name>
     <message>
-        <source>Learn Steering Delay</source>
-        <translation>学习转向延迟</translation>
+        <source>Disable Steering Delay Learning</source>
+        <translation>关闭转向延迟学习</translation>
     </message>
     <message>
-        <source>Learn the steering response delay of the car while driving, as upstream openpilot does. Turn off to keep the fixed default delay: on cars whose steering wheel sticks, the learned delay comes out too long and the steering can wobble.
-Always off with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive.</source>
-        <translation>像官方 openpilot 一样，在行驶中学习这台车的转向反应延迟。关闭则固定使用默认延迟：方向盘容易卡住的车，学到的延迟会偏长，方向盘可能因此晃动。
-开启 NNFF 控制器时一律关闭，NNFF 使用固定延迟。下次行驶时生效。</translation>
+        <source>Keep the fixed default steering delay instead of learning the delay of the car while driving. Turn on for cars whose steering wheel sticks: the learned delay comes out too long and the steering can wobble.
+Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive.</source>
+        <translation>不在行驶中学习这台车的转向反应延迟，固定使用默认延迟。方向盘容易卡住的车建议开启：学到的延迟会偏长，方向盘可能因此晃动。
+开启 NNFF 控制器时一律开启，NNFF 使用固定延迟。下次行驶时生效。</translation>
     </message>
     <message>
         <source>Select Car</source>
