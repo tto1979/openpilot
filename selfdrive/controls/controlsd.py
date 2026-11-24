@@ -142,15 +142,15 @@ class Controls:
     # Steering PID loop and lateral MPC
     # Reset desired curvature to current to avoid violating the limits on engage
     new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
+    lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
     lane_centering = self.lane_centering.update(self.lane_centering_enabled and CC.latActive, model_v2, self.sm.updated['modelV2'],
-                                                CS.vEgo, CS.steeringPressed)
+                                                CS.vEgo, CS.steeringPressed, self.curvature, model_v2.action.desiredCurvature, lat_delay)
     if CC.latActive:
       new_desired_curvature += lane_centering
     if isinstance(self.LaC, LatControlTorque):
       # NNFF also reads the model's planned lateral accels: shift them by the same amount
       self.LaC.plan_lat_accel_offset = lane_centering * CS.vEgo ** 2 if CC.latActive else 0.0
     self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
-    lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
 
     actuators.curvature = self.desired_curvature
     steer, steeringAngleDeg, lac_log = self.LaC.update(CC.latActive, CS, self.VM, lp,
@@ -218,6 +218,9 @@ class Controls:
     ncs.laneCenteringCurvature = float(self.lane_centering.curvature)
     ncs.laneCenteringOffset = float(self.lane_centering.offset)
     ncs.laneCenteringWeight = float(self.lane_centering.weight)
+    ncs.laneCenteringHeld = self.lane_centering.held
+    ncs.laneCenteringRecovery = float(self.lane_centering.recovery)
+    ncs.laneCenteringEdge = float(self.lane_centering.edge)
     self.pm.send('topControlsState', dat)
 
     # controlsState

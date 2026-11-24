@@ -15,6 +15,9 @@ struct TopControlsState @0x81c2f05a394cf4af {
   laneCenteringCurvature @1 :Float32;  # lane centering: added to the model's desired curvature (1/m, right positive)
   laneCenteringOffset @2 :Float32;     # plan minus lane centre at the aim point (m, right positive)
   laneCenteringWeight @3 :Float32;
+  laneCenteringHeld @4 :Bool;          # integral stopped: the car lagged the command (held wheel)
+  laneCenteringRecovery @5 :Float32;   # share of the proportional part kept: the car is already heading back
+  laneCenteringEdge @6 :Float32;       # share of the correction kept by the road edge limit
 }
 
 struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
