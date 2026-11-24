@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-19 12:21+0200\n"
+"POT-Creation-Date: 2026-11-25 06:51+0800\n"
 "PO-Revision-Date: 2025-11-19 13:27+0200\n"
 "Last-Translator: KeeFeeRe <me@keefeere.me>\n"
 "Language-Team: none\n"
@@ -19,17 +19,17 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 3.8\n"
 
-#: selfdrive/ui/layouts/settings/device.py:160
+#: selfdrive/ui/layouts/settings/device.py:216
 #, python-format
 msgid " Steering torque response calibration is complete."
 msgstr " Калібрування реакції крутного моменту керма завершено."
 
-#: selfdrive/ui/layouts/settings/device.py:158
+#: selfdrive/ui/layouts/settings/device.py:214
 #, python-format
 msgid " Steering torque response calibration is {}% complete."
 msgstr "Калібрування реакції крутного моменту керма завершено на {}%."
 
-#: selfdrive/ui/layouts/settings/device.py:133
+#: selfdrive/ui/layouts/settings/device.py:189
 #, python-format
 msgid " Your device is pointed {:.1f}° {} and {:.1f}° {}."
 msgstr " Ваш пристрій нахилено на {:.1f}° {} та {:.1f}° {}."
@@ -73,20 +73,19 @@ msgstr ""
 "ПОПЕРЕДЖЕННЯ: поздовжнє керування openpilot для цього автомобіля знаходиться "
 "в стадії альфа-тестування і вимкне автоматичне екстрене гальмування (AEB)."
 
-#: selfdrive/ui/layouts/settings/device.py:148
+#: selfdrive/ui/layouts/settings/device.py:204
 #, python-format
 msgid "<br><br>Steering lag calibration is complete."
 msgstr "<br><br>Калібрування затримки кермування завершено."
 
-#: selfdrive/ui/layouts/settings/device.py:146
+#: selfdrive/ui/layouts/settings/device.py:202
 #, python-format
 msgid "<br><br>Steering lag calibration is {}% complete."
 msgstr "<br><br>Калібрування затримки кермування завершено на {}%."
 
-#: selfdrive/ui/layouts/settings/firehose.py:138
-#, python-format
-msgid "ACTIVE"
-msgstr "АКТИВНИЙ"
+#: selfdrive/ui/layouts/settings/top.py:108
+msgid "ACC +/-: Long Press Reverse"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/developer.py:15
 msgid ""
@@ -106,32 +105,43 @@ msgstr "ДОДАТИ"
 msgid "APN Setting"
 msgstr "Налаштування APN"
 
+#: selfdrive/ui/layouts/settings/toggles.py:117
+#, python-format
+msgid "Acceleration Personality"
+msgstr ""
+
 #: selfdrive/ui/widgets/offroad_alerts.py:109
 #, python-format
 msgid "Acknowledge Excessive Actuation"
 msgstr "Визнайте надмірне спрацьовування"
+
+#: selfdrive/ui/layouts/settings/top.py:103
+msgid ""
+"Activates the car's brakes after 1 seconds stopped. (Only support on Toyota "
+"TSS2 Hybrid vehicles)"
+msgstr ""
 
 #: system/ui/widgets/network.py:74 system/ui/widgets/network.py:95
 #, python-format
 msgid "Advanced"
 msgstr "Розширені"
 
-#: selfdrive/ui/layouts/settings/toggles.py:98
+#: selfdrive/ui/layouts/settings/toggles.py:108
 #, python-format
 msgid "Aggressive"
 msgstr "Агресивн."
 
-#: selfdrive/ui/layouts/onboarding.py:116
+#: selfdrive/ui/layouts/onboarding.py:117
 #, python-format
 msgid "Agree"
 msgstr "Погодитися"
 
-#: selfdrive/ui/layouts/settings/toggles.py:70
+#: selfdrive/ui/layouts/settings/toggles.py:80
 #, python-format
 msgid "Always-On Driver Monitoring"
 msgstr "Постійний моніторинг водія"
 
-#: selfdrive/ui/layouts/settings/toggles.py:186
+#: selfdrive/ui/layouts/settings/toggles.py:212
 #, python-format
 msgid ""
 "An alpha version of openpilot longitudinal control can be tested, along with "
@@ -140,28 +150,36 @@ msgstr ""
 "Альфа-версію поздовжнього керування openpilot можна протестувати разом з "
 "експериментальним режимом на нерелізних гілках."
 
-#: selfdrive/ui/layouts/settings/device.py:187
+#: selfdrive/ui/layouts/settings/device.py:128
+#, python-format
+msgid "Are you sure you want to flash the Panda firmware?"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:243
 #, python-format
 msgid "Are you sure you want to power off?"
 msgstr "Ви впевнені, що хочете вимкнути?"
 
-#: selfdrive/ui/layouts/settings/device.py:175
+#: selfdrive/ui/layouts/settings/device.py:231
 #, python-format
 msgid "Are you sure you want to reboot?"
 msgstr "Ви впевнені, що хочете перезавантажити?"
 
-#: selfdrive/ui/layouts/settings/device.py:119
+#: selfdrive/ui/layouts/settings/device.py:175
 #, python-format
 msgid "Are you sure you want to reset calibration?"
 msgstr "Ви впевнені, що хочете скинути калібрування?"
 
-#: selfdrive/ui/layouts/settings/software.py:171
+#: selfdrive/ui/layouts/settings/software.py:172
 #, python-format
 msgid "Are you sure you want to uninstall?"
 msgstr "Ви впевнені, що хочете видалити?"
 
-#: system/ui/widgets/network.py:99
-#: selfdrive/ui/layouts/onboarding.py:147
+#: selfdrive/ui/layouts/settings/top.py:102
+msgid "Automatic Brake Hold"
+msgstr ""
+
+#: selfdrive/ui/layouts/onboarding.py:148 system/ui/widgets/network.py:99
 #, python-format
 msgid "Back"
 msgstr "Назад"
@@ -171,6 +189,10 @@ msgstr "Назад"
 msgid "Become a comma prime member at connect.comma.ai"
 msgstr "Станьте членом comma prime на connect.comma.ai"
 
+#: selfdrive/ui/layouts/settings/top.py:70
+msgid "Blinker Lane Change"
+msgstr ""
+
 #: selfdrive/ui/widgets/pairing_dialog.py:119
 #, python-format
 msgid "Bookmark connect.comma.ai to your home screen to use it like an app"
@@ -178,15 +200,15 @@ msgstr ""
 "Додайте connect.comma.ai до головного екрану, щоб використовувати його як "
 "додаток."
 
-#: selfdrive/ui/layouts/settings/device.py:68
+#: selfdrive/ui/layouts/settings/device.py:85
 #, python-format
 msgid "CHANGE"
 msgstr "ЗМІНИТИ"
 
-#: selfdrive/ui/layouts/settings/software.py:50
-#: selfdrive/ui/layouts/settings/software.py:115
-#: selfdrive/ui/layouts/settings/software.py:126
-#: selfdrive/ui/layouts/settings/software.py:155
+#: selfdrive/ui/layouts/settings/software.py:57
+#: selfdrive/ui/layouts/settings/software.py:116
+#: selfdrive/ui/layouts/settings/software.py:127
+#: selfdrive/ui/layouts/settings/software.py:156
 #, python-format
 msgid "CHECK"
 msgstr "ПЕРЕВІРИТИ"
@@ -196,11 +218,9 @@ msgstr "ПЕРЕВІРИТИ"
 msgid "CHILL MODE ON"
 msgstr "СПОКІЙНИЙ РЕЖИМ"
 
+#: selfdrive/ui/layouts/sidebar.py:73 selfdrive/ui/layouts/sidebar.py:134
+#: selfdrive/ui/layouts/sidebar.py:136 selfdrive/ui/layouts/sidebar.py:138
 #: system/ui/widgets/network.py:155
-#: selfdrive/ui/layouts/sidebar.py:73
-#: selfdrive/ui/layouts/sidebar.py:134
-#: selfdrive/ui/layouts/sidebar.py:136
-#: selfdrive/ui/layouts/sidebar.py:138
 #, python-format
 msgid "CONNECT"
 msgstr "CONNECT"
@@ -210,23 +230,49 @@ msgstr "CONNECT"
 msgid "CONNECTING..."
 msgstr "ПІДКЛЮЧА..."
 
-#: system/ui/widgets/confirm_dialog.py:23 system/ui/widgets/option_dialog.py:35
-#: system/ui/widgets/network.py:318 system/ui/widgets/keyboard.py:81
+#: system/ui/widgets/confirm_dialog.py:23 system/ui/widgets/keyboard.py:81
+#: system/ui/widgets/network.py:318 system/ui/widgets/option_dialog.py:35
 #, python-format
 msgid "Cancel"
 msgstr "Скасувати"
+
+#: selfdrive/ui/layouts/settings/top.py:146
+#, python-format
+msgid "Car Model"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:233
+#, python-format
+msgid "Car list is not available."
+msgstr ""
 
 #: system/ui/widgets/network.py:134
 #, python-format
 msgid "Cellular Metered"
 msgstr "Лімітне стільникове з'єднання"
 
-#: selfdrive/ui/layouts/settings/device.py:68
+#: selfdrive/ui/layouts/settings/device.py:85
 #, python-format
 msgid "Change Language"
 msgstr "Змінити мову"
 
-#: selfdrive/ui/layouts/settings/toggles.py:125
+#: selfdrive/ui/layouts/settings/top.py:71
+msgid ""
+"Change lanes without the need to nudge the steering wheel first.\n"
+"Disabled: Need to nudge the steering wheel to change lanes.\n"
+"Enabled: Nudgeless.\n"
+"Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: "
+"above 35mph."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:109
+msgid ""
+"Change the ACC +/- buttons behavior with cruise speed change in openpilot.\n"
+"Disabled (Stock): Short = 1, Long = 5.\n"
+"Enabled: Short and Long = 5."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:150
 #, python-format
 msgid "Changing this setting will restart openpilot if the car is powered on."
 msgstr ""
@@ -243,77 +289,106 @@ msgstr "Натисніть «додати новий пристрій» і ві�
 msgid "Close"
 msgstr "Закрити"
 
-#: selfdrive/ui/layouts/settings/software.py:49
+#: selfdrive/ui/widgets/footage_dialog.py:91
+#, python-format
+msgid ""
+"Connect the device to Wi-Fi (or your phone's hotspot) to watch the "
+"recordings."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:56
 #, python-format
 msgid "Current Version"
 msgstr "Поточна версія"
 
-#: selfdrive/ui/layouts/settings/software.py:118
+#: selfdrive/ui/layouts/settings/software.py:119
 #, python-format
 msgid "DOWNLOAD"
 msgstr "ВАНТАЖ"
 
-#: selfdrive/ui/layouts/onboarding.py:115
+#: selfdrive/ui/layouts/settings/device.py:75
+#, python-format
+msgid "DashCam footage"
+msgstr ""
+
+#: selfdrive/ui/layouts/onboarding.py:116
 #, python-format
 msgid "Decline"
 msgstr "Відхилити"
 
-#: selfdrive/ui/layouts/onboarding.py:148
+#: selfdrive/ui/layouts/onboarding.py:149
 #, python-format
 msgid "Decline, uninstall openpilot"
 msgstr "Відхилити, видалити openpilot"
 
-#: selfdrive/ui/layouts/settings/settings.py:64
+#: selfdrive/ui/layouts/settings/settings.py:66
 msgid "Developer"
 msgstr "Розробник"
 
-#: selfdrive/ui/layouts/settings/settings.py:59
+#: selfdrive/ui/layouts/settings/settings.py:61
 msgid "Device"
 msgstr "Пристрій"
 
-#: selfdrive/ui/layouts/settings/toggles.py:58
+#: selfdrive/ui/layouts/settings/top.py:41
+msgid "Disable Steering Delay Learning"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:68
 #, python-format
 msgid "Disengage on Accelerator Pedal"
 msgstr "Вимкнення при натисканні на педаль газу"
 
-#: selfdrive/ui/layouts/settings/device.py:184
+#: selfdrive/ui/layouts/settings/device.py:119
+#, python-format
+msgid "Disengage to Flash Panda"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:240
 #, python-format
 msgid "Disengage to Power Off"
 msgstr "Вимкніть openpilot, щоб вимкнути пристрій"
 
-#: selfdrive/ui/layouts/settings/device.py:172
+#: selfdrive/ui/layouts/settings/device.py:228
 #, python-format
 msgid "Disengage to Reboot"
 msgstr "Вимкніть openpilot, щоб перезавантажити"
 
-#: selfdrive/ui/layouts/settings/device.py:103
+#: selfdrive/ui/layouts/settings/device.py:159
 #, python-format
 msgid "Disengage to Reset Calibration"
 msgstr "Деактивуйте для скидання калібрування"
 
-#: selfdrive/ui/layouts/settings/toggles.py:32
+#: selfdrive/ui/layouts/settings/toggles.py:34
 msgid "Display speed in km/h instead of mph."
 msgstr "Відображати швидкість у км/год замість миль/год."
 
-#: selfdrive/ui/layouts/settings/device.py:59
+#: selfdrive/ui/layouts/settings/device.py:76
 #, python-format
 msgid "Dongle ID"
 msgstr "ID ключа"
 
-#: selfdrive/ui/layouts/settings/software.py:50
+#: selfdrive/ui/layouts/settings/software.py:57
 #, python-format
 msgid "Download"
 msgstr "Завантажити"
 
-#: selfdrive/ui/layouts/settings/device.py:62
+#: selfdrive/ui/layouts/settings/device.py:70
 #, python-format
 msgid "Driver Camera"
 msgstr "Камера водія"
 
-#: selfdrive/ui/layouts/settings/toggles.py:96
+#: selfdrive/ui/layouts/settings/toggles.py:106
 #, python-format
 msgid "Driving Personality"
 msgstr "Стиль водіння"
+
+#: selfdrive/ui/layouts/settings/top.py:30
+msgid "Driving Screen Off"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:62
+msgid "Dynamic Distance Adjustment"
+msgstr ""
 
 #: system/ui/widgets/network.py:123 system/ui/widgets/network.py:139
 #, python-format
@@ -333,8 +408,23 @@ msgstr "ETH"
 msgid "EXPERIMENTAL MODE ON"
 msgstr "ЕКСПЕРИМЕНТ. РЕЖИМ"
 
-#: selfdrive/ui/layouts/settings/toggles.py:228
-#: selfdrive/ui/layouts/settings/developer.py:166
+#: selfdrive/ui/layouts/settings/top.py:67
+msgid ""
+"Eases off the brake in the final moments of a stop for a gentle landing. "
+"Planned braking is never softened. Requires openpilot longitudinal control."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:119
+#, python-format
+msgid "Eco"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:75
+msgid "Edge Detection During Lane Changes"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/developer.py:179
+#: selfdrive/ui/layouts/settings/toggles.py:254
 #, python-format
 msgid "Enable"
 msgstr "Увімкнути"
@@ -344,10 +434,26 @@ msgstr "Увімкнути"
 msgid "Enable ADB"
 msgstr "Увімкнути ADB"
 
-#: selfdrive/ui/layouts/settings/toggles.py:64
+#: selfdrive/ui/layouts/settings/top.py:96
+msgid "Enable Door Auto Lock"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:99
+msgid "Enable Door Auto Unlock"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:55
+msgid "Enable Experiment Mode In SNG"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:74
 #, python-format
 msgid "Enable Lane Departure Warnings"
 msgstr "Увімкнути попередження про виїзд зі смуги"
+
+#: selfdrive/ui/layouts/settings/top.py:85
+msgid "Enable Local File Server"
+msgstr ""
 
 #: system/ui/widgets/network.py:129
 #, python-format
@@ -364,16 +470,20 @@ msgstr "Увімкнути SSH"
 msgid "Enable Tethering"
 msgstr "Увімкнути точку доступу"
 
-#: selfdrive/ui/layouts/settings/toggles.py:30
+#: selfdrive/ui/layouts/settings/top.py:93
+msgid "Enable Toyota Drive Mode Button"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:32
 msgid "Enable driver monitoring even when openpilot is not engaged."
 msgstr "Увімкнути моніторинг водія, навіть коли openpilot не ввімкнено."
 
-#: selfdrive/ui/layouts/settings/toggles.py:46
+#: selfdrive/ui/layouts/settings/toggles.py:56
 #, python-format
 msgid "Enable openpilot"
 msgstr "Увімкнути openpilot"
 
-#: selfdrive/ui/layouts/settings/toggles.py:189
+#: selfdrive/ui/layouts/settings/toggles.py:215
 #, python-format
 msgid ""
 "Enable the openpilot longitudinal control (alpha) toggle to allow "
@@ -381,6 +491,32 @@ msgid ""
 msgstr ""
 "Увімкніть перемикач поздовжнього керування openpilot (альфа), щоб увімкнути "
 "експериментальний режим."
+
+#: selfdrive/ui/layouts/settings/top.py:91
+msgid "Enable to use Toyota's stock longitudinal control."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:53
+msgid "Enabled the Stop And Go feature and get auto hold."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:97
+msgid ""
+"Enabled this to lock doors when drive above 25 km/h. Only work on some "
+"Toyota vehicles."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:100
+msgid ""
+"Enabled this to unlock doors when shift to gear P. Only work on some Toyota "
+"vehicles."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:106
+msgid ""
+"Enhance BSM function for some Toyota vehicles that openpilot currently does "
+"not support."
+msgstr ""
 
 #: system/ui/widgets/network.py:204
 #, python-format
@@ -412,12 +548,12 @@ msgstr "Введіть ваш логін GitHub"
 msgid "Error"
 msgstr "Помилка"
 
-#: selfdrive/ui/layouts/settings/toggles.py:52
+#: selfdrive/ui/layouts/settings/toggles.py:62
 #, python-format
 msgid "Experimental Mode"
 msgstr "Експериментальний режим"
 
-#: selfdrive/ui/layouts/settings/toggles.py:181
+#: selfdrive/ui/layouts/settings/toggles.py:207
 #, python-format
 msgid ""
 "Experimental mode is currently unavailable on this car since the car's stock "
@@ -427,25 +563,59 @@ msgstr ""
 "для поздовжнього керування використовується штатний адаптивний круїз-"
 "контроль (ACC)."
 
+#: selfdrive/ui/layouts/settings/device.py:66
+#, python-format
+msgid "FLASH"
+msgstr ""
+
 #: system/ui/widgets/network.py:373
 #, python-format
 msgid "FORGETTING..."
 msgstr "ЗАБУВАЮ..."
+
+#: selfdrive/ui/layouts/settings/device.py:147
+#, python-format
+msgid "Failed!"
+msgstr ""
 
 #: selfdrive/ui/widgets/setup.py:44
 #, python-format
 msgid "Finish Setup"
 msgstr "Завершити налаштування"
 
-#: selfdrive/ui/layouts/settings/settings.py:63
+#: selfdrive/ui/layouts/settings/settings.py:65
 msgid "Firehose"
 msgstr "Злива"
 
-#: selfdrive/ui/layouts/settings/firehose.py:18
+#: selfdrive/ui/layouts/settings/firehose.py:10
 msgid "Firehose Mode"
 msgstr "Режим зливи"
 
-#: selfdrive/ui/layouts/settings/firehose.py:25
+#: selfdrive/ui/layouts/settings/top.py:105
+msgid "Fix Toyota BSM Signal"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:128
+#, python-format
+msgid "Flash"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:66
+#, python-format
+msgid "Flash Panda"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:141
+#, python-format
+msgid "Flashed!"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:132
+#, python-format
+msgid "Flashing..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/firehose.py:17
 msgid ""
 "For maximum effectiveness, bring your device inside and connect to a good "
 "USB-C adapter and Wi-Fi weekly.\n"
@@ -489,6 +659,13 @@ msgstr ""
 "навчання можна використовувати тільки upstream openpilot (і певні його "
 "форки)."
 
+#: selfdrive/ui/layouts/settings/top.py:147
+#, python-format
+msgid ""
+"Force a car model instead of fingerprinting. Select [-Not selected-] to go "
+"back to automatic detection."
+msgstr ""
+
 #: system/ui/widgets/network.py:318 system/ui/widgets/network.py:451
 #, python-format
 msgid "Forget"
@@ -499,8 +676,7 @@ msgstr "Заб-и"
 msgid "Forget Wi-Fi Network \"{}\"?"
 msgstr "Забути мережу Wi-Fi \"{}\"?"
 
-#: selfdrive/ui/layouts/sidebar.py:71
-#: selfdrive/ui/layouts/sidebar.py:125
+#: selfdrive/ui/layouts/sidebar.py:71 selfdrive/ui/layouts/sidebar.py:125
 msgid "GOOD"
 msgstr "ДОБРА"
 
@@ -518,13 +694,8 @@ msgstr "ВИСОКА"
 msgid "Hidden Network"
 msgstr "Прихована мережа"
 
-#: selfdrive/ui/layouts/settings/firehose.py:140
-#, python-format
-msgid "INACTIVE: connect to an unmetered network"
-msgstr "НЕАКТИВНО: підключення до мережі без ліміту трафіку"
-
-#: selfdrive/ui/layouts/settings/software.py:53
-#: selfdrive/ui/layouts/settings/software.py:144
+#: selfdrive/ui/layouts/settings/software.py:60
+#: selfdrive/ui/layouts/settings/software.py:145
 #, python-format
 msgid "INSTALL"
 msgstr "ВСТАНОВ."
@@ -534,7 +705,7 @@ msgstr "ВСТАНОВ."
 msgid "IP Address"
 msgstr "IP-адреса"
 
-#: selfdrive/ui/layouts/settings/software.py:53
+#: selfdrive/ui/layouts/settings/software.py:60
 #, python-format
 msgid "Install Update"
 msgstr "Встановити оновлення"
@@ -544,13 +715,36 @@ msgstr "Встановити оновлення"
 msgid "Joystick Debug Mode"
 msgstr "Режим зневадження джойстика"
 
-#: selfdrive/ui/widgets/ssh_key.py:29
+#: selfdrive/ui/layouts/settings/top.py:42
+msgid ""
+"Keep the fixed default steering delay instead of learning the delay of the "
+"car while driving. Turn on for cars whose steering wheel sticks: the learned "
+"delay comes out too long and the steering can wobble.\n"
+"Always on with NNFF Torque Control, which uses the fixed delay. Takes effect "
+"on the next drive."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:194 selfdrive/ui/widgets/ssh_key.py:29
+#, python-format
 msgid "LOADING"
 msgstr "ЗАВАНТАЖЕННЯ"
 
 #: selfdrive/ui/layouts/sidebar.py:48
 msgid "LTE"
 msgstr "LTE"
+
+#: selfdrive/ui/layouts/settings/top.py:46
+msgid "Lane Centering Correction"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:34
+msgid "Lateral Controls Always On"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:35
+msgid ""
+"Lateral control will always be on and will not be interrupted by braking."
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/developer.py:64
 #, python-format
@@ -562,6 +756,10 @@ msgstr "Режим поздовжнього маневрування"
 msgid "MAX"
 msgstr "МАКС"
 
+#: selfdrive/ui/layouts/settings/top.py:82
+msgid "Map Based Turn Control"
+msgstr ""
+
 #: selfdrive/ui/widgets/setup.py:75
 #, python-format
 msgid ""
@@ -569,17 +767,21 @@ msgid ""
 msgstr ""
 "Максимізуйте завантаження навчальних даних, щоб поліпшити моделі openpilot."
 
-#: selfdrive/ui/layouts/settings/device.py:59
-#: selfdrive/ui/layouts/settings/device.py:60
+#: selfdrive/ui/layouts/settings/device.py:76
+#: selfdrive/ui/layouts/settings/device.py:77
 #, python-format
 msgid "N/A"
 msgstr "Н/Д"
+
+#: selfdrive/ui/layouts/settings/top.py:37
+msgid "NNFF Torque Control"
+msgstr ""
 
 #: selfdrive/ui/layouts/sidebar.py:142
 msgid "NO"
 msgstr "НЕМАЄ"
 
-#: selfdrive/ui/layouts/settings/settings.py:60
+#: selfdrive/ui/layouts/settings/settings.py:62
 msgid "Network"
 msgstr "Мережа"
 
@@ -598,19 +800,31 @@ msgstr "Користувач '{}' не має ключів на GitHub"
 msgid "No release notes available."
 msgstr "Інформація про випуск відсутня."
 
-#: selfdrive/ui/layouts/sidebar.py:73
-#: selfdrive/ui/layouts/sidebar.py:134
+#: selfdrive/ui/layouts/settings/toggles.py:119
+#, python-format
+msgid "Normal"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:37
+msgid ""
+"Normal is recommended. In sport mode, TOP will provide aggressive "
+"acceleration for a dynamic driving experience. In eco mode, TOP will apply "
+"smoother and more relaxed acceleration. On supported cars, you can cycle "
+"through these acceleration personality within Onroad Settings on the driving "
+"screen."
+msgstr ""
+
+#: selfdrive/ui/layouts/sidebar.py:73 selfdrive/ui/layouts/sidebar.py:134
 msgid "OFFLINE"
 msgstr "ОФЛАЙН"
 
-#: system/ui/widgets/confirm_dialog.py:93 system/ui/widgets/html_render.py:263
-#: selfdrive/ui/layouts/sidebar.py:127
+#: selfdrive/ui/layouts/sidebar.py:127 system/ui/widgets/confirm_dialog.py:93
+#: system/ui/widgets/html_render.py:263
 #, python-format
 msgid "OK"
 msgstr "OK"
 
-#: selfdrive/ui/layouts/sidebar.py:72
-#: selfdrive/ui/layouts/sidebar.py:136
+#: selfdrive/ui/layouts/sidebar.py:72 selfdrive/ui/layouts/sidebar.py:136
 #: selfdrive/ui/layouts/sidebar.py:144
 msgid "ONLINE"
 msgstr "ОНЛАЙН"
@@ -620,7 +834,7 @@ msgstr "ОНЛАЙН"
 msgid "Open"
 msgstr "ВІДКРИТИ"
 
-#: selfdrive/ui/layouts/settings/device.py:48
+#: selfdrive/ui/layouts/settings/device.py:56
 #, python-format
 msgid "PAIR"
 msgstr "ПІДКЛЮЧИТИ"
@@ -629,7 +843,7 @@ msgstr "ПІДКЛЮЧИТИ"
 msgid "PANDA"
 msgstr "PANDA"
 
-#: selfdrive/ui/layouts/settings/device.py:62
+#: selfdrive/ui/layouts/settings/device.py:70
 #, python-format
 msgid "PREVIEW"
 msgstr "ПОКАЖИ"
@@ -639,7 +853,7 @@ msgstr "ПОКАЖИ"
 msgid "PRIME FEATURES:"
 msgstr "XАРАКТЕРИСТИКИ PRIME:"
 
-#: selfdrive/ui/layouts/settings/device.py:48
+#: selfdrive/ui/layouts/settings/device.py:56
 #, python-format
 msgid "Pair Device"
 msgstr "Підключити пристрій"
@@ -654,8 +868,7 @@ msgstr "Підключити пристрій"
 msgid "Pair your device to your comma account"
 msgstr "Підключіть свій пристрій до обліковки comma connect"
 
-#: selfdrive/ui/widgets/setup.py:48
-#: selfdrive/ui/layouts/settings/device.py:24
+#: selfdrive/ui/layouts/settings/device.py:28 selfdrive/ui/widgets/setup.py:48
 #, python-format
 msgid ""
 "Pair your device with comma connect (connect.comma.ai) and claim your comma "
@@ -669,8 +882,8 @@ msgstr ""
 msgid "Please connect to Wi-Fi to complete initial pairing"
 msgstr "Будь ласка, підключіться до Wi-Fi, щоб завершити початкове сполучення."
 
-#: selfdrive/ui/layouts/settings/device.py:55
-#: selfdrive/ui/layouts/settings/device.py:187
+#: selfdrive/ui/layouts/settings/device.py:63
+#: selfdrive/ui/layouts/settings/device.py:243
 #, python-format
 msgid "Power Off"
 msgstr "Вимкнути"
@@ -689,7 +902,7 @@ msgstr ""
 "Запобігати великим завантаженням даних під час лімітного стільникового "
 "з'єднання"
 
-#: selfdrive/ui/layouts/settings/device.py:25
+#: selfdrive/ui/layouts/settings/device.py:29
 msgid ""
 "Preview the driver facing camera to ensure that driver monitoring has good "
 "visibility. (vehicle must be off)"
@@ -703,22 +916,31 @@ msgstr ""
 msgid "QR Code Error"
 msgstr "Помилка QR-коду"
 
+#: selfdrive/ui/layouts/settings/device.py:75
+#, python-format
+msgid "QR-Code"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:27
+msgid "Quiet Drive"
+msgstr ""
+
 #: selfdrive/ui/widgets/ssh_key.py:31
 msgid "REMOVE"
 msgstr "ВИДАЛИТИ"
 
-#: selfdrive/ui/layouts/settings/device.py:51
+#: selfdrive/ui/layouts/settings/device.py:59
 #, python-format
 msgid "RESET"
 msgstr "Скинути"
 
-#: selfdrive/ui/layouts/settings/device.py:65
+#: selfdrive/ui/layouts/settings/device.py:82
 #, python-format
 msgid "REVIEW"
 msgstr "ДИВИТИСЬ"
 
-#: selfdrive/ui/layouts/settings/device.py:55
-#: selfdrive/ui/layouts/settings/device.py:175
+#: selfdrive/ui/layouts/settings/device.py:63
+#: selfdrive/ui/layouts/settings/device.py:231
 #, python-format
 msgid "Reboot"
 msgstr "Перезавантажити"
@@ -733,7 +955,12 @@ msgstr "Перезавантажте пристрій"
 msgid "Reboot and Update"
 msgstr "Перезавантажити та оновити"
 
-#: selfdrive/ui/layouts/settings/toggles.py:27
+#: selfdrive/ui/layouts/settings/device.py:143
+#, python-format
+msgid "Rebooting..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:29
 msgid ""
 "Receive alerts to steer back into the lane when your vehicle drifts over a "
 "detected lane line without a turn signal activated while driving over 31 mph "
@@ -743,17 +970,17 @@ msgstr ""
 "автомобіль перетинає виявлену лінію розмітки без увімкненого сигналу "
 "повороту під час руху зі швидкістю понад 31 миль/год (50 км/год)."
 
-#: selfdrive/ui/layouts/settings/toggles.py:76
+#: selfdrive/ui/layouts/settings/toggles.py:86
 #, python-format
 msgid "Record and Upload Driver Camera"
 msgstr "Писати та вантажити відео з камери водія"
 
-#: selfdrive/ui/layouts/settings/toggles.py:82
+#: selfdrive/ui/layouts/settings/toggles.py:92
 #, python-format
 msgid "Record and Upload Microphone Audio"
 msgstr "Запис та завантаження аудіо з мікрофона"
 
-#: selfdrive/ui/layouts/settings/toggles.py:33
+#: selfdrive/ui/layouts/settings/toggles.py:35
 msgid ""
 "Record and store microphone audio while driving. The audio will be included "
 "in the dashcam video in comma connect."
@@ -761,12 +988,16 @@ msgstr ""
 "Записуйте та зберігайте аудіо з мікрофона під час руху. Аудіо буде включено "
 "до відео з відеореєстратора в comma connect."
 
-#: selfdrive/ui/layouts/settings/device.py:67
+#: selfdrive/ui/layouts/settings/device.py:84
 #, python-format
 msgid "Regulatory"
 msgstr "Нормативні документи"
 
-#: selfdrive/ui/layouts/settings/toggles.py:98
+#: selfdrive/ui/layouts/settings/device.py:33
+msgid "Reinstall the Panda firmware to fix connection or reliability issues."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:108
 #, python-format
 msgid "Relaxed"
 msgstr "Спокійний"
@@ -786,26 +1017,27 @@ msgstr "Віддалені знімки"
 msgid "Request timed out"
 msgstr "Час запиту вичерпано"
 
-#: selfdrive/ui/layouts/settings/device.py:119
+#: selfdrive/ui/layouts/settings/device.py:175
 #, python-format
 msgid "Reset"
 msgstr "Скинути"
 
-#: selfdrive/ui/layouts/settings/device.py:51
+#: selfdrive/ui/layouts/settings/device.py:59
 #, python-format
 msgid "Reset Calibration"
 msgstr "Скинути калібрування"
 
-#: selfdrive/ui/layouts/settings/device.py:65
+#: selfdrive/ui/layouts/settings/device.py:82
 #, python-format
 msgid "Review Training Guide"
 msgstr "Переглянути посібник з навчання"
 
-#: selfdrive/ui/layouts/settings/device.py:27
+#: selfdrive/ui/layouts/settings/device.py:31
 msgid "Review the rules, features, and limitations of openpilot"
 msgstr "Перегляньте правила, функції та обмеження openpilot"
 
-#: selfdrive/ui/layouts/settings/software.py:61
+#: selfdrive/ui/layouts/settings/software.py:68
+#: selfdrive/ui/layouts/settings/top.py:195
 #, python-format
 msgid "SELECT"
 msgstr "ВИБРАТИ"
@@ -814,6 +1046,12 @@ msgstr "ВИБРАТИ"
 #, python-format
 msgid "SSH Keys"
 msgstr "SSH ключі"
+
+#: selfdrive/ui/widgets/footage_dialog.py:89
+#, python-format
+msgid ""
+"Scan the QR code with a phone on the same network as the device, or open:"
+msgstr ""
 
 #: system/ui/widgets/network.py:310
 #, python-format
@@ -825,36 +1063,50 @@ msgstr "Пошук мереж..."
 msgid "Select"
 msgstr "Вибрати"
 
-#: selfdrive/ui/layouts/settings/software.py:191
+#: selfdrive/ui/layouts/settings/software.py:192
 #, python-format
 msgid "Select a branch"
 msgstr "Виберіть гілку"
 
-#: selfdrive/ui/layouts/settings/device.py:91
+#: selfdrive/ui/layouts/settings/device.py:108
 #, python-format
 msgid "Select a language"
 msgstr "Виберіть мову"
 
-#: selfdrive/ui/layouts/settings/device.py:60
+#: selfdrive/ui/layouts/settings/top.py:223
+#, python-format
+msgid "Select your car"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/device.py:77
 #, python-format
 msgid "Serial"
 msgstr "Серійний номер"
+
+#: selfdrive/ui/layouts/settings/top.py:66
+msgid "Smooth Stops"
+msgstr ""
 
 #: selfdrive/ui/widgets/offroad_alerts.py:106
 #, python-format
 msgid "Snooze Update"
 msgstr "Відкласти оновлення"
 
-#: selfdrive/ui/layouts/settings/settings.py:62
+#: selfdrive/ui/layouts/settings/settings.py:64
 msgid "Software"
 msgstr "Програма"
 
-#: selfdrive/ui/layouts/settings/toggles.py:98
+#: selfdrive/ui/layouts/settings/toggles.py:119
+#, python-format
+msgid "Sport"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:108
 #, python-format
 msgid "Standard"
 msgstr "Стандарт"
 
-#: selfdrive/ui/layouts/settings/toggles.py:22
+#: selfdrive/ui/layouts/settings/toggles.py:24
 msgid ""
 "Standard is recommended. In aggressive mode, openpilot will follow lead cars "
 "closer and be more aggressive with the gas and brake. In relaxed mode "
@@ -867,25 +1119,53 @@ msgstr ""
 "відстані від автомобілів попереду. На підтримуваних автомобілях ви можете "
 "перемикатися між цими режимами за допомогою кнопки дистанції на кермі."
 
+#: selfdrive/ui/layouts/settings/toggles.py:119
+#, python-format
+msgid "Stock"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:52
+msgid "Stop And Go"
+msgstr ""
+
 #: selfdrive/ui/onroad/alert_renderer.py:59
 #: selfdrive/ui/onroad/alert_renderer.py:65
 #, python-format
 msgid "System Unresponsive"
 msgstr "Система не реагує"
 
+#: selfdrive/ui/layouts/settings/settings.py:67
+msgid "T.O.P"
+msgstr ""
+
 #: selfdrive/ui/onroad/alert_renderer.py:58
 #, python-format
 msgid "TAKE CONTROL IMMEDIATELY"
 msgstr "КЕРМУЙТЕ НЕГАЙНО"
 
-#: selfdrive/ui/layouts/sidebar.py:71
-#: selfdrive/ui/layouts/sidebar.py:125
-#: selfdrive/ui/layouts/sidebar.py:127
-#: selfdrive/ui/layouts/sidebar.py:129
+#: selfdrive/ui/layouts/sidebar.py:71 selfdrive/ui/layouts/sidebar.py:125
+#: selfdrive/ui/layouts/sidebar.py:127 selfdrive/ui/layouts/sidebar.py:129
 msgid "TEMP"
 msgstr "ТЕМП"
 
-#: selfdrive/ui/layouts/settings/software.py:61
+#: selfdrive/ui/layouts/settings/top.py:28
+msgid ""
+"TOP will display alerts but only play the most important warning sounds. "
+"This feature can be toggled while the car is on."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:94
+msgid ""
+"TOP will link the Acceleration Personality to the car's physical drive mode "
+"selector.\n"
+"Reboot Required."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:59
+msgid "TSS-P Longitudinal Tuning"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:68
 #, python-format
 msgid "Target Branch"
 msgstr "Цільова гілка"
@@ -895,22 +1175,47 @@ msgstr "Цільова гілка"
 msgid "Tethering Password"
 msgstr "Пароль для точки доступу"
 
-#: selfdrive/ui/layouts/settings/settings.py:61
+#: selfdrive/ui/layouts/settings/top.py:63
+msgid ""
+"The distance to the lead car will no longer be a fixed reaction time, but "
+"will be dynamically adjusted based on the speed of the vehicle."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:86
+msgid ""
+"This will allow you to play or download openpilot driving record files "
+"through your browser.\n"
+"Use web interface to control it: http://[device_ip]:8082\n"
+"Internet access from mobile phone (tethering) is required."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/settings.py:63
 msgid "Toggles"
 msgstr "Перемикачі"
 
-#: selfdrive/ui/layouts/settings/software.py:72
+#: selfdrive/ui/layouts/settings/top.py:31
+msgid ""
+"Turn off the device screen to protect the OLED panel after driving starts. "
+"It automatically brightens or turns on when a touch or event occurs."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/developer.py:79
+#, python-format
+msgid "UI Debug Mode"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:79
 #, python-format
 msgid "UNINSTALL"
 msgstr "ВИДАЛИТИ"
 
-#: selfdrive/ui/layouts/home.py:155
+#: selfdrive/ui/layouts/home.py:154
 #, python-format
 msgid "UPDATE"
 msgstr "ОНОВИТИ"
 
-#: selfdrive/ui/layouts/settings/software.py:72
-#: selfdrive/ui/layouts/settings/software.py:171
+#: selfdrive/ui/layouts/settings/software.py:79
+#: selfdrive/ui/layouts/settings/software.py:172
 #, python-format
 msgid "Uninstall"
 msgstr "Видалити"
@@ -919,7 +1224,7 @@ msgstr "Видалити"
 msgid "Unknown"
 msgstr "Невідомо"
 
-#: selfdrive/ui/layouts/settings/software.py:48
+#: selfdrive/ui/layouts/settings/software.py:55
 #, python-format
 msgid "Updates are only downloaded while the car is off."
 msgstr "Оновлення завантажуються лише тоді, коли автомобіль вимкнено."
@@ -929,7 +1234,7 @@ msgstr "Оновлення завантажуються лише тоді, ко�
 msgid "Upgrade Now"
 msgstr "Оновити зараз"
 
-#: selfdrive/ui/layouts/settings/toggles.py:31
+#: selfdrive/ui/layouts/settings/toggles.py:33
 msgid ""
 "Upload data from the driver facing camera and help improve the driver "
 "monitoring algorithm."
@@ -937,12 +1242,28 @@ msgstr ""
 "Завантажуйте дані з камери, спрямованої на водія, та допоможіть покращити "
 "алгоритм моніторингу водія."
 
-#: selfdrive/ui/layouts/settings/toggles.py:88
+#: selfdrive/ui/layouts/settings/toggles.py:98
 #, python-format
 msgid "Use Metric System"
 msgstr "Використовувати метричну систему"
 
-#: selfdrive/ui/layouts/settings/toggles.py:17
+#: selfdrive/ui/layouts/settings/top.py:90
+msgid "Use Toyota Stock Longitudinal Control"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:38
+msgid ""
+"Use Twilsonco's Neural Network Feedforward torque system for more precise "
+"lateral control.\n"
+"Changing this setting will restart openpilot."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:83
+msgid ""
+"Use map data to estimate the appropriate speed to drive through turns ahead."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/toggles.py:19
 msgid ""
 "Use the openpilot system for adaptive cruise control and lane keep driver "
 "assistance. Your attention is required at all times to use this feature."
@@ -952,15 +1273,30 @@ msgstr ""
 "функції. Зміна цього налаштування набуває чинності після вимкнення живлення "
 "автомобіля."
 
-#: selfdrive/ui/layouts/sidebar.py:72
-#: selfdrive/ui/layouts/sidebar.py:144
+#: selfdrive/ui/layouts/settings/top.py:80
+msgid ""
+"Use vision path predictions to estimate the appropriate speed to drive "
+"through turns ahead."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:60
+msgid ""
+"Using the longitudinal tuning can improve the smoothness on Toyota TSS-P "
+"models when equipped with SDSU for longitudinal control."
+msgstr ""
+
+#: selfdrive/ui/layouts/sidebar.py:72 selfdrive/ui/layouts/sidebar.py:144
 msgid "VEHICLE"
 msgstr "АВТО"
 
-#: selfdrive/ui/layouts/settings/device.py:67
+#: selfdrive/ui/layouts/settings/device.py:84
 #, python-format
 msgid "VIEW"
 msgstr "ДИВИСЬ"
+
+#: selfdrive/ui/layouts/settings/top.py:79
+msgid "Vision Based Turn Control"
+msgstr ""
 
 #: selfdrive/ui/onroad/alert_renderer.py:52
 #, python-format
@@ -978,14 +1314,42 @@ msgstr ""
 "вашого власного. Співробітник comma НІКОЛИ не попросить вас додати його ім'я "
 "користувача GitHub."
 
-#: selfdrive/ui/layouts/onboarding.py:111
+#: selfdrive/ui/layouts/settings/device.py:32
+#: selfdrive/ui/widgets/footage_dialog.py:83
+#, python-format
+msgid "Watch and/or download recordings from comma device cameras"
+msgstr ""
+
+#: selfdrive/ui/layouts/onboarding.py:112
 #, python-format
 msgid "Welcome to openpilot"
 msgstr "Ласкаво просимо до openpilot"
 
-#: selfdrive/ui/layouts/settings/toggles.py:20
+#: selfdrive/ui/layouts/settings/toggles.py:22
 msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
 msgstr "Якщо увімкнено, натискання на педаль акселератора вимкне openpilot."
+
+#: selfdrive/ui/layouts/settings/top.py:47
+msgid ""
+"When the driving model keeps the car off the middle of a marked lane, "
+"cutting curves or hugging a line, steer it back toward the lane centre. Only "
+"from 45 km/h (full from 60 km/h) in normal-width lanes: off in alleys and "
+"slow streets, during lane changes, while you steer and where the lane lines "
+"are faint. Takes effect on the next drive."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:76
+msgid ""
+"When the system detects obstacles at the vehicle's edge, lane change assist "
+"functionality will be temporarily suspended.\n"
+"NOTE: This will show 'Car Detected in Blindspot' warning."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top.py:56
+msgid ""
+"When vehicle is stopped, enable experiment mode to prevent radar misjudgment "
+"of other moving vehicles that could cause continuous forward sliding."
+msgstr ""
 
 #: selfdrive/ui/layouts/sidebar.py:44
 msgid "Wi-Fi"
@@ -1001,27 +1365,27 @@ msgstr "Трафік Wi-Fi"
 msgid "Wrong password"
 msgstr "Невірний пароль"
 
-#: selfdrive/ui/layouts/onboarding.py:145
+#: selfdrive/ui/layouts/onboarding.py:146
 #, python-format
 msgid "You must accept the Terms and Conditions in order to use openpilot."
 msgstr "Ви повинні прийняти Умови та положення, щоб користуватися openpilot."
 
-#: selfdrive/ui/layouts/onboarding.py:112
+#: selfdrive/ui/layouts/onboarding.py:113
 #, python-format
 msgid ""
 "You must accept the Terms and Conditions to use openpilot. Read the latest "
 "terms at https://comma.ai/terms before continuing."
 msgstr ""
 "Ви повинні прийняти Умови використання, щоб користуватися openpilot. Перед "
-"тим, як продовжити, ознайомтеся з останніми умовами на сайті https://"
-"comma.ai/terms."
+"тим, як продовжити, ознайомтеся з останніми умовами на сайті https://comma."
+"ai/terms."
 
-#: selfdrive/ui/onroad/driver_camera_dialog.py:34
+#: selfdrive/ui/onroad/driver_camera_dialog.py:38
 #, python-format
 msgid "camera starting"
 msgstr "запуск камери"
 
-#: selfdrive/ui/layouts/settings/software.py:105
+#: selfdrive/ui/layouts/settings/software.py:19
 #, python-format
 msgid "checking..."
 msgstr "перевіряю..."
@@ -1036,22 +1400,22 @@ msgstr "comma prime"
 msgid "default"
 msgstr "замовч."
 
-#: selfdrive/ui/layouts/settings/device.py:133
+#: selfdrive/ui/layouts/settings/device.py:189
 #, python-format
 msgid "down"
 msgstr "вниз"
 
-#: selfdrive/ui/layouts/settings/software.py:106
+#: selfdrive/ui/layouts/settings/software.py:20
 #, python-format
 msgid "downloading..."
 msgstr "завантажую..."
 
-#: selfdrive/ui/layouts/settings/software.py:114
+#: selfdrive/ui/layouts/settings/software.py:115
 #, python-format
 msgid "failed to check for update"
 msgstr "не вдалося перевірити оновлення"
 
-#: selfdrive/ui/layouts/settings/software.py:107
+#: selfdrive/ui/layouts/settings/software.py:21
 #, python-format
 msgid "finalizing update..."
 msgstr "завершую..."
@@ -1071,7 +1435,7 @@ msgstr "км/год"
 msgid "leave blank for automatic configuration"
 msgstr "залиште порожнім для автоматичного налаштування"
 
-#: selfdrive/ui/layouts/settings/device.py:134
+#: selfdrive/ui/layouts/settings/device.py:190
 #, python-format
 msgid "left"
 msgstr "вліво"
@@ -1086,12 +1450,12 @@ msgstr "обмеж."
 msgid "mph"
 msgstr "миль/год"
 
-#: selfdrive/ui/layouts/settings/software.py:20
+#: selfdrive/ui/layouts/settings/software.py:27
 #, python-format
 msgid "never"
 msgstr "ніколи"
 
-#: selfdrive/ui/layouts/settings/software.py:31
+#: selfdrive/ui/layouts/settings/software.py:38
 #, python-format
 msgid "now"
 msgstr "зараз"
@@ -1106,7 +1470,7 @@ msgstr "Поздовжнє керування openpilot (Альфа)"
 msgid "openpilot Unavailable"
 msgstr "openpilot Недоступний"
 
-#: selfdrive/ui/layouts/settings/toggles.py:158
+#: selfdrive/ui/layouts/settings/toggles.py:184
 #, python-format
 msgid ""
 "openpilot defaults to driving in chill mode. Experimental mode enables alpha-"
@@ -1133,7 +1497,7 @@ msgstr ""
 "дорогу, при низьких швидкостях, щоб краще показувати деякі повороти. Логотип "
 "експериментального режиму також буде показаний у верхньому правому куті."
 
-#: selfdrive/ui/layouts/settings/device.py:165
+#: selfdrive/ui/layouts/settings/device.py:221
 #, python-format
 msgid ""
 "openpilot is continuously calibrating, resetting is rarely required. "
@@ -1142,7 +1506,7 @@ msgstr ""
 "openpilot постійно калібрується, скидання рідко потрібне. Скидання "
 "калібрування призведе до перезапуску openpilot, якщо автомобіль увімкнено."
 
-#: selfdrive/ui/layouts/settings/firehose.py:20
+#: selfdrive/ui/layouts/settings/firehose.py:12
 msgid ""
 "openpilot learns to drive by watching humans, like you, drive.\n"
 "\n"
@@ -1157,12 +1521,12 @@ msgstr ""
 "даних, щоб поліпшити моделі керування автомобілем openpilot. Більше даних "
 "означає більші моделі, а це означає кращий експериментальний режим."
 
-#: selfdrive/ui/layouts/settings/toggles.py:183
+#: selfdrive/ui/layouts/settings/toggles.py:209
 #, python-format
 msgid "openpilot longitudinal control may come in a future update."
 msgstr "Поздовжнє керування openpilot може з'явитися в майбутньому оновленні."
 
-#: selfdrive/ui/layouts/settings/device.py:26
+#: selfdrive/ui/layouts/settings/device.py:30
 msgid ""
 "openpilot requires the device to be mounted within 4° left or right and "
 "within 5° up or 9° down."
@@ -1171,7 +1535,7 @@ msgstr ""
 "більше 4° вліво або вправо та не більше 5° вгору або 9° вниз. openpilot "
 "постійно калібрується, тому скидання калібрування потрібне рідко."
 
-#: selfdrive/ui/layouts/settings/device.py:134
+#: selfdrive/ui/layouts/settings/device.py:190
 #, python-format
 msgid "right"
 msgstr "вправо"
@@ -1181,27 +1545,27 @@ msgstr "вправо"
 msgid "unmetered"
 msgstr "необмеж."
 
-#: selfdrive/ui/layouts/settings/device.py:133
+#: selfdrive/ui/layouts/settings/device.py:189
 #, python-format
 msgid "up"
 msgstr "вгору"
 
-#: selfdrive/ui/layouts/settings/software.py:125
+#: selfdrive/ui/layouts/settings/software.py:126
 #, python-format
 msgid "up to date, last checked never"
 msgstr "оновлено, ніколи не перевірялось"
 
-#: selfdrive/ui/layouts/settings/software.py:123
+#: selfdrive/ui/layouts/settings/software.py:124
 #, python-format
 msgid "up to date, last checked {}"
 msgstr "оновлено, перевірив {}"
 
-#: selfdrive/ui/layouts/settings/software.py:117
+#: selfdrive/ui/layouts/settings/software.py:118
 #, python-format
 msgid "update available"
 msgstr "доступне оновлення"
 
-#: selfdrive/ui/layouts/home.py:169
+#: selfdrive/ui/layouts/home.py:168
 #, python-format
 msgid "{} ALERT"
 msgid_plural "{} ALERTS"
@@ -1209,7 +1573,7 @@ msgstr[0] "{} СПОВІЩЕННЯ"
 msgstr[1] "{} СПОВІЩЕННЯ"
 msgstr[2] "{} СПОВІЩЕНЬ"
 
-#: selfdrive/ui/layouts/settings/software.py:40
+#: selfdrive/ui/layouts/settings/software.py:47
 #, python-format
 msgid "{} day ago"
 msgid_plural "{} days ago"
@@ -1217,7 +1581,7 @@ msgstr[0] "{} день тому"
 msgstr[1] "{} дні тому"
 msgstr[2] "{} днів тому"
 
-#: selfdrive/ui/layouts/settings/software.py:37
+#: selfdrive/ui/layouts/settings/software.py:44
 #, python-format
 msgid "{} hour ago"
 msgid_plural "{} hours ago"
@@ -1225,7 +1589,7 @@ msgstr[0] "{} година тому"
 msgstr[1] "{} години тому"
 msgstr[2] "{} годин тому"
 
-#: selfdrive/ui/layouts/settings/software.py:34
+#: selfdrive/ui/layouts/settings/software.py:41
 #, python-format
 msgid "{} minute ago"
 msgid_plural "{} minutes ago"
@@ -1233,7 +1597,7 @@ msgstr[0] "{} хвилина тому"
 msgstr[1] "{} хвилини тому"
 msgstr[2] "{} хвилин тому"
 
-#: selfdrive/ui/layouts/settings/firehose.py:111
+#: selfdrive/ui/layouts/settings/firehose.py:70
 #, python-format
 msgid "{} segment of your driving is in the training dataset so far."
 msgid_plural "{} segments of your driving is in the training dataset so far."
@@ -1256,3 +1620,11 @@ msgstr "✓ ПІДПИСАНО"
 #, python-format
 msgid "🔥 Firehose Mode 🔥"
 msgstr "🌧️ Режим зливи 🌧️"
+
+#, python-format
+#~ msgid "ACTIVE"
+#~ msgstr "АКТИВНИЙ"
+
+#, python-format
+#~ msgid "INACTIVE: connect to an unmetered network"
+#~ msgstr "НЕАКТИВНО: підключення до мережі без ліміту трафіку"

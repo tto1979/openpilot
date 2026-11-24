@@ -1,5 +1,8 @@
 import os
 import math
+import subprocess
+import threading
+import time
 
 from cereal import messaging, log
 from openpilot.common.basedir import BASEDIR
@@ -9,6 +12,7 @@ from openpilot.selfdrive.ui.onroad.driver_camera_dialog import DriverCameraDialo
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.layouts.onboarding import TrainingGuide
 from openpilot.selfdrive.ui.widgets.pairing_dialog import PairingDialog
+from openpilot.selfdrive.ui.widgets.footage_dialog import FootageDialog
 from openpilot.system.hardware import TICI
 from openpilot.system.ui.lib.application import FontWeight, gui_app
 from openpilot.system.ui.lib.multilang import multilang, tr, tr_noop
@@ -25,6 +29,8 @@ DESCRIPTIONS = {
   'driver_camera': tr_noop("Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"),
   'reset_calibration': tr_noop("openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."),
   'review_guide': tr_noop("Review the rules, features, and limitations of openpilot"),
+  'footage': tr_noop("Watch and/or download recordings from comma device cameras"),
+  'flash_panda': tr_noop("Reinstall the Panda firmware to fix connection or reliability issues."),
 }
 
 
@@ -38,6 +44,8 @@ class DeviceLayout(Widget):
     self._pair_device_dialog: PairingDialog | None = None
     self._fcc_dialog: HtmlModal | None = None
     self._training_guide: TrainingGuide | None = None
+    self._footage_dialog: FootageDialog | None = None
+    self._flash_status = ""
 
     items = self._initialize_items()
     self._scroller = Scroller(items, line_separator=True, spacing=0)
@@ -55,13 +63,22 @@ class DeviceLayout(Widget):
     self._power_off_btn = dual_button_item(lambda: tr("Reboot"), lambda: tr("Power Off"),
                                            left_callback=self._reboot_prompt, right_callback=self._power_off_prompt)
 
+    self._flash_panda_btn = button_item(lambda: tr("Flash Panda"), lambda: self._flash_status or tr("FLASH"),
+                                        lambda: tr(DESCRIPTIONS['flash_panda']), callback=self._flash_panda_prompt,
+                                        enabled=lambda: not self._flash_status)
+
+    driver_camera_btn = button_item(lambda: tr("Driver Camera"), lambda: tr("PREVIEW"), lambda: tr(DESCRIPTIONS['driver_camera']),
+                                    callback=self._show_driver_camera, enabled=ui_state.is_offroad)
+    driver_camera_btn.set_visible(not os.getenv("LITE"))  # LITE units have no driver camera
+
     items = [
+      button_item(lambda: tr("DashCam footage"), lambda: tr("QR-Code"), lambda: tr(DESCRIPTIONS['footage']), callback=self._show_footage),
       text_item(lambda: tr("Dongle ID"), self._params.get("DongleId") or (lambda: tr("N/A"))),
       text_item(lambda: tr("Serial"), self._params.get("HardwareSerial") or (lambda: tr("N/A"))),
       self._pair_device_btn,
-      button_item(lambda: tr("Driver Camera"), lambda: tr("PREVIEW"), lambda: tr(DESCRIPTIONS['driver_camera']),
-                  callback=self._show_driver_camera, enabled=ui_state.is_offroad),
+      driver_camera_btn,
       self._reset_calib_btn,
+      self._flash_panda_btn,
       button_item(lambda: tr("Review Training Guide"), lambda: tr("REVIEW"), lambda: tr(DESCRIPTIONS['review_guide']),
                   self._on_review_training_guide, enabled=ui_state.is_offroad),
       regulatory_btn := button_item(lambda: tr("Regulatory"), lambda: tr("VIEW"), callback=self._on_regulatory, enabled=ui_state.is_offroad),
@@ -91,6 +108,45 @@ class DeviceLayout(Widget):
     self._select_language_dialog = MultiOptionDialog(tr("Select a language"), multilang.languages, multilang.codes[multilang.language],
                                                      option_font_weight=FontWeight.UNIFONT)
     gui_app.set_modal_overlay(self._select_language_dialog, callback=handle_language_selection)
+
+  def _show_footage(self):
+    if not self._footage_dialog:
+      self._footage_dialog = FootageDialog()
+    gui_app.set_modal_overlay(self._footage_dialog, callback=lambda result: setattr(self, '_footage_dialog', None))
+
+  def _flash_panda_prompt(self):
+    if ui_state.engaged:
+      gui_app.set_modal_overlay(alert_dialog(tr("Disengage to Flash Panda")))
+      return
+
+    def flash(result: int):
+      # Check engaged again in case it changed while the dialog was open
+      if ui_state.engaged or result != DialogResult.CONFIRM:
+        return
+      threading.Thread(target=self._flash_panda, daemon=True).start()
+
+    dialog = ConfirmDialog(tr("Are you sure you want to flash the Panda firmware?"), tr("Flash"))
+    gui_app.set_modal_overlay(dialog, callback=flash)
+
+  def _flash_panda(self):
+    self._flash_status = tr("Flashing...")
+    try:
+      with open("/data/flash_panda.log", "w") as log_file:
+        ret = subprocess.call(["python3", "top/system/flash_panda.py"], cwd=BASEDIR, stdout=log_file, stderr=subprocess.STDOUT)
+    except Exception:
+      cloudlog.exception("flash panda failed")
+      ret = -1
+
+    if ret == 0:
+      self._flash_status = tr("Flashed!")
+      time.sleep(2.5)
+      self._flash_status = tr("Rebooting...")
+      time.sleep(2.5)
+      self._params.put_bool("DoReboot", True)
+    else:
+      self._flash_status = tr("Failed!")
+      time.sleep(3)
+      self._flash_status = ""
 
   def _show_driver_camera(self):
     if not self._driver_camera:

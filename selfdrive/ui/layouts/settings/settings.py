@@ -7,6 +7,7 @@ from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
 from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
 from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
+from openpilot.selfdrive.ui.layouts.settings.top import TopLayout
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.lib.text_measure import measure_text_cached
@@ -37,6 +38,7 @@ class PanelType(IntEnum):
   SOFTWARE = 3
   FIREHOSE = 4
   DEVELOPER = 5
+  TOP = 6
 
 
 @dataclass
@@ -62,6 +64,7 @@ class SettingsLayout(Widget):
       PanelType.SOFTWARE: PanelInfo(tr_noop("Software"), SoftwareLayout()),
       PanelType.FIREHOSE: PanelInfo(tr_noop("Firehose"), FirehoseLayout()),
       PanelType.DEVELOPER: PanelInfo(tr_noop("Developer"), DeveloperLayout()),
+      PanelType.TOP: PanelInfo(tr_noop("T.O.P"), TopLayout()),
     }
 
     self._font_medium = gui_app.font(FontWeight.MEDIUM)
@@ -114,10 +117,11 @@ class SettingsLayout(Widget):
     # Store close button rect for click detection
     self._close_btn_rect = close_btn_rect
 
-    # Navigation buttons
+    # Navigation buttons, squeezed when TOP's extra panels don't fit
     y = rect.y + 300
+    nav_btn_height = min(NAV_BTN_HEIGHT, (rect.height - 320) / len(self._panels))
     for panel_type, panel_info in self._panels.items():
-      button_rect = rl.Rectangle(rect.x + 50, y, rect.width - 150, NAV_BTN_HEIGHT)
+      button_rect = rl.Rectangle(rect.x + 50, y, rect.width - 150, nav_btn_height)
 
       # Button styling
       is_selected = panel_type == self._current_panel
@@ -133,7 +137,7 @@ class SettingsLayout(Widget):
       # Store button rect for click detection
       panel_info.button_rect = button_rect
 
-      y += NAV_BTN_HEIGHT
+      y += nav_btn_height
 
   def _draw_current_panel(self, rect: rl.Rectangle):
     rl.draw_rectangle_rounded(

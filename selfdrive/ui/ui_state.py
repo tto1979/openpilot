@@ -71,6 +71,7 @@ class UIState:
     self.is_metric: bool = self.params.get_bool("IsMetric")
     self.is_release = self.params.get_bool("IsReleaseBranch")
     self.always_on_dm: bool = self.params.get_bool("AlwaysOnDM")
+    self.onroad_screen_off: bool = self.params.get_bool("OnroadScreenOff")  # TOP: "Driving Screen Off"
     self.started: bool = False
     self.ignition: bool = False
     self.recording_audio: bool = False
@@ -144,6 +145,7 @@ class UIState:
 
     self.is_metric = self.params.get_bool("IsMetric")
     self.always_on_dm = self.params.get_bool("AlwaysOnDM")
+    self.onroad_screen_off = self.params.get_bool("OnroadScreenOff")
 
   def _update_status(self) -> None:
     if self.started and self.sm.updated["selfdriveState"]:
@@ -199,6 +201,7 @@ class Device:
     self._last_brightness: int = 0
     self._brightness_filter = FirstOrderFilter(BACKLIGHT_OFFROAD, 10.00, 1 / gui_app.target_fps)
     self._brightness_thread: threading.Thread | None = None
+    self._screen_on_until: float = 0.0  # TOP: Driving Screen Off keeps the screen on briefly after alerts
 
   @property
   def awake(self) -> bool:
@@ -253,6 +256,14 @@ class Device:
     brightness = round(self._brightness_filter.update(clipped_brightness))
     if not self._awake:
       brightness = 0
+    elif ui_state.onroad_screen_off and ui_state.started:
+      # TOP "Driving Screen Off": dark while driving, lit by a touch (interactive timeout) or a warning/alert
+      now = time.monotonic()
+      alert_status = ui_state.sm["selfdriveState"].alertStatus
+      if alert_status in (log.SelfdriveState.AlertStatus.userPrompt, log.SelfdriveState.AlertStatus.critical):
+        self._screen_on_until = now + 0.4
+      if now > self._interaction_time and now > self._screen_on_until:
+        brightness = 0
 
     if brightness != self._last_brightness:
       if self._brightness_thread is None or not self._brightness_thread.is_alive():

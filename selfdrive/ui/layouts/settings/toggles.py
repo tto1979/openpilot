@@ -1,3 +1,5 @@
+import os
+
 from cereal import log
 from openpilot.common.params import Params, UnknownKeyName
 from openpilot.system.ui.widgets import Widget
@@ -31,7 +33,15 @@ DESCRIPTIONS = {
   'RecordFront': tr_noop("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+  "AccelPersonality": tr_noop(
+    "Normal is recommended. In sport mode, TOP will provide aggressive acceleration for a dynamic driving experience. " +
+    "In eco mode, TOP will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these " +
+    "acceleration personality within Onroad Settings on the driving screen."
+  ),
 }
+
+# LITE (comma three without driver camera / microphone): these toggles do nothing
+LITE_HIDDEN = {"AlwaysOnDM", "RecordFront", "RecordAudio"}
 
 
 class TogglesLayout(Widget):
@@ -102,6 +112,21 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
+    # TOP: acceleration personality
+    self._accel_personality_setting = multiple_button_item(
+      lambda: tr("Acceleration Personality"),
+      lambda: tr(DESCRIPTIONS["AccelPersonality"]),
+      buttons=[lambda: tr("Sport"), lambda: tr("Normal"), lambda: tr("Eco"), lambda: tr("Stock")],
+      button_width=200,
+      callback=lambda button_index: self._params.put("AccelPersonality", button_index),
+      selected_index=self._accel_personality_index(),
+      icon="speed_limit.png"
+    )
+
+    if os.getenv("LITE"):
+      for param in LITE_HIDDEN:
+        self._toggle_defs.pop(param, None)
+
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -134,6 +159,7 @@ class TogglesLayout(Widget):
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
+        self._toggles["AccelPersonality"] = self._accel_personality_setting
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -239,6 +265,11 @@ class TogglesLayout(Widget):
     self._params.put_bool(param, state)
     if self._toggle_defs[param][3]:
       self._params.put_bool("OnroadCycleRequested", True)
+
+  def _accel_personality_index(self) -> int:
+    # unset means stock, which is what the accel controller does too
+    value = self._params.get("AccelPersonality")
+    return value if value in (0, 1, 2, 3) else 3
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
