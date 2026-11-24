@@ -718,6 +718,12 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
   toggles.append(nnff_toggle);
   toggles.append(lag_toggle);
 
+  toggles.append(new ParamControl("LaneCentering",
+                                  tr("Lane Centering Correction"),
+                                  tr("When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it part of the way back to the lane centre. Off during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive."),
+                                  "../assets/icons/road.png",
+                                  this));
+
   toggles.append(new ParamControl("topsng",
                                   tr("Stop And Go"),
                                   tr("Enabled the Stop And Go feature and get auto hold."),

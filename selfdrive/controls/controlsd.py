@@ -13,6 +13,7 @@ from opendbc.car import structs
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.vehicle_model import VehicleModel
 from openpilot.selfdrive.controls.lib.drive_helpers import clip_curvature
+from openpilot.selfdrive.controls.lib.lane_centering import LaneCentering
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle, STEER_ANGLE_SATURATION_THRESHOLD
@@ -67,6 +68,10 @@ class Controls:
 
     self.dp_atl = self.params.get_bool("dp_atl")
     self.alka_active = False
+
+    # TOP: steer the model's plan part of the way back to the lane centre (read once per drive)
+    self.lane_centering_enabled = self.params.get_bool("LaneCentering")
+    self.lane_centering = LaneCentering()
 
   def update(self):
     self.sm.update(15)
@@ -137,6 +142,13 @@ class Controls:
     # Steering PID loop and lateral MPC
     # Reset desired curvature to current to avoid violating the limits on engage
     new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
+    lane_centering = self.lane_centering.update(self.lane_centering_enabled and CC.latActive, model_v2, self.sm.updated['modelV2'],
+                                                CS.vEgo, CS.steeringPressed)
+    if CC.latActive:
+      new_desired_curvature += lane_centering
+    if isinstance(self.LaC, LatControlTorque):
+      # NNFF also reads the model's planned lateral accels: shift them by the same amount
+      self.LaC.plan_lat_accel_offset = lane_centering * CS.vEgo ** 2 if CC.latActive else 0.0
     self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
     lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
 
@@ -203,6 +215,9 @@ class Controls:
     dat.valid = True
     ncs = dat.topControlsState
     ncs.alkaActive = self.alka_active
+    ncs.laneCenteringCurvature = float(self.lane_centering.curvature)
+    ncs.laneCenteringOffset = float(self.lane_centering.offset)
+    ncs.laneCenteringWeight = float(self.lane_centering.weight)
     self.pm.send('topControlsState', dat)
 
     # controlsState

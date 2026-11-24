@@ -1367,8 +1367,16 @@ Data</source>
     <message>
         <source>Keep the fixed default steering delay instead of learning the delay of the car while driving. Turn on for cars whose steering wheel sticks: the learned delay comes out too long and the steering can wobble.
 Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive.</source>
-        <translation>不在行駛中學習這台車的轉向反應延遲，固定使用預設延遲。方向盤容易卡住的車建議開啟：學到的延遲會偏長，方向盤可能因此晃動。
+        <translation>不在行駛中學習這台車的轉向反應延遲，固定使用預設延遲。有時延遲學習錯誤可能會造成方向盤因此晃動，可開啟此功能改善晃動。
 開啟 NNFF 控制器時一律開啟，NNFF 使用固定延遲。下次行駛時生效。</translation>
+    </message>
+    <message>
+        <source>Lane Centering Correction</source>
+        <translation>車道置中修正</translation>
+    </message>
+    <message>
+        <source>When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it part of the way back to the lane centre. Off during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive.</source>
+        <translation>駕駛模型有時可能造成車偏離車道中央（彎道切內側），開啟此功能可把車往車道中央拉回一部分。變換車道、駕駛轉動方向盤時，以及車道線不清楚的地方不作用。下次行駛時生效。</translation>
     </message>
     <message>
         <source>Select Car</source>

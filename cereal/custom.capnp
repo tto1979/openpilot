@@ -12,6 +12,9 @@ $Cxx.namespace("cereal");
 
 struct TopControlsState @0x81c2f05a394cf4af {
   alkaActive @0 :Bool;
+  laneCenteringCurvature @1 :Float32;  # lane centering: added to the model's desired curvature (1/m, right positive)
+  laneCenteringOffset @2 :Float32;     # plan minus lane centre at the aim point (m, right positive)
+  laneCenteringWeight @3 :Float32;
 }
 
 struct LongitudinalPlanTOP @0xaedffd8f31e7b55d {
