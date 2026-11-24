@@ -35,7 +35,7 @@ def is_tici() -> bool:
 
 def load_manifest(manifest_path: str) -> list[dict]:
   with open(manifest_path) as f:
-    update = json.load(f)
+    update: list[dict] = json.load(f)
   if not is_tici():
     return update
 

@@ -49,7 +49,7 @@ LANE_WIDTH_TC = 2.0    # s
 
 
 class LaneCentering:
-  def __init__(self):
+  def __init__(self) -> None:
     self.lane_width = LANE_WIDTH_INIT
     self.curvature = 0.0  # correction added to the model's desired curvature (1/m)
     self.target = 0.0
