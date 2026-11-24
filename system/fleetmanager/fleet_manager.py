@@ -21,6 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+import os
 import secrets
 from flask import Flask, render_template, Response, request, send_from_directory
 from openpilot.common.realtime import set_core_affinity
@@ -77,9 +78,40 @@ def route(route):
   links = ""
   segments = ""
   for segment in fleet.segments_in_route(route):
-    links += "<a href='"+route+"?"+segment.split("--")[2]+","+query_type+"'>"+segment+"</a><br>"
+    links += "<a href='"+route+"?"+segment.split("--")[2]+","+query_type+"'>"+segment+"</a>"
+    if fleet.rlog_path(segment) is not None:
+      links += " - <a href='/rlog/"+segment+"'>rlog</a>"
+    links += "<br>"
     segments += "'"+segment+"',"
   return render_template("route.html", route=route, query_type=query_type, links=links, segments=segments, query_segment=query_segment)
+
+
+def attachment(body, filename, mimetype, length=None):
+  # set headers by hand: works on any Flask version (no send_file download_name needed)
+  headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+  if length is not None:
+    headers["Content-Length"] = str(length)
+  return Response(body, status=200, mimetype=mimetype, headers=headers)
+
+
+@app.route("/rlog/<segment>")
+def rlog_segment(segment):
+  fn = fleet.rlog_path(segment)
+  if fn is None:
+    return render_template("error.html", error="rlog not found (or still recording): " + segment)
+  # flat name the nnlc tools recognize: <dongle>_<route>--<seg>--rlog.zst
+  filename = fleet.dongle_prefix() + segment + "--" + os.path.basename(fn)
+  return attachment(fleet.file_stream(fn), filename, "application/octet-stream", os.path.getsize(fn))
+
+
+@app.route("/rlog/full/<route>")
+def rlog_route(route):
+  if len(route) != 20:
+    return render_template("error.html", error="route not found")
+  files = fleet.rlogs_in_route(route)
+  if not files:
+    return render_template("error.html", error="no finished rlogs in route: " + route)
+  return attachment(fleet.zip_stream(files), fleet.dongle_prefix() + route + "--rlog.zip", "application/zip")
 
 
 @app.route("/footage/")
