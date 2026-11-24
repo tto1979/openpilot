@@ -20,8 +20,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+import io
 import os
 import subprocess
+import zipfile
 from pathlib import Path
 from openpilot.system.hardware import PC
 from openpilot.system.hardware.hw import Paths
@@ -61,7 +63,7 @@ def is_valid_segment(segment):
   try:
     segment_to_segment_name(Paths.log_root(), segment)
     return True
-  except AssertionError:
+  except (AssertionError, ValueError, IndexError):
     return False
 
 
@@ -75,7 +77,7 @@ def all_segment_names():
   for segment in listdir_by_creation(Paths.log_root()):
     try:
       segments.append(segment_to_segment_name(Paths.log_root(), segment))
-    except AssertionError:
+    except (AssertionError, ValueError, IndexError):  # skip non-segment dirs
       pass
   return segments
 
@@ -109,6 +111,83 @@ def segments_in_route(route):
   segment_names = [segment_name for segment_name in all_segment_names() if segment_name.time_str == route]
   segments = [segment_name.time_str + "--" + str(segment_name.segment_num) for segment_name in segment_names]
   return segments
+
+
+# ---- rlog download ----
+RLOG_NAMES = ("rlog.zst", "rlog.bz2", "rlog")
+RLOG_CHUNK_SIZE = 1024 * 1024
+
+
+def rlog_path(segment):
+  """Path to the segment's rlog, or None if missing or still being written."""
+  root = Paths.log_root()
+  try:
+    if segment not in os.listdir(root):  # also blocks path traversal
+      return None
+  except OSError:
+    return None
+  seg_dir = os.path.join(root, segment)
+  if os.path.exists(os.path.join(seg_dir, "rlog.lock")):
+    return None
+  for name in RLOG_NAMES:
+    fn = os.path.join(seg_dir, name)
+    if os.path.isfile(fn):
+      return fn
+  return None
+
+
+def rlogs_in_route(route):
+  """[(path, arcname)] for every finished rlog in the route, device layout: <segment>/rlog.zst"""
+  segments = sorted(segments_in_route(route), key=lambda s: int(s.rsplit("--", 1)[1]))
+  files = []
+  for segment in segments:
+    fn = rlog_path(segment)
+    if fn is not None:
+      files.append((fn, segment + "/" + os.path.basename(fn)))
+  return files
+
+
+def dongle_prefix():
+  dongle_id = params.get("DongleId")
+  return f"{dongle_id}_" if dongle_id else ""
+
+
+def file_stream(fn, chunk_size=RLOG_CHUNK_SIZE):
+  with open(fn, "rb") as f:
+    while chunk := f.read(chunk_size):
+      yield chunk
+
+
+class _ZipSink(io.RawIOBase):
+  """Write-only, unseekable buffer: zipfile falls back to data descriptors, so the zip can be streamed."""
+  def __init__(self):
+    self._buf = bytearray()
+
+  def writable(self):
+    return True
+
+  def write(self, b):
+    self._buf += b
+    return len(b)
+
+  def drain(self):
+    data = bytes(self._buf)
+    self._buf.clear()
+    return data
+
+
+def zip_stream(files, chunk_size=RLOG_CHUNK_SIZE):
+  """Stream a ZIP_STORED archive (rlogs are already compressed) without temp files."""
+  sink = _ZipSink()
+  with zipfile.ZipFile(sink, mode="w", compression=zipfile.ZIP_STORED) as zf:
+    for fn, arcname in files:
+      zinfo = zipfile.ZipInfo.from_file(fn, arcname)
+      zinfo.compress_type = zipfile.ZIP_STORED
+      with open(fn, "rb") as src, zf.open(zinfo, mode="w") as dst:
+        while chunk := src.read(chunk_size):
+          dst.write(chunk)
+          yield sink.drain()
+  yield sink.drain()  # central directory
 
 
 def ffmpeg_mp4_concat_wrap_process_builder(file_list, cameratype, chunk_size=1024*512):
