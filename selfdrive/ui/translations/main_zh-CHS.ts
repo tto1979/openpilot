@@ -1364,8 +1364,8 @@ Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on 
         <translation>车道居中修正</translation>
     </message>
     <message>
-        <source>When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it part of the way back to the lane centre. Off during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive.</source>
-        <translation>驾驶模型让车偏离标线清楚的车道中央时（弯道切内侧、贴着车道线开），把车往车道中央拉回一部分。变换车道、驾驶转动方向盘时，以及车道线不清楚的地方不起作用。下次行驶时生效。</translation>
+        <source>When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it back toward the lane centre. Only from 45 km/h (full from 60 km/h) in normal-width lanes: off in alleys and slow streets, during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive.</source>
+        <translation>驾驶模型让车偏离标线清楚的车道中央时（弯道切内侧、贴着车道线开），把车往车道中央拉回。只在时速 45 公里以上（60 公里以上全力）、车道宽度正常时起作用：巷子与低速市区道路、变换车道、驾驶转动方向盘时，以及车道线不清楚的地方不起作用。下次行驶时生效。</translation>
     </message>
     <message>
         <source>Select Car</source>

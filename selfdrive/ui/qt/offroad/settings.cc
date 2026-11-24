@@ -720,7 +720,7 @@ TimpilotPanel::TimpilotPanel(QWidget* parent) : QWidget(parent) {
 
   toggles.append(new ParamControl("LaneCentering",
                                   tr("Lane Centering Correction"),
-                                  tr("When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it part of the way back to the lane centre. Off during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive."),
+                                  tr("When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it back toward the lane centre. Only from 45 km/h (full from 60 km/h) in normal-width lanes: off in alleys and slow streets, during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive."),
                                   "../assets/icons/road.png",
                                   this));
 

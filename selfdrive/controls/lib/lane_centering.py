@@ -16,9 +16,15 @@ Where the model sees the lane lines, this aims the plan part of the way back to 
              an integral: while the offset persists, the same amount again every INTEGRAL_T, leaking away over LEAK_T.
              At most MAX_LAT_ACCEL of lateral acceleration, fading in and out at MAX_LAT_JERK
 
-The weight drops to 0 without a usable lane line, where both lines are clear but the lane is far off a normal width
-(merges, splits), below SPEED_BP, during a lane change and while the driver steers. Curvatures and y are right
-positive, as desiredCurvature and the model frame.
+The weight drops to 0 without a usable lane line (probability, and the model's std of the line), where both lines are
+clear but the lane is far off a normal width (merges, splits), in narrow lanes, below 45 km/h (full from 60), during a
+lane change and while the driver steers. Curvatures and y are right positive, as desiredCurvature and the model frame.
+
+Not in alleys and slow streets: there the "lane" the model sees often has parked cars inside it and the model keeps
+away from them on purpose. In an alley at 28-37 km/h (00000039--dc1aece740--18) the correction pushed 0.03 m/s^2 toward
+the parked cars on the right for 3 s (radar tracks 1.5-2 m to the side) before the driver steered away; it was
+active from 29 km/h then. From 45 km/h, in lanes 2.8 m or wider, the simulation results below are unchanged above
+60 km/h (wheel within 0.2 m of a line 3.4%, over it 1.8%) and the alley segment gets no correction at all.
 
 The model pulls back: in a long right curve at 75 km/h (1.9 m/s^2) it raised its own request as the correction took
 curvature away, and with the first tuning (weight 0.7, 0.1 m deadband, no integral, 0.3 m/s^2) the car still sat
@@ -50,9 +56,11 @@ MAX_LAT_ACCEL = 0.5    # m/s^2
 MAX_LAT_JERK = 0.5     # m/s^3
 PROB_BP, PROB_V = [0.5, 0.8], [0.0, 1.0]
 WIDTH_BP, WIDTH_V = [2.2, 2.5, 4.3, 4.6], [0.0, 1.0, 1.0, 0.0]  # both lines clear but this far apart: no centring
-SPEED_BP, SPEED_V = [8.0, 11.0], [0.0, 1.0]
+SPEED_BP, SPEED_V = [12.5, 16.7], [0.0, 1.0]   # 45 -> 60 km/h: not in alleys and slow streets
+STD_BP, STD_V = [0.2, 0.3], [1.0, 0.0]         # lane line std (m): unsure lines count less
+NARROW_BP, NARROW_V = [2.6, 2.8], [0.0, 1.0]   # learned lane width (m): narrow street lanes are left to the model
 LANE_WIDTH_INIT = 3.2  # m
-LANE_WIDTH_MIN, LANE_WIDTH_MAX = 2.7, 3.8
+LANE_WIDTH_MIN, LANE_WIDTH_MAX = 2.3, 3.8   # range the width is learned in
 LANE_WIDTH_TC = 2.0    # s
 
 
@@ -75,6 +83,10 @@ class LaneCentering:
     right = float(np.interp(dist, lines[2].x, lines[2].y))
     p_left = float(np.interp(probs[1], PROB_BP, PROB_V))
     p_right = float(np.interp(probs[2], PROB_BP, PROB_V))
+    stds = model_v2.laneLineStds
+    if len(stds) > 2:
+      p_left *= float(np.interp(stds[1], STD_BP, STD_V))
+      p_right *= float(np.interp(stds[2], STD_BP, STD_V))
     if p_left + p_right < 1e-3:
       return 0.0, 0.0, 0.0
     both = p_left * p_right
@@ -85,7 +97,7 @@ class LaneCentering:
     centre = (p_left * (left + half) + p_right * (right - half)) / (p_left + p_right)
     offset = float(np.interp(dist, pos.x, pos.y)) - centre
     weight = WEIGHT * (p_left + p_right - both) * (1.0 - both * (1.0 - float(np.interp(width, WIDTH_BP, WIDTH_V)))) \
-             * float(np.interp(v_ego, SPEED_BP, SPEED_V))
+             * float(np.interp(v_ego, SPEED_BP, SPEED_V)) * float(np.interp(self.lane_width, NARROW_BP, NARROW_V))
     error = -np.sign(offset) * max(abs(offset) - DEADBAND, 0.0)  # toward the centre
     limit = MAX_LAT_ACCEL / max(v_ego, 1.0) ** 2
     return float(np.clip(weight * 2.0 * error / dist ** 2, -limit, limit)), offset, weight

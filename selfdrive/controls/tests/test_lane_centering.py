@@ -9,7 +9,7 @@ X = np.linspace(0.0, 120.0, 33)
 V = 20.0
 
 
-def model(plan_y=0.0, left=-1.6, right=1.6, probs=(0.95, 0.95), lane_change=log.LaneChangeState.off):
+def model(plan_y=0.0, left=-1.6, right=1.6, probs=(0.95, 0.95), lane_change=log.LaneChangeState.off, stds=(0.06, 0.06)):
   """Straight lane, lines at left/right (y right positive), plan parallel at plan_y."""
   msg = messaging.new_message('modelV2')
   md = msg.modelV2
@@ -17,6 +17,7 @@ def model(plan_y=0.0, left=-1.6, right=1.6, probs=(0.95, 0.95), lane_change=log.
   for line, y in zip(lines, (left - 3.2, left, right, right + 3.2), strict=True):
     line.x, line.y = X.tolist(), [y] * len(X)
   md.laneLineProbs = [0.1, probs[0], probs[1], 0.1]
+  md.laneLineStds = [0.3, stds[0], stds[1], 0.3]
   md.position.x, md.position.y = X.tolist(), [plan_y] * len(X)
   md.meta.laneChangeState = lane_change
   return md
@@ -90,3 +91,18 @@ def test_one_line_opens_up_centre_stays_half_a_lane_from_the_other():
   out = settle(L, model(plan_y=-0.3, left=-1.6, right=2.6, probs=(0.95, 0.4)))
   assert np.isclose(L.offset, -0.3, atol=1e-6)  # centre still 1.6 m from the left line
   assert out > 0.0
+
+
+def test_not_in_alleys_and_slow_streets():
+  # 40 km/h: below the 45-60 km/h ramp
+  assert settle(LaneCentering(), model(plan_y=-0.6), v=40 / 3.6) == 0.0
+  # a narrow street lane (2.5 m): learned, then left to the model
+  L = LaneCentering()
+  out = settle(L, model(plan_y=-0.4, left=-1.25, right=1.25), secs=20.0)
+  assert L.lane_width < 2.6 and out == 0.0
+
+
+def test_unsure_lane_lines_count_less():
+  sure = settle(LaneCentering(), model(plan_y=-0.3), secs=1.0)
+  assert sure > 0.0
+  assert settle(LaneCentering(), model(plan_y=-0.3, stds=(0.35, 0.35)), secs=1.0) == 0.0
