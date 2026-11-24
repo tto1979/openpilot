@@ -11,20 +11,26 @@ Where the model sees the lane lines, this aims the plan part of the way back to 
              (probability 0.5 -> 0, 0.8 -> full). The lane width is learned while both lines are clear, so where one
              line fades or opens up (a turn bay, a bus stop, a wide shoulder) the centre stays a lane's half width from
              the other line
-  offset     plan minus centre at the aim point; the first DEADBAND metres are left alone, so the model keeps its own
-             line near the centre
-  correction curvature that moves the aim point WEIGHT x the rest of the offset toward the centre (2 x offset /
-             distance^2), at most MAX_LAT_ACCEL of lateral acceleration, fading in and out at MAX_LAT_JERK
+  offset     plan minus centre at the aim point
+  correction curvature that moves the aim point WEIGHT x the offset toward the centre (2 x offset / distance^2), plus
+             an integral: while the offset persists, the same amount again every INTEGRAL_T, leaking away over LEAK_T.
+             At most MAX_LAT_ACCEL of lateral acceleration, fading in and out at MAX_LAT_JERK
 
 The weight drops to 0 without a usable lane line, where both lines are clear but the lane is far off a normal width
 (merges, splits), below SPEED_BP, during a lane change and while the driver steers. Curvatures and y are right
 positive, as desiredCurvature and the model frame.
 
-Tuned in closed loop on 7 Prius v rlogs, with the driving model's reaction to the car's position fitted from the same
-logs: wheels within 0.2 m of a lane line 16% of the time -> 8% (today's segment with the left lean 28% -> 9%), 95th
-percentile offset 0.92 -> 0.63 m. A car the model holds 0.6 m off centre settles at 0.3 m in 3 s. It stays stable up to
-0.8 s of steering delay (the Prius v follows in 0.3-0.45 s); a shorter lookahead or more weight centres harder but
-starts to weave at 0.6-0.8 s.
+The model pulls back: in a long right curve at 75 km/h (1.9 m/s^2) it raised its own request as the correction took
+curvature away, and with the first tuning (weight 0.7, 0.1 m deadband, no integral, 0.3 m/s^2) the car still sat
+0.5-0.9 m inside, the wheel up to 0.4 m over the line (00000038--5caa4048ef--28/29; without the correction 1.0-1.5 m).
+The integral keeps adding while the plan stays off centre, so the pull can't hold the car there.
+
+Tuned in closed loop on 11 Prius v rlogs, the driving model's reaction to the car's position fitted from the same
+logs (with the first tuning the simulation matched the road: wheel over the line 19% vs 22% of the time on segment
+29): wheels within 0.2 m of a line 15% of the time without, 8.7% with the first tuning, 3.6% now; over the line
+9.4% / 3.9% / 1.7%; in that curve the wheel stays 0.12 m inside the line (first tuning: 0.23 m over). A car the model
+holds 0.8 m off centre on straight road settles within 0.1 m of the centre in 7 s. Stable up to 0.6 s of steering
+delay in that test and up to 0.8 s on the logs (the Prius v follows in 0.3-0.45 s).
 """
 import numpy as np
 
@@ -36,9 +42,11 @@ LaneChangeState = log.LaneChangeState
 LOOKAHEAD_T = 2.0      # s
 LOOKAHEAD_MIN = 15.0   # m
 LOOKAHEAD_MAX = 50.0   # m
-WEIGHT = 0.7           # share of the offset beyond the deadband that is corrected
-DEADBAND = 0.1         # m
-MAX_LAT_ACCEL = 0.3    # m/s^2
+WEIGHT = 1.0           # share of the offset beyond the deadband corrected at once
+DEADBAND = 0.0         # m
+INTEGRAL_T = 4.0       # s
+LEAK_T = 8.0           # s
+MAX_LAT_ACCEL = 0.5    # m/s^2
 MAX_LAT_JERK = 0.5     # m/s^3
 PROB_BP, PROB_V = [0.5, 0.8], [0.0, 1.0]
 WIDTH_BP, WIDTH_V = [2.2, 2.5, 4.3, 4.6], [0.0, 1.0, 1.0, 0.0]  # both lines clear but this far apart: no centring
@@ -55,6 +63,7 @@ class LaneCentering:
     self.target = 0.0
     self.offset = 0.0     # plan minus lane centre at the aim point (m)
     self.weight = 0.0
+    self.integral = 0.0   # 1/m
 
   def compute(self, model_v2, v_ego: float) -> tuple[float, float, float]:
     """(correction curvature before the fade, offset, weight) for one modelV2 message; learns the lane width."""
@@ -82,10 +91,18 @@ class LaneCentering:
     return float(np.clip(weight * 2.0 * error / dist ** 2, -limit, limit)), offset, weight
 
   def update(self, enabled: bool, model_v2, model_updated: bool, v_ego: float, steering_pressed: bool) -> float:
+    active = enabled and not steering_pressed and model_v2.meta.laneChangeState == LaneChangeState.off
+    limit = MAX_LAT_ACCEL / max(v_ego, 1.0) ** 2
     if model_updated:
-      self.target, self.offset, self.weight = self.compute(model_v2, v_ego)
-    if not enabled or steering_pressed or model_v2.meta.laneChangeState != LaneChangeState.off:
-      self.target, self.weight = 0.0, 0.0
+      p, self.offset, self.weight = self.compute(model_v2, v_ego)
+      if active and self.weight > 0.0:
+        self.integral += p * DT_MDL / INTEGRAL_T - self.integral * DT_MDL / LEAK_T
+      else:
+        self.integral = 0.0
+      self.integral = float(np.clip(self.integral, -limit, limit))
+      self.target = float(np.clip(p + self.integral, -limit, limit))
+    if not active:
+      self.target, self.weight, self.integral = 0.0, 0.0, 0.0
     step = MAX_LAT_JERK / max(v_ego, 1.0) ** 2 * DT_CTRL
     self.curvature += float(np.clip(self.target - self.curvature, -step, step))
     return self.curvature
