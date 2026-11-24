@@ -8,6 +8,7 @@ from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
 from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
 from openpilot.selfdrive.ui.layouts.settings.top import TopLayout
+from openpilot.selfdrive.ui.layouts.settings.osm import OsmLayout
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.lib.text_measure import measure_text_cached
@@ -39,6 +40,7 @@ class PanelType(IntEnum):
   FIREHOSE = 4
   DEVELOPER = 5
   TOP = 6
+  OSM = 7
 
 
 @dataclass
@@ -65,6 +67,7 @@ class SettingsLayout(Widget):
       PanelType.FIREHOSE: PanelInfo(tr_noop("Firehose"), FirehoseLayout()),
       PanelType.DEVELOPER: PanelInfo(tr_noop("Developer"), DeveloperLayout()),
       PanelType.TOP: PanelInfo(tr_noop("T.O.P"), TopLayout()),
+      PanelType.OSM: PanelInfo(tr_noop("OSM"), OsmLayout()),
     }
 
     self._font_medium = gui_app.font(FontWeight.MEDIUM)

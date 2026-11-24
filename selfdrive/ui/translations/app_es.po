@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 06:51+0800\n"
+"POT-Creation-Date: 2026-11-25 07:00+0800\n"
 "PO-Revision-Date: 2025-10-20 16:35-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -177,11 +177,24 @@ msgstr "¿Seguro que quieres restablecer la calibración?"
 msgid "Are you sure you want to uninstall?"
 msgstr "¿Seguro que quieres desinstalar?"
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:125
+#, python-format
+msgid "Assist"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:47
+msgid ""
+"Assist: Adjusts the vehicle's cruise speed based on the current road's speed "
+"limit when operating the +/- buttons."
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/top.py:102
 msgid "Automatic Brake Hold"
 msgstr ""
 
-#: selfdrive/ui/layouts/onboarding.py:148 system/ui/widgets/network.py:99
+#: selfdrive/ui/layouts/onboarding.py:148
+#: selfdrive/ui/layouts/settings/speed_limit.py:77
+#: system/ui/widgets/network.py:99
 #, python-format
 msgid "Back"
 msgstr "Atrás"
@@ -219,6 +232,11 @@ msgstr "COMPROBAR"
 msgid "CHILL MODE ON"
 msgstr "MODO CHILL ACTIVADO"
 
+#: selfdrive/ui/layouts/settings/osm.py:108
+#, python-format
+msgid "CONFIGURE"
+msgstr ""
+
 #: selfdrive/ui/layouts/sidebar.py:73 selfdrive/ui/layouts/sidebar.py:134
 #: selfdrive/ui/layouts/sidebar.py:136 selfdrive/ui/layouts/sidebar.py:138
 #: system/ui/widgets/network.py:155
@@ -231,15 +249,42 @@ msgstr "CONECTAR"
 msgid "CONNECTING..."
 msgstr "CONECTAR"
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:130
+#, python-format
+msgid "CUSTOMIZE"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:150
+#: selfdrive/ui/layouts/settings/osm.py:157
+#, python-format
+msgid "Calculating ETA..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:58
+#: selfdrive/ui/layouts/settings/osm.py:141
+#, python-format
+msgid "Calculating..."
+msgstr ""
+
 #: system/ui/widgets/confirm_dialog.py:23 system/ui/widgets/keyboard.py:81
 #: system/ui/widgets/network.py:318 system/ui/widgets/option_dialog.py:35
 #, python-format
 msgid "Cancel"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:97
+#, python-format
+msgid "Car First"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/top.py:146
 #, python-format
 msgid "Car Model"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:97
+#, python-format
+msgid "Car Only"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/top.py:233
@@ -279,6 +324,12 @@ msgid "Changing this setting will restart openpilot if the car is powered on."
 msgstr ""
 " Cambiar esta configuración reiniciará openpilot si el coche está encendido."
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:131
+#, python-format
+msgid ""
+"Choose where the speed limit comes from: the car, OpenStreetMaps or both."
+msgstr ""
+
 #: selfdrive/ui/widgets/pairing_dialog.py:118
 #, python-format
 msgid "Click \"add new device\" and scan the QR code on the right"
@@ -290,6 +341,18 @@ msgstr ""
 msgid "Close"
 msgstr "Cerrar"
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:97
+#, python-format
+msgid "Combined"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:109
+#, python-format
+msgid ""
+"Configure speed limit settings including source policy, mode, and offset "
+"options."
+msgstr ""
+
 #: selfdrive/ui/widgets/footage_dialog.py:91
 #, python-format
 msgid ""
@@ -297,10 +360,25 @@ msgid ""
 "recordings."
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:220
+#, python-format
+msgid "Continue on Metered"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:99
+#, python-format
+msgid "Country"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/software.py:56
 #, python-format
 msgid "Current Version"
 msgstr "Versión actual"
+
+#: selfdrive/ui/layouts/settings/osm.py:89
+#, python-format
+msgid "DELETE"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/software.py:119
 #, python-format
@@ -310,6 +388,11 @@ msgstr "DESCARGAR"
 #: selfdrive/ui/layouts/settings/device.py:75
 #, python-format
 msgid "DashCam footage"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:96
+#, python-format
+msgid "Database Update"
 msgstr ""
 
 #: selfdrive/ui/layouts/onboarding.py:116
@@ -322,11 +405,17 @@ msgstr "Rechazar"
 msgid "Decline, uninstall openpilot"
 msgstr "Rechazar, desinstalar openpilot"
 
-#: selfdrive/ui/layouts/settings/settings.py:66
+#: selfdrive/ui/layouts/settings/osm.py:91
+#: selfdrive/ui/layouts/settings/osm.py:240
+#, python-format
+msgid "Deleting..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/settings.py:68
 msgid "Developer"
 msgstr "Desarrollador"
 
-#: selfdrive/ui/layouts/settings/settings.py:61
+#: selfdrive/ui/layouts/settings/settings.py:63
 msgid "Device"
 msgstr "Dispositivo"
 
@@ -372,6 +461,27 @@ msgstr "ID del dongle"
 #, python-format
 msgid "Download"
 msgstr "Descargar"
+
+#: selfdrive/ui/layouts/settings/osm.py:172
+#, python-format
+msgid "Download complete!"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:168
+#, python-format
+msgid "Download starting..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:139
+#: selfdrive/ui/layouts/settings/osm.py:147
+#, python-format
+msgid "Downloaded"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:89
+#, python-format
+msgid "Downloaded Maps"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:70
 #, python-format
@@ -541,6 +651,16 @@ msgstr ""
 msgid "Enter password"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:275
+#, python-format
+msgid "Enter search keywords, or leave blank to list all countries."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:276
+#, python-format
+msgid "Enter search keywords, or leave blank to list all states."
+msgstr ""
+
 #: selfdrive/ui/widgets/ssh_key.py:89
 #, python-format
 msgid "Enter your GitHub username"
@@ -580,12 +700,24 @@ msgstr ""
 msgid "Failed!"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:101
+#: selfdrive/ui/layouts/settings/osm.py:262
+#, python-format
+msgid "Fetching Country list..."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:105
+#: selfdrive/ui/layouts/settings/osm.py:262
+#, python-format
+msgid "Fetching State list..."
+msgstr ""
+
 #: selfdrive/ui/widgets/setup.py:44
 #, python-format
 msgid "Finish Setup"
 msgstr "Finalizar configuración"
 
-#: selfdrive/ui/layouts/settings/settings.py:65
+#: selfdrive/ui/layouts/settings/settings.py:67
 msgid "Firehose"
 msgstr "Firehose"
 
@@ -595,6 +727,15 @@ msgstr "Modo Firehose"
 
 #: selfdrive/ui/layouts/settings/top.py:105
 msgid "Fix Toyota BSM Signal"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:135
+#, python-format
+msgid "Fixed"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:52
+msgid "Fixed: Adds a fixed offset [Speed Limit + Offset]"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:128
@@ -706,6 +847,15 @@ msgstr "INSTALAR"
 msgid "IP Address"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:125
+#, python-format
+msgid "Info."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:45
+msgid "Information: Displays the current road's speed limit."
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/software.py:60
 #, python-format
 msgid "Install Update"
@@ -747,6 +897,11 @@ msgid ""
 "Lateral control will always be on and will not be interrupted by braking."
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:88
+#, python-format
+msgid "Loading..."
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/developer.py:64
 #, python-format
 msgid "Longitudinal Maneuver Mode"
@@ -759,6 +914,21 @@ msgstr "MÁX"
 
 #: selfdrive/ui/layouts/settings/top.py:82
 msgid "Map Based Turn Control"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:97
+#, python-format
+msgid "Map First"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:97
+#, python-format
+msgid "Map Only"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:88
+#, python-format
+msgid "Mapd Version"
 msgstr ""
 
 #: selfdrive/ui/widgets/setup.py:75
@@ -783,7 +953,7 @@ msgstr ""
 msgid "NO"
 msgstr "NO"
 
-#: selfdrive/ui/layouts/settings/settings.py:62
+#: selfdrive/ui/layouts/settings/settings.py:64
 msgid "Network"
 msgstr "Red"
 
@@ -801,6 +971,20 @@ msgstr "No se encontraron claves SSH para el usuario '{username}'"
 #, python-format
 msgid "No release notes available."
 msgstr "No hay notas de versión disponibles."
+
+#: selfdrive/ui/layouts/settings/osm.py:286
+#, python-format
+msgid "No results found for keywords: {}"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:135
+#, python-format
+msgid "None"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:51
+msgid "None: No Offset"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:119
 #, python-format
@@ -830,6 +1014,29 @@ msgstr "OK"
 #: selfdrive/ui/layouts/sidebar.py:144
 msgid "ONLINE"
 msgstr "EN LÍNEA"
+
+#: selfdrive/ui/layouts/settings/settings.py:70
+msgid "OSM"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:125
+#, python-format
+msgid "Off"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:44
+msgid "Off: Disables the Speed Limit functions."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:92
+#, python-format
+msgid "Offline Maps ETA"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:141
+#, python-format
+msgid "Offset"
+msgstr ""
 
 #: selfdrive/ui/widgets/setup.py:20
 #, python-format
@@ -879,6 +1086,15 @@ msgstr ""
 "Empareja tu dispositivo con comma connect (connect.comma.ai) y reclama tu "
 "oferta de comma prime."
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:135
+#, python-format
+msgid "Percent"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:53
+msgid "Percent: Adds a percent offset [Speed Limit + (Offset % Speed Limit)]"
+msgstr ""
+
 #: selfdrive/ui/widgets/setup.py:91
 #, python-format
 msgid "Please connect to Wi-Fi to complete initial pairing"
@@ -923,6 +1139,11 @@ msgstr ""
 msgid "Quiet Drive"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:179
+#, python-format
+msgid "REFRESH"
+msgstr ""
+
 #: selfdrive/ui/widgets/ssh_key.py:31
 msgid "REMOVE"
 msgstr "ELIMINAR"
@@ -936,6 +1157,11 @@ msgstr "RESTABLECER"
 #, python-format
 msgid "REVIEW"
 msgstr "REVISAR"
+
+#: selfdrive/ui/layouts/settings/osm.py:147
+#, python-format
+msgid "Ready"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:63
 #: selfdrive/ui/layouts/settings/device.py:231
@@ -1034,6 +1260,8 @@ msgstr "Revisar guía de entrenamiento"
 msgid "Review the rules, features, and limitations of openpilot"
 msgstr "Revisa las reglas, funciones y limitaciones de openpilot"
 
+#: selfdrive/ui/layouts/settings/osm.py:99
+#: selfdrive/ui/layouts/settings/osm.py:103
 #: selfdrive/ui/layouts/settings/software.py:68
 #: selfdrive/ui/layouts/settings/top.py:195
 #, python-format
@@ -1056,9 +1284,29 @@ msgstr ""
 msgid "Scanning Wi-Fi networks..."
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/osm.py:274
+#, python-format
+msgid "Search Country"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:274
+#, python-format
+msgid "Search State"
+msgstr ""
+
 #: system/ui/widgets/option_dialog.py:36
 #, python-format
 msgid "Select"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:316
+#, python-format
+msgid "Select Country"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:316
+#, python-format
+msgid "Select State"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/software.py:192
@@ -1090,9 +1338,30 @@ msgstr ""
 msgid "Snooze Update"
 msgstr "Posponer actualización"
 
-#: selfdrive/ui/layouts/settings/settings.py:64
+#: selfdrive/ui/layouts/settings/settings.py:66
 msgid "Software"
 msgstr "Software"
+
+#: selfdrive/ui/layouts/settings/osm.py:108
+#, python-format
+msgid "Speed Limit"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:124
+#, python-format
+msgid "Speed Limit Mode"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:134
+#, python-format
+msgid "Speed Limit Offset"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:96
+#: selfdrive/ui/layouts/settings/speed_limit.py:130
+#, python-format
+msgid "Speed Limit Source"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:119
 #, python-format
@@ -1117,6 +1386,16 @@ msgstr ""
 "coches compatibles, puedes cambiar entre estas personalidades con el botón "
 "de distancia del volante."
 
+#: selfdrive/ui/layouts/settings/osm.py:220
+#, python-format
+msgid "Start Download"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:103
+#, python-format
+msgid "State"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/toggles.py:119
 #, python-format
 msgid "Stock"
@@ -1132,7 +1411,7 @@ msgstr ""
 msgid "System Unresponsive"
 msgstr "Sistema sin respuesta"
 
-#: selfdrive/ui/layouts/settings/settings.py:67
+#: selfdrive/ui/layouts/settings/settings.py:69
 msgid "T.O.P"
 msgstr ""
 
@@ -1187,7 +1466,31 @@ msgid ""
 "Internet access from mobile phone (tethering) is required."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/settings.py:63
+#: selfdrive/ui/layouts/settings/osm.py:246
+#, python-format
+msgid ""
+"This will delete ALL downloaded maps\n"
+"\n"
+"Are you sure you want to delete all the maps?"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:217
+#, python-format
+msgid ""
+"This will start the download process and it might take a while to complete."
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:94
+#, python-format
+msgid "Time Elapsed"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:162
+#, python-format
+msgid "Time remaining: "
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/settings.py:65
 msgid "Toggles"
 msgstr "Interruptores"
 
@@ -1207,10 +1510,15 @@ msgstr ""
 msgid "UNINSTALL"
 msgstr "DESINSTALAR"
 
-#: selfdrive/ui/layouts/home.py:154
+#: selfdrive/ui/layouts/home.py:154 selfdrive/ui/layouts/settings/osm.py:179
 #, python-format
 msgid "UPDATE"
 msgstr "ACTUALIZAR"
+
+#: selfdrive/ui/layouts/settings/osm.py:271
+#, python-format
+msgid "Unable to fetch the list. Check the internet connection."
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/software.py:79
 #: selfdrive/ui/layouts/settings/software.py:172
@@ -1300,6 +1608,16 @@ msgstr ""
 msgid "Waiting to start"
 msgstr "Esperando para iniciar"
 
+#: selfdrive/ui/layouts/settings/speed_limit.py:125
+#, python-format
+msgid "Warning"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:46
+msgid ""
+"Warning: Provides a warning when exceeding the current road's speed limit."
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/developer.py:19
 msgid ""
 "Warning: This grants SSH access to all public keys in your GitHub settings. "
@@ -1310,6 +1628,11 @@ msgstr ""
 "configuración de GitHub. Nunca introduzcas un nombre de usuario de GitHub "
 "que no sea el tuyo. Un empleado de comma NUNCA te pedirá que agregues su "
 "nombre de usuario de GitHub."
+
+#: selfdrive/ui/layouts/settings/osm.py:219
+#, python-format
+msgid "Warning: You are on a metered connection!"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:32
 #: selfdrive/ui/widgets/footage_dialog.py:83
@@ -1362,6 +1685,11 @@ msgstr ""
 #: system/ui/widgets/network.py:314
 #, python-format
 msgid "Wrong password"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/osm.py:247
+#, python-format
+msgid "Yes, delete all the maps."
 msgstr ""
 
 #: selfdrive/ui/layouts/onboarding.py:146
@@ -1437,6 +1765,11 @@ msgstr ""
 #, python-format
 msgid "left"
 msgstr "izquierda"
+
+#: selfdrive/ui/layouts/settings/osm.py:65
+#, python-format
+msgid "m "
+msgstr ""
 
 #: system/ui/widgets/network.py:142
 #, python-format
@@ -1539,6 +1872,11 @@ msgstr ""
 msgid "right"
 msgstr "derecha"
 
+#: selfdrive/ui/layouts/settings/osm.py:65
+#, python-format
+msgid "s"
+msgstr ""
+
 #: system/ui/widgets/network.py:142
 #, python-format
 msgid "unmetered"
@@ -1607,6 +1945,30 @@ msgstr[1] ""
 #, python-format
 msgid "✓ SUBSCRIBED"
 msgstr "✓ SUSCRITO"
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:59
+msgid ""
+"⦿ Car First: Use Speed Limit data from Car if available, else use from "
+"OpenStreetMaps"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:57
+msgid "⦿ Car Only: Use Speed Limit data only from Car"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:61
+msgid "⦿ Combined: Use combined Speed Limit data from Car & OpenStreetMaps"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:60
+msgid ""
+"⦿ Map First: Use Speed Limit data from OpenStreetMaps if available, else use "
+"from Car"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/speed_limit.py:58
+msgid "⦿ Map Only: Use Speed Limit data only from OpenStreetMaps"
+msgstr ""
 
 #: selfdrive/ui/widgets/setup.py:22
 #, python-format
