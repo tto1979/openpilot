@@ -1376,11 +1376,11 @@ Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on 
     </message>
     <message>
         <source>Lane Centering Correction</source>
-        <translation>車道置中修正</translation>
+        <translation>強制車道線置中</translation>
     </message>
     <message>
         <source>When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it part of the way back to the lane centre. Off during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive.</source>
-        <translation>駕駛模型有時可能造成車偏離車道中央（彎道切內側），開啟此功能可把車往車道中央拉回一部分。變換車道、駕駛轉動方向盤時，以及車道線不清楚的地方不作用。下次行駛時生效。</translation>
+        <translation>駕駛模型為了更大的過彎角度，有時可能造成車偏離車道中央過多。開啟此功能可把車往車道線中央拉回一部分。變換車道、駕駛轉動方向盤時，以及車道線不清楚的地方不作用。下次行駛時生效。</translation>
     </message>
     <message>
         <source>Select Car</source>
