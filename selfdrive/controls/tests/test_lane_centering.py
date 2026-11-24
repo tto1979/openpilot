@@ -28,19 +28,23 @@ def settle(L, md, v=V, pressed=False, enabled=True, secs=3.0):
   return out
 
 
-def test_plan_left_of_centre_steers_right():
+def proportional(offset, v=V):
+  dist = v * lc.LOOKAHEAD_T
+  return lc.WEIGHT * 2.0 * (abs(offset) - lc.DEADBAND) / dist ** 2
+
+
+def test_plan_left_of_centre_steers_right_and_the_integral_adds():
   L = LaneCentering()
-  out = settle(L, model(plan_y=-0.6))
-  dist = V * lc.LOOKAHEAD_T
-  expected = lc.WEIGHT * 2.0 * (0.6 - lc.DEADBAND) / dist ** 2
+  out = settle(L, model(plan_y=-0.3), secs=1.0)
   assert out > 0.0
-  assert np.isclose(out, min(expected, lc.MAX_LAT_ACCEL / V ** 2), rtol=1e-3)
-  assert np.isclose(L.offset, -0.6)
+  assert np.isclose(L.offset, -0.3)
+  later = settle(L, model(plan_y=-0.3), secs=4.0)
+  assert later > proportional(0.3) * 1.3  # the offset persisted: the integral has added to it
+  assert later * V ** 2 <= lc.MAX_LAT_ACCEL + 1e-9
 
 
-def test_centred_plan_or_inside_deadband_does_nothing():
-  for plan_y in (0.0, lc.DEADBAND * 0.9, -lc.DEADBAND * 0.9):
-    assert settle(LaneCentering(), model(plan_y=plan_y)) == 0.0
+def test_centred_plan_does_nothing():
+  assert settle(LaneCentering(), model(plan_y=0.0)) == 0.0
 
 
 def test_capped_and_faded_in():
@@ -61,11 +65,21 @@ def test_off_in_lane_change_override_faint_lines_and_low_speed():
   assert settle(LaneCentering(), model(plan_y=-0.6, left=-2.6, right=2.6)) == 0.0
 
 
-def test_override_fades_out():
+def test_override_fades_out_and_clears_the_integral():
   L = LaneCentering()
   on = settle(L, model(plan_y=-0.6))
   after = L.update(True, model(plan_y=-0.6), True, V, True)
   assert 0.0 < after < on
+  assert L.integral == 0.0
+
+
+def test_integral_leaks_away_once_the_plan_is_centred():
+  L = LaneCentering()
+  settle(L, model(plan_y=-0.4), secs=6.0)
+  held = L.integral
+  assert held > 0.0
+  settle(L, model(plan_y=0.0), secs=lc.LEAK_T)
+  assert 0.0 <= L.integral < held * 0.45
 
 
 def test_one_line_opens_up_centre_stays_half_a_lane_from_the_other():
