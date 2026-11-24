@@ -262,14 +262,17 @@ class LatControlTorque(LatControl):
 
         # Static friction. On the Prius v the wheel holds still while the torque moves 0.2-0.4 of max (up to 0.55), so
         # when the model asks to unwind it stays put for 1-5 s while the PID walks the torque across that band, and the
-        # car keeps turning toward the inside of the curve. While the wheel is held, add stuck_friction_gain x friction
-        # to the feedforward: replayed on three takeovers, the torque got across 0.6-3.3 s sooner. While it turns, the
-        # NN's own friction response covers it; adding friction then (sunnypilot's override) cuts the 1.5 Hz margin from
-        # 75 to 43 deg on the Prius v, gated like this it stays at 71.
+        # car keeps turning toward the inside of the curve. While the wheel is held, add stuck_friction_gain x the car's
+        # friction (torque) to the feedforward. get_friction returns lateral accel (friction * latAccelFactor): without
+        # the conversion the push was 2.28x too strong on the Prius v (gain 1.5 pushed 0.29 of max, more than the ~0.19
+        # it takes to free the wheel), so it knocked the wheel loose at every small error and the car made constant small
+        # corrections at ~1 Hz. At gain 2 (0.17): closed loop with a sticking column, the unwind after a curve comes
+        # 0.1-0.5 s late instead of 5 s, and the 1.5 Hz margin stays at 74 deg (75 without). While the wheel turns, the
+        # NN's own friction response covers it; adding friction then (sunnypilot's override) cuts the margin to 43 deg.
         if self.stuck_friction_gain > 0.0:
           stuck = abs(CS.steeringRateDeg) < STUCK_STEER_RATE and not CS.steeringPressed
           self.stuck_factor += (float(stuck) - self.stuck_factor) * min(1.0, self.dt / STUCK_FADE_TIME)
-          nn_torque += self.stuck_friction_gain * self.stuck_factor * friction
+          nn_torque += self.stuck_friction_gain * self.stuck_factor * friction / self.torque_params.latAccelFactor
 
         if self.nn_friction_override:
           # get_friction returns lateral accel (friction * latAccelFactor) for the official controller, this error is torque.
