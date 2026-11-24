@@ -123,7 +123,7 @@ jobs:
       # Homebrew's gcc-arm-embedded is GCC 15, which rejects panda's NUL-less gitversion string
       # (-Wunterminated-string-initialization). Backport of commaai/panda e42367d; no-op once panda has it.
       run: |
-        perl -pi -e 's/gitversion\[\{len\(version\)\}\]/gitversion[{len(version)+1}]/g' panda/SConscript
+        perl -pi -e 's/gitversion\[\{len\(version\)\}\]/gitversion[{len(version)+1}]/g' panda/SConscript panda_tici/SConscript
     - name: Building openpilot
       run: . .venv/bin/activate && scons -j$(nproc)
 
