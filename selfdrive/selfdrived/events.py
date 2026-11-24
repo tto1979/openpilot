@@ -17,6 +17,7 @@ from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
 from openpilot.top.selfdrive.controls.lib.speed_limit import PCM_LONG_REQUIRED_MAX_SET_SPEED, CONFIRM_SPEED_THRESHOLD
 from openpilot.top.selfdrive.controls.lib.speed_limit.helpers import compare_cluster_target
 from openpilot.top.selfdrive.car.car_params_top import get_car_params_top
+from openpilot.system.hardware import HARDWARE
 
 AlertSize = log.SelfdriveState.AlertSize
 AlertStatus = log.SelfdriveState.AlertStatus
@@ -154,6 +155,8 @@ class NoEntryAlert(Alert):
   def __init__(self, alert_text_2: str,
                alert_text_1: str = "Openpilot 暫時失效",
                visual_alert: car.CarControl.HUDControl.VisualAlert=VisualAlert.none):
+    if HARDWARE.get_device_type() == 'mici':
+      alert_text_1, alert_text_2 = alert_text_2, alert_text_1
     super().__init__(alert_text_1, alert_text_2, AlertStatus.normal,
                      AlertSize.mid, Priority.LOW, visual_alert,
                      AudibleAlert.refuse, 3.)
@@ -199,8 +202,13 @@ class NormalPermanentAlert(Alert):
 
 class StartupAlert(Alert):
   def __init__(self, alert_text_1: str, alert_text_2: str = "保持手握方向盤並且注意路況", alert_status=AlertStatus.normal):
+    alert_size = AlertSize.mid
+    if HARDWARE.get_device_type() == 'mici':
+      if alert_text_2 == "保持手握方向盤並且注意路況":
+        alert_text_2 = ""
+      alert_size = AlertSize.small
     super().__init__(alert_text_1, alert_text_2,
-                     alert_status, AlertSize.mid,
+                     alert_status, alert_size,
                      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 5.),
 
 
@@ -1007,13 +1015,13 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   # - CAN data is received, but some message are not received at the right frequency
   # If you're not writing a new car port, this is usually cause by faulty wiring
   EventName.canError: {
-    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("CAN Error"),
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Unknown Vehicle Variant"),
     ET.PERMANENT: Alert(
-      "CAN Error: Check Connections",
+      "Unknown Vehicle Variant",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., creation_delay=1.),
-    ET.NO_ENTRY: NoEntryAlert("CAN Error: Check Connections"),
+    ET.NO_ENTRY: NoEntryAlert("Unknown Vehicle Variant"),
   },
 
   EventName.canBusMissing: {
@@ -1146,6 +1154,74 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 5.),
   }
 }
+
+
+if HARDWARE.get_device_type() == 'mici':
+  EVENTS.update({
+    EventName.preDriverDistracted: {
+      ET.PERMANENT: Alert(
+        "Pay Attention",
+        "",
+        AlertStatus.normal, AlertSize.small,
+        Priority.LOW, VisualAlert.none, AudibleAlert.none, 2),
+    },
+    EventName.promptDriverDistracted: {
+      ET.PERMANENT: Alert(
+        "Pay Attention",
+        "Driver Distracted",
+        AlertStatus.userPrompt, AlertSize.mid,
+        Priority.MID, VisualAlert.steerRequired, AudibleAlert.promptDistracted, 1),
+    },
+    EventName.resumeRequired: {
+      ET.WARNING: Alert(
+        "Press Resume",
+        "",
+        AlertStatus.userPrompt, AlertSize.small,
+        Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
+    },
+    EventName.preLaneChangeLeft: {
+      ET.WARNING: Alert(
+        "Steer Left",
+        "Confirm Lane Change",
+        AlertStatus.normal, AlertSize.mid,
+        Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
+    },
+    EventName.preLaneChangeRight: {
+      ET.WARNING: Alert(
+        "Steer Right",
+        "Confirm Lane Change",
+        AlertStatus.normal, AlertSize.mid,
+        Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
+    },
+    EventName.laneChangeBlocked: {
+      ET.WARNING: Alert(
+        "Car in Blindspot",
+        "",
+        AlertStatus.userPrompt, AlertSize.small,
+        Priority.LOW, VisualAlert.none, AudibleAlert.prompt, .1),
+    },
+    EventName.steerSaturated: {
+      ET.WARNING: Alert(
+        "take control",
+        "turn exceeds limit",
+        AlertStatus.userPrompt, AlertSize.mid,
+        Priority.LOW, VisualAlert.steerRequired, AudibleAlert.promptRepeat, 2.),
+    },
+    EventName.calibrationIncomplete: {
+      ET.PERMANENT: calibration_incomplete_alert,
+      ET.SOFT_DISABLE: soft_disable_alert("Calibration Incomplete"),
+      ET.NO_ENTRY: NoEntryAlert("Calibrating"),
+    },
+    EventName.reverseGear: {
+      ET.PERMANENT: Alert(
+        "Reverse",
+        "",
+        AlertStatus.normal, AlertSize.full,
+        Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2, creation_delay=0.5),
+      ET.USER_DISABLE: ImmediateDisableAlert("Reverse"),
+      ET.NO_ENTRY: NoEntryAlert("Reverse"),
+    },
+  })
 
 
 if __name__ == '__main__':
