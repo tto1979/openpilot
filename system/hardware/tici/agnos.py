@@ -17,6 +17,38 @@ CAIBX_URL = "https://commadist.azureedge.net/agnosupdate/"
 
 AGNOS_MANIFEST_FILE = "system/hardware/tici/agnos.json"
 
+# comma three (tici) support was dropped from the AGNOS bootloader and kernel after 12.8, but the
+# 13.x userspace still runs fine on top of them. On tici, the partitions listed in agnos_tici.json
+# (abl + boot from AGNOS 12.8) replace the ones from agnos.json, everything else is shared.
+# Same approach as dragonpilot (credit: Rick Lan, dragonpilot-community/dragonpilot).
+TICI_MANIFEST_NAME = "agnos_tici.json"
+TICI_PARTITIONS = ("abl", "boot")
+
+
+def is_tici() -> bool:
+  try:
+    with open("/sys/firmware/devicetree/base/model") as f:
+      return f.read().strip("\x00").strip().split("comma ")[-1] == "tici"
+  except OSError:
+    return False
+
+
+def load_manifest(manifest_path: str) -> list[dict]:
+  with open(manifest_path) as f:
+    update = json.load(f)
+  if not is_tici():
+    return update
+
+  tici_manifest_path = os.path.join(os.path.dirname(os.path.abspath(manifest_path)), TICI_MANIFEST_NAME)
+  with open(tici_manifest_path) as f:
+    overrides = {p["name"]: p for p in json.load(f) if p["name"] in TICI_PARTITIONS}
+
+  # never flash a bootloader/kernel that can't boot a comma three
+  missing = set(TICI_PARTITIONS) - set(overrides)
+  if missing:
+    raise Exception(f"{tici_manifest_path} is missing {sorted(missing)}, refusing to flash AGNOS on tici")
+  return [overrides.get(p["name"], p) for p in update]
+
 
 class StreamingDecompressor:
   def __init__(self, url: str) -> None:
@@ -258,7 +290,7 @@ def flash_partition(target_slot_number: int, partition: dict, cloudlog, standalo
 
 
 def swap(manifest_path: str, target_slot_number: int, cloudlog) -> None:
-  update = json.load(open(manifest_path))
+  update = load_manifest(manifest_path)
   for partition in update:
     if not partition.get('full_check', False):
       clear_partition_hash(target_slot_number, partition)
@@ -273,7 +305,7 @@ def swap(manifest_path: str, target_slot_number: int, cloudlog) -> None:
 
 
 def flash_agnos_update(manifest_path: str, target_slot_number: int, cloudlog, standalone=False) -> None:
-  update = json.load(open(manifest_path))
+  update = load_manifest(manifest_path)
 
   cloudlog.info(f"Target slot {target_slot_number}")
 
@@ -302,7 +334,7 @@ def flash_agnos_update(manifest_path: str, target_slot_number: int, cloudlog, st
 
 
 def verify_agnos_update(manifest_path: str, target_slot_number: int) -> bool:
-  update = json.load(open(manifest_path))
+  update = load_manifest(manifest_path)
   return all(verify_partition(target_slot_number, partition) for partition in update)
 
 

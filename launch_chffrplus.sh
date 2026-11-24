@@ -39,6 +39,35 @@ function set_lite_hw {
   fi
 }
 
+# comma three (tici) family only: AGNOS 13+ dropped the NVMe from fstab,
+# so mount it where the AGNOS 12 fstab did (/data/media)
+function mount_nvme {
+  grep -q "tici" /sys/firmware/devicetree/base/model 2>/dev/null || return 0
+  [ -n "$LITE" ] && return 0
+  [ -f /persist/comma/living-in-the-moment ] && return 0
+
+  local dev=/dev/nvme0n1
+  for i in $(seq 1 5); do
+    [ -b $dev ] && break
+    sleep 1
+  done
+  if [ ! -b $dev ]; then
+    echo "NVMe not found"
+    return 0
+  fi
+  [ -b ${dev}p1 ] && dev=${dev}p1
+
+  sudo mkdir -p /data/media
+  if ! mountpoint -q /data/media; then
+    sudo mount -o discard,nosuid,nodev $dev /data/media || echo "NVMe mount failed"
+  fi
+
+  if mountpoint -q /data/media; then
+    sudo mkdir -p /data/media/0/realdata
+    sudo chown comma:comma /data/media/0 /data/media/0/realdata
+  fi
+}
+
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
@@ -84,6 +113,7 @@ function launch {
   # hardware specific init
   if [ -f /AGNOS ]; then
     set_lite_hw
+    mount_nvme
     agnos_init
   fi
 
