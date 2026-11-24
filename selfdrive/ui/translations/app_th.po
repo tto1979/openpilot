@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:00+0800\n"
+"POT-Creation-Date: 2026-11-25 07:14+0800\n"
 "PO-Revision-Date: 2025-10-22 16:32-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -93,6 +93,11 @@ msgstr ""
 msgid "ADD"
 msgstr ""
 
+#: selfdrive/ui/onroad/top_hud.py:399
+#, python-format
+msgid "AHEAD"
+msgstr ""
+
 #: system/ui/widgets/network.py:139
 #, python-format
 msgid "APN Setting"
@@ -120,6 +125,7 @@ msgid "Advanced"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Aggressive"
 msgstr ""
@@ -836,6 +842,11 @@ msgid ""
 "on the next drive."
 msgstr ""
 
+#: selfdrive/ui/onroad/top_hud.py:356
+#, python-format
+msgid "LIMIT"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/top.py:194 selfdrive/ui/widgets/ssh_key.py:29
 #, python-format
 msgid "LOADING"
@@ -868,7 +879,7 @@ msgstr ""
 msgid "Longitudinal Maneuver Mode"
 msgstr ""
 
-#: selfdrive/ui/onroad/hud_renderer.py:148
+#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:233
 #, python-format
 msgid "MAX"
 msgstr ""
@@ -910,6 +921,11 @@ msgstr ""
 
 #: selfdrive/ui/layouts/sidebar.py:142
 msgid "NO"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:376 selfdrive/ui/onroad/top_hud.py:383
+#, python-format
+msgid "Near"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/settings.py:64
@@ -1171,6 +1187,7 @@ msgid "Reinstall the Panda firmware to fix connection or reliability issues."
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Relaxed"
 msgstr ""
@@ -1215,6 +1232,11 @@ msgstr ""
 #: selfdrive/ui/layouts/settings/top.py:195
 #, python-format
 msgid "SELECT"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:355
+#, python-format
+msgid "SPEED"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/developer.py:53
@@ -1318,6 +1340,7 @@ msgid "Sport"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Standard"
 msgstr ""
@@ -1682,6 +1705,16 @@ msgstr ""
 msgid "for \"{}\""
 msgstr ""
 
+#: selfdrive/ui/onroad/top_hud.py:387
+#, python-format
+msgid "ft"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:378
+#, python-format
+msgid "km"
+msgstr ""
+
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format
 msgid "km/h"
@@ -1697,6 +1730,11 @@ msgstr ""
 msgid "left"
 msgstr ""
 
+#: selfdrive/ui/onroad/top_hud.py:380
+#, python-format
+msgid "m"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/osm.py:65
 #, python-format
 msgid "m "
@@ -1705,6 +1743,11 @@ msgstr ""
 #: system/ui/widgets/network.py:142
 #, python-format
 msgid "metered"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:385
+#, python-format
+msgid "mi"
 msgstr ""
 
 #: selfdrive/ui/onroad/hud_renderer.py:177

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:00+0800\n"
+"POT-Creation-Date: 2026-11-25 07:14+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1071,16 +1071,19 @@ msgid "Driving Personality"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Aggressive"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Standard"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Relaxed"
 msgstr ""
@@ -1537,7 +1540,7 @@ msgstr ""
 msgid "camera starting"
 msgstr ""
 
-#: selfdrive/ui/onroad/hud_renderer.py:148
+#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:233
 #, python-format
 msgid "MAX"
 msgstr ""
@@ -1550,6 +1553,46 @@ msgstr ""
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format
 msgid "mph"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:355
+#, python-format
+msgid "SPEED"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:356
+#, python-format
+msgid "LIMIT"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:376 selfdrive/ui/onroad/top_hud.py:383
+#, python-format
+msgid "Near"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:378
+#, python-format
+msgid "km"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:380
+#, python-format
+msgid "m"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:385
+#, python-format
+msgid "mi"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:387
+#, python-format
+msgid "ft"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:399
+#, python-format
+msgid "AHEAD"
 msgstr ""
 
 #: selfdrive/ui/widgets/exp_mode_button.py:50

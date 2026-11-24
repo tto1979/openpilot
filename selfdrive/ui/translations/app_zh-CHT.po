@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:00+0800\n"
+"POT-Creation-Date: 2026-11-25 07:14+0800\n"
 "PO-Revision-Date: 2025-10-22 16:32-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -99,6 +99,11 @@ msgstr ""
 msgid "ADD"
 msgstr "新增"
 
+#: selfdrive/ui/onroad/top_hud.py:399
+#, python-format
+msgid "AHEAD"
+msgstr "前方"
+
 #: system/ui/widgets/network.py:139
 #, python-format
 msgid "APN Setting"
@@ -126,6 +131,7 @@ msgid "Advanced"
 msgstr "進階"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Aggressive"
 msgstr "積極"
@@ -855,6 +861,11 @@ msgstr ""
 "不在行駛中學習這台車的轉向反應延遲，固定使用預設延遲。有時延遲學習錯誤可能會造成方向盤因此晃動，可開啟此功能改善晃動。\n"
 "開啟 NNFF 控制器時一律開啟，NNFF 使用固定延遲。下次行駛時生效。"
 
+#: selfdrive/ui/onroad/top_hud.py:356
+#, python-format
+msgid "LIMIT"
+msgstr "速限"
+
 #: selfdrive/ui/layouts/settings/top.py:194 selfdrive/ui/widgets/ssh_key.py:29
 #, python-format
 msgid "LOADING"
@@ -887,7 +898,7 @@ msgstr "載入中..."
 msgid "Longitudinal Maneuver Mode"
 msgstr "縱向操作模式"
 
-#: selfdrive/ui/onroad/hud_renderer.py:148
+#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:233
 #, python-format
 msgid "MAX"
 msgstr "最大"
@@ -930,6 +941,11 @@ msgstr "開啟 NNFF 控制器"
 #: selfdrive/ui/layouts/sidebar.py:142
 msgid "NO"
 msgstr "否"
+
+#: selfdrive/ui/onroad/top_hud.py:376 selfdrive/ui/onroad/top_hud.py:383
+#, python-format
+msgid "Near"
+msgstr "接近"
 
 #: selfdrive/ui/layouts/settings/settings.py:64
 msgid "Network"
@@ -1191,6 +1207,7 @@ msgid "Reinstall the Panda firmware to fix connection or reliability issues."
 msgstr "刷新 Panda 韌體，用以修復連線或可靠性問題。"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Relaxed"
 msgstr "從容"
@@ -1236,6 +1253,11 @@ msgstr "檢視 openpilot 的規則、功能與限制"
 #, python-format
 msgid "SELECT"
 msgstr "選取"
+
+#: selfdrive/ui/onroad/top_hud.py:355
+#, python-format
+msgid "SPEED"
+msgstr "時速"
 
 #: selfdrive/ui/layouts/settings/developer.py:53
 #, python-format
@@ -1338,6 +1360,7 @@ msgid "Sport"
 msgstr "運動"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Standard"
 msgstr "標準"
@@ -1717,6 +1740,16 @@ msgstr ""
 msgid "for \"{}\""
 msgstr "適用於「{}」"
 
+#: selfdrive/ui/onroad/top_hud.py:387
+#, python-format
+msgid "ft"
+msgstr "英尺"
+
+#: selfdrive/ui/onroad/top_hud.py:378
+#, python-format
+msgid "km"
+msgstr "公里"
+
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format
 msgid "km/h"
@@ -1732,6 +1765,11 @@ msgstr "留空以自動設定"
 msgid "left"
 msgstr "左"
 
+#: selfdrive/ui/onroad/top_hud.py:380
+#, python-format
+msgid "m"
+msgstr "公尺"
+
 #: selfdrive/ui/layouts/settings/osm.py:65
 #, python-format
 msgid "m "
@@ -1741,6 +1779,11 @@ msgstr "分"
 #, python-format
 msgid "metered"
 msgstr "計量"
+
+#: selfdrive/ui/onroad/top_hud.py:385
+#, python-format
+msgid "mi"
+msgstr "英里"
 
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format

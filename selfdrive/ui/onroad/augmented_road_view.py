@@ -1,3 +1,4 @@
+import os
 import time
 import numpy as np
 import pyray as rl
@@ -7,8 +8,8 @@ from openpilot.selfdrive.ui import UI_BORDER_SIZE
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.onroad.driver_state import DriverStateRenderer
-from openpilot.selfdrive.ui.onroad.hud_renderer import HudRenderer
-from openpilot.selfdrive.ui.onroad.model_renderer import ModelRenderer
+from openpilot.selfdrive.ui.onroad.top_hud import TopHudRenderer
+from openpilot.selfdrive.ui.onroad.top_model import TopModelRenderer
 from openpilot.selfdrive.ui.onroad.cameraview import CameraView
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
@@ -25,10 +26,45 @@ BORDER_COLORS = {
   UIStatus.OVERRIDE: rl.Color(0x89, 0x92, 0x8D, 0xFF),  # Gray for override state
   UIStatus.ENGAGED: rl.Color(0x16, 0x7F, 0x40, 0xFF),  # Green for engaged state
 }
+ALKA_BORDER_COLOR = rl.Color(0x6f, 0xc0, 0xc9, 0xf1)  # TOP: lateral only (ALKA) active while disengaged
+
+# TOP: blinker / blind spot indicator on the left and right part of the border (from dragonpilot)
+INDICATOR_COLOR_BLINKER = rl.Color(0, 0xff, 0, 0xff)
+INDICATOR_COLOR_BSM = rl.Color(0xff, 0xff, 0, 0xff)
+INDICATOR_BLINK_STD = 0.4  # s
+INDICATOR_BLINK_FAST = 0.2  # s, blinker towards a car in the blind spot
+INDICATOR_WIDTH = 0.2  # share of the screen width
+
+# TOP: screen taps (cars without the steering wheel buttons)
+PERSONALITY_TAP_X = 124  # bottom left corner, same area as the Qt UI
+PERSONALITY_TAP_Y = 70
+PERSONALITY_TAP_DISTANCE = 384  # manhattan distance
+DOUBLE_TAP_TIME = 0.5  # s
 
 WIDE_CAM_MAX_SPEED = 10.0  # m/s (22 mph)
 ROAD_CAM_MIN_SPEED = 15.0  # m/s (34 mph)
 INF_POINT = np.array([1000.0, 0.0, 0.0])
+
+
+class SideIndicator:
+  def __init__(self):
+    self.show = False
+    self.color = INDICATOR_COLOR_BLINKER
+    self._start = 0.0
+
+  def update(self, blinker: bool, bsm: bool) -> None:
+    now = time.monotonic()
+    if not blinker and not bsm:
+      self.show = False
+      self._start = now
+      return
+    if blinker:
+      self.color = INDICATOR_COLOR_BSM if bsm else INDICATOR_COLOR_BLINKER
+      period = INDICATOR_BLINK_FAST if bsm else INDICATOR_BLINK_STD
+      self.show = int((now - self._start) / period) % 2 == 1
+    else:
+      self.color = INDICATOR_COLOR_BSM
+      self.show = True
 
 
 class AugmentedRoadView(CameraView):
@@ -44,10 +80,14 @@ class AugmentedRoadView(CameraView):
     self._cached_matrix: np.ndarray | None = None
     self._content_rect = rl.Rectangle()
 
-    self.model_renderer = ModelRenderer()
-    self._hud_renderer = HudRenderer()
+    self.model_renderer = TopModelRenderer()
+    self._hud_renderer = TopHudRenderer()
     self.alert_renderer = AlertRenderer()
     self.driver_state_renderer = DriverStateRenderer()
+    self._lite = bool(os.getenv("LITE"))  # no driver camera
+    self._indicator_left = SideIndicator()
+    self._indicator_right = SideIndicator()
+    self._last_tap_t = 0.0
 
     # debug
     self._pm = messaging.PubMaster(['uiDebug'])
@@ -87,7 +127,8 @@ class AugmentedRoadView(CameraView):
     self.model_renderer.render(self._content_rect)
     self._hud_renderer.render(self._content_rect)
     self.alert_renderer.render(self._content_rect)
-    self.driver_state_renderer.render(self._content_rect)
+    if not self._lite:
+      self.driver_state_renderer.render(self._content_rect)
 
     # Custom UI extension point - add custom overlays here
     # Use self._content_rect for positioning within camera bounds
@@ -103,9 +144,36 @@ class AugmentedRoadView(CameraView):
     msg.uiDebug.drawTimeMillis = (time.monotonic() - start_draw) * 1000
     self._pm.send('uiDebug', msg)
 
-  def _handle_mouse_press(self, _):
-    if not self._hud_renderer.user_interacting() and self._click_callback is not None:
+  def _handle_mouse_press(self, mouse_pos):
+    if self._hud_renderer.user_interacting():
+      return
+    if self._handle_top_tap(mouse_pos):
+      return
+    if self._click_callback is not None:
       self._click_callback()
+
+  def _handle_top_tap(self, mouse_pos) -> bool:
+    """TOP: tap the bottom left corner to change the driving personality, double tap to toggle
+    experimental mode. Only for cars without the steering wheel buttons. Returns True if handled."""
+    if ui_state.steering_wheel_car:
+      return False
+
+    x = self._rect.x + PERSONALITY_TAP_X
+    y = self._rect.y + self._rect.height - PERSONALITY_TAP_Y
+    if abs(mouse_pos.x - x) + abs(mouse_pos.y - y) <= PERSONALITY_TAP_DISTANCE:
+      personality = (int(ui_state.params.get("LongitudinalPersonality", return_default=True) or 0) + 2) % 3
+      ui_state.params.put_nonblocking("LongitudinalPersonality", personality)
+      self._last_tap_t = 0.0
+      return True
+
+    if ui_state.experimental_mode_via_wheel and ui_state.has_longitudinal_control:
+      now = time.monotonic()
+      if now - self._last_tap_t < DOUBLE_TAP_TIME:
+        ui_state.params.put_bool_nonblocking("ExperimentalMode", not ui_state.params.get_bool("ExperimentalMode"))
+        self._last_tap_t = 0.0
+      else:
+        self._last_tap_t = now
+    return False
 
   def _handle_mouse_release(self, _):
     # We only call click callback on press if not interacting with HUD
@@ -115,9 +183,22 @@ class AugmentedRoadView(CameraView):
     rl.draw_rectangle_lines_ex(rect, UI_BORDER_SIZE, rl.BLACK)
     border_roundness = 0.12
     border_color = BORDER_COLORS.get(ui_state.status, BORDER_COLORS[UIStatus.DISENGAGED])
+    if ui_state.alka_active and ui_state.status == UIStatus.DISENGAGED:
+      border_color = ALKA_BORDER_COLOR
     border_rect = rl.Rectangle(rect.x + UI_BORDER_SIZE, rect.y + UI_BORDER_SIZE,
                                rect.width - 2 * UI_BORDER_SIZE, rect.height - 2 * UI_BORDER_SIZE)
     rl.draw_rectangle_rounded_lines_ex(border_rect, border_roundness, 10, UI_BORDER_SIZE, border_color)
+
+    # TOP: blinker / blind spot indicators
+    cs = ui_state.sm['carState']
+    self._indicator_left.update(cs.leftBlinker, cs.leftBlindspot)
+    self._indicator_right.update(cs.rightBlinker, cs.rightBlindspot)
+    width = int(rect.width * INDICATOR_WIDTH)
+    for indicator, x in ((self._indicator_left, rect.x), (self._indicator_right, rect.x + rect.width - width)):
+      if indicator.show:
+        rl.begin_scissor_mode(int(x), int(rect.y), width, int(rect.height))
+        rl.draw_rectangle_rounded_lines_ex(border_rect, border_roundness, 10, UI_BORDER_SIZE, indicator.color)
+        rl.end_scissor_mode()
 
   def _switch_stream_if_needed(self, sm):
     if sm['selfdriveState'].experimentalMode and WIDE_CAM in self.available_streams:

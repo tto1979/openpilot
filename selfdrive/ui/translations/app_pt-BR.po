@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:00+0800\n"
+"POT-Creation-Date: 2026-11-25 07:14+0800\n"
 "PO-Revision-Date: 2025-10-21 00:00-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -104,6 +104,11 @@ msgstr ""
 msgid "ADD"
 msgstr "ADICIONAR"
 
+#: selfdrive/ui/onroad/top_hud.py:399
+#, python-format
+msgid "AHEAD"
+msgstr ""
+
 #: system/ui/widgets/network.py:139
 #, python-format
 msgid "APN Setting"
@@ -131,6 +136,7 @@ msgid "Advanced"
 msgstr "Avançado"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Aggressive"
 msgstr "Agressivo"
@@ -874,6 +880,11 @@ msgid ""
 "on the next drive."
 msgstr ""
 
+#: selfdrive/ui/onroad/top_hud.py:356
+#, python-format
+msgid "LIMIT"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/top.py:194 selfdrive/ui/widgets/ssh_key.py:29
 #, python-format
 msgid "LOADING"
@@ -906,7 +917,7 @@ msgstr ""
 msgid "Longitudinal Maneuver Mode"
 msgstr "Modo de Manobra Longitudinal"
 
-#: selfdrive/ui/onroad/hud_renderer.py:148
+#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:233
 #, python-format
 msgid "MAX"
 msgstr "MÁX"
@@ -951,6 +962,11 @@ msgstr ""
 #: selfdrive/ui/layouts/sidebar.py:142
 msgid "NO"
 msgstr "NÃO"
+
+#: selfdrive/ui/onroad/top_hud.py:376 selfdrive/ui/onroad/top_hud.py:383
+#, python-format
+msgid "Near"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/settings.py:64
 msgid "Network"
@@ -1220,6 +1236,7 @@ msgid "Reinstall the Panda firmware to fix connection or reliability issues."
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Relaxed"
 msgstr "Relaxado"
@@ -1265,6 +1282,11 @@ msgstr "Revise as regras, recursos e limitações do openpilot"
 #, python-format
 msgid "SELECT"
 msgstr "SELECIONAR"
+
+#: selfdrive/ui/onroad/top_hud.py:355
+#, python-format
+msgid "SPEED"
+msgstr ""
 
 #: selfdrive/ui/layouts/settings/developer.py:53
 #, python-format
@@ -1367,6 +1389,7 @@ msgid "Sport"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
+#: selfdrive/ui/onroad/top_hud.py:37
 #, python-format
 msgid "Standard"
 msgstr "Padrão"
@@ -1748,6 +1771,16 @@ msgstr ""
 msgid "for \"{}\""
 msgstr "para \"{}\""
 
+#: selfdrive/ui/onroad/top_hud.py:387
+#, python-format
+msgid "ft"
+msgstr ""
+
+#: selfdrive/ui/onroad/top_hud.py:378
+#, python-format
+msgid "km"
+msgstr ""
+
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format
 msgid "km/h"
@@ -1763,6 +1796,11 @@ msgstr "deixe em branco para configuração automática"
 msgid "left"
 msgstr "à esquerda"
 
+#: selfdrive/ui/onroad/top_hud.py:380
+#, python-format
+msgid "m"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/osm.py:65
 #, python-format
 msgid "m "
@@ -1772,6 +1810,11 @@ msgstr ""
 #, python-format
 msgid "metered"
 msgstr "limitados"
+
+#: selfdrive/ui/onroad/top_hud.py:385
+#, python-format
+msgid "mi"
+msgstr ""
 
 #: selfdrive/ui/onroad/hud_renderer.py:177
 #, python-format

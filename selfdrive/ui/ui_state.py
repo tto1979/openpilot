@@ -55,6 +55,11 @@ class UIState:
         "carControl",
         "liveParameters",
         "rawAudioData",
+        # TOP
+        "longitudinalPlanTOP",
+        "liveMapDataTOP",
+        "topControlsState",
+        "carStateTOP",
       ]
     )
 
@@ -72,6 +77,13 @@ class UIState:
     self.is_release = self.params.get_bool("IsReleaseBranch")
     self.always_on_dm: bool = self.params.get_bool("AlwaysOnDM")
     self.onroad_screen_off: bool = self.params.get_bool("OnroadScreenOff")  # TOP: "Driving Screen Off"
+    # TOP onroad UI
+    self.speed_limit_mode: int = 0
+    self.tim_signals: bool = True
+    self.driving_personalities_ui_wheel: bool = True
+    self.experimental_mode_via_wheel: bool = True  # tap the screen twice to toggle experimental mode
+    self.steering_wheel_car: bool = False  # car has wheel buttons for experimental mode / personality
+    self.alka_active: bool = False
     self.started: bool = False
     self.ignition: bool = False
     self.recording_audio: bool = False
@@ -147,6 +159,11 @@ class UIState:
     self.always_on_dm = self.params.get_bool("AlwaysOnDM")
     self.onroad_screen_off = self.params.get_bool("OnroadScreenOff")
 
+    # TOP
+    if self.sm.updated["carStateTOP"]:
+      self.steering_wheel_car = self.sm["carStateTOP"].steeringWheelCar
+    self.alka_active = self.started and self.sm.alive["topControlsState"] and self.sm["topControlsState"].alkaActive
+
   def _update_status(self) -> None:
     if self.started and self.sm.updated["selfdriveState"]:
       ss = self.sm["selfdriveState"]
@@ -185,6 +202,12 @@ class UIState:
         self.has_longitudinal_control = self.params.get_bool("AlphaLongitudinalEnabled")
       else:
         self.has_longitudinal_control = self.CP.openpilotLongitudinalControl
+
+    # TOP
+    self.speed_limit_mode = self.params.get("SpeedLimitMode", return_default=True) or 0
+    self.tim_signals = self.params.get_bool("TimSignals")
+    self.driving_personalities_ui_wheel = self.params.get_bool("DrivingPersonalitiesUIWheel")
+    self.experimental_mode_via_wheel = self.params.get_bool("e2e_link")
     self._param_update_time = time.monotonic()
 
 
