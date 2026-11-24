@@ -243,9 +243,7 @@ class Updater:
     if b is None:
       b = self.get_branch(BASEDIR)
 
-    # Use the new migration function that handles dynamic version numbers
-    from openpilot.system.version import get_top_branch_migration
-    b = get_top_branch_migration(HARDWARE.get_device_type(), b)
+    # no tici -> -c3/-C3 branch migration anymore: the same branches run on comma three and comma 3X
     return b
 
   @property

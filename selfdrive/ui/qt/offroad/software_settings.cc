@@ -67,17 +67,10 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   targetBranchBtn = new ButtonControl(tr("Target Branch"), tr("SELECT"));
   connect(targetBranchBtn, &ButtonControl::clicked, [=]() {
     if (Hardware::get_device_type() == cereal::InitData::DeviceType::TICI) {
-      // TICI device special handling - only show -c3/-C3 branches
+      // TICI: the regular branches run on comma three too, legacy -c3/-C3 branches are still listed
       auto current = params.get("GitBranch");
       QStringList allBranches = QString::fromStdString(params.get("UpdaterAvailableBranches")).split(",");
-      QStringList branches;
-
-      // Filter to only show branches ending with -c3 or -C3
-      for (const QString &b : allBranches) {
-        if (b.endsWith("-c3") || b.endsWith("-C3")) {
-          branches.append(b);
-        }
-      }
+      QStringList branches = allBranches;
 
       // Prioritize recommended branches for TOP fork
       for (QString b : {current.c_str(), "top-c3", "dev-c3", "release-c3"}) {
