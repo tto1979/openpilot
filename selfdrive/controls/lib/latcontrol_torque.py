@@ -97,6 +97,8 @@ class LatControlTorque(LatControl):
     if self.use_nn:
       self.pid_nnff = PIDController(NN_KP, NN_KI, rate=1/self.dt)
 
+    # TOP lane centering: lateral accel controlsd added to the model's request; the NN path shifts the plan's accels by it
+    self.plan_lat_accel_offset = 0.0
     self.pid = self.pid_official
     self.update_limits()
 
@@ -203,7 +205,8 @@ class LatControlTorque(LatControl):
       predicted_lateral_jerk = get_predicted_lateral_jerk(model_data.acceleration.y, self.t_diffs)
       lookahead = np.interp(CS.vEgo, self.friction_look_ahead_bp, self.friction_look_ahead_v)
       friction_upper_idx = next((i for i, val in enumerate(ModelConstants.T_IDXS) if val > lookahead), 16)
-      desired_lateral_jerk_model = (np.interp(self.desired_lat_jerk_time, ModelConstants.T_IDXS, model_data.acceleration.y) - desired_lateral_accel) / self.desired_lat_jerk_time
+      desired_lateral_jerk_model = (np.interp(self.desired_lat_jerk_time, ModelConstants.T_IDXS, model_data.acceleration.y) + self.plan_lat_accel_offset
+                                    - desired_lateral_accel) / self.desired_lat_jerk_time
       lookahead_lateral_jerk = get_lookahead_value(predicted_lateral_jerk[LAT_PLAN_MIN_IDX:friction_upper_idx], desired_lateral_jerk_model)
 
       if lookahead_lateral_jerk == 0.0:
@@ -233,7 +236,8 @@ class LatControlTorque(LatControl):
 
         future_rolls = [roll_pitch_adjust(np.interp(t, ModelConstants.T_IDXS, model_data.orientation.x) + roll,
                         np.interp(t, ModelConstants.T_IDXS, model_data.orientation.y) + self.pitch_last) for t in adjusted_future_times]
-        future_planned_lateral_accels = [np.interp(t, ModelConstants.T_IDXS, model_data.acceleration.y) for t in adjusted_future_times]
+        future_planned_lateral_accels = [np.interp(t, ModelConstants.T_IDXS, model_data.acceleration.y) + self.plan_lat_accel_offset
+                                         for t in adjusted_future_times]
 
         friction_input = self.lat_accel_friction_factor * (setpoint - measurement) + lateral_jerk_setpoint
 
