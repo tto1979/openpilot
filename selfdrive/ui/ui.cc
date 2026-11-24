@@ -75,7 +75,8 @@ static void update_state(UIState *s) {
   }
   if (sm.updated("wideRoadCameraState")) {
     auto cam_state = sm["wideRoadCameraState"].getWideRoadCameraState();
-    scene.light_sensor = std::max(100.0f - cam_state.getExposureValPercent(), 0.0f);
+    float scale = (cam_state.getSensor() == cereal::FrameData::ImageSensor::AR0231) ? 6.0f : 1.0f;
+    scene.light_sensor = std::max(100.0f - scale * cam_state.getExposureValPercent(), 0.0f);
   } else if (!sm.allAliveAndValid({"wideRoadCameraState"})) {
     scene.light_sensor = -1;
   }
@@ -89,6 +90,7 @@ static void update_state(UIState *s) {
 void ui_update_params(UIState *s) {
   auto params = Params();
   s->scene.is_metric = params.getBool("IsMetric");
+  s->scene.lite = getenv("LITE");
   s->scene.speed_limit_mode = std::atoi(params.get("SpeedLimitMode").c_str());
   UIScene &scene = s->scene;
   scene.onroadScreenOff = params.getBool("OnroadScreenOff");

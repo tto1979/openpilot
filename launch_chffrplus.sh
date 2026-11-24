@@ -27,6 +27,18 @@ function agnos_init {
   fi
 }
 
+# comma three (tici) family only: a unit without the amplifier at i2c 0x10
+# (e.g. O3 Lite) has no speaker, driver camera or modem
+function set_lite_hw {
+  grep -q "tici" /sys/firmware/devicetree/base/model 2>/dev/null || return 0
+
+  if [ -z "$(i2cget -y 0 0x10 0x00 2>/dev/null)" ]; then
+    echo "Lite HW"
+    export LITE=1
+    export DISABLE_DRIVER=1
+  fi
+}
+
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
@@ -71,6 +83,7 @@ function launch {
 
   # hardware specific init
   if [ -f /AGNOS ]; then
+    set_lite_hw
     agnos_init
   fi
 

@@ -95,7 +95,7 @@ class Tici(HardwareBase):
 
   @cached_property
   def amplifier(self):
-    if self.get_device_type() == "mici":
+    if self.get_device_type() == "mici" or os.getenv("LITE"):
       return None
     return Amplifier()
 
@@ -211,7 +211,7 @@ class Tici(HardwareBase):
     return str(self.get_modem().Get(MM_MODEM, 'EquipmentIdentifier', dbus_interface=DBUS_PROPS, timeout=TIMEOUT))
 
   def get_network_info(self):
-    if self.get_device_type() == "mici":
+    if self.get_device_type() == "mici" or os.getenv("LITE"):
       return None
     try:
       modem = self.get_modem()
@@ -303,6 +303,8 @@ class Tici(HardwareBase):
       return None
 
   def get_modem_temperatures(self):
+    if os.getenv("LITE"):
+      return []
     timeout = 0.2  # Default timeout is too short
     try:
       modem = self.get_modem()
@@ -446,6 +448,9 @@ class Tici(HardwareBase):
 
     # pandad core
     affine_irq(3, "spi_geni")         # SPI
+    if "tici" in self.get_device_type():
+      affine_irq(3, "xhci-hcd:usb3")  # aux panda USB (or potentially anything else on USB)
+      affine_irq(3, "xhci-hcd:usb1")  # internal panda USB (also modem)
     try:
       pid = subprocess.check_output(["pgrep", "-f", "spi0"], encoding='utf8').strip()
       subprocess.call(["sudo", "chrt", "-f", "-p", "1", pid])
@@ -464,20 +469,22 @@ class Tici(HardwareBase):
 
     cmds = []
 
-    if self.get_device_type() in ("tizi", ):
+    if self.get_device_type() in ("tici", "tizi"):
       # clear out old blue prime initial APN
       os.system('mmcli -m any --3gpp-set-initial-eps-bearer-settings="apn="')
 
       cmds += [
-        # SIM hot swap
-        'AT+QSIMDET=1,0',
-        'AT+QSIMSTAT=1',
-
         # configure modem as data-centric
         'AT+QNVW=5280,0,"0102000000000000"',
         'AT+QNVFW="/nv/item_files/ims/IMS_enable",00',
         'AT+QNVFW="/nv/item_files/modem/mmode/ue_usage_setting",01',
       ]
+      if self.get_device_type() == "tizi":
+        # SIM hot swap, not routed on tici
+        cmds += [
+          'AT+QSIMDET=1,0',
+          'AT+QSIMSTAT=1',
+        ]
     elif manufacturer == 'Cavli Inc.':
       cmds += [
         'AT^SIMSWAP=1',     # use SIM slot, instead of internal eSIM

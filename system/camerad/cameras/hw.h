@@ -13,7 +13,7 @@ typedef enum {
   ISP_BPS_PROCESSED,  // fully processed image through the BPS
 } SpectraOutputType;
 
-// For the comma 3X three camera platform
+// For the comma 3/3X three camera platform
 
 struct CameraConfig {
   int camera_num;
@@ -59,7 +59,7 @@ const CameraConfig DRIVER_CAMERA_CONFIG = {
   .focal_len = 1.71,
   .publish_name = "driverCameraState",
   .init_camera_state = &cereal::Event::Builder::initDriverCameraState,
-  .enabled = !getenv("DISABLE_DRIVER"),
+  .enabled = (!getenv("DISABLE_DRIVER") && !getenv("LITE")),
   .phy = CAM_ISP_IFE_IN_RES_PHY_2,
   .vignetting_correction = false,
   .output_type = ISP_BPS_PROCESSED,

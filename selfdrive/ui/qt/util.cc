@@ -29,7 +29,8 @@ QString getVersion() {
 }
 
 QString getBrand() {
-  return QObject::tr("T.O.P");
+  const bool lite = getenv("LITE");
+  return QObject::tr("T.O.P") + (lite ? QString::fromStdString(" - Lite") : QString(""));
 }
 
 QString getUserAgent() {

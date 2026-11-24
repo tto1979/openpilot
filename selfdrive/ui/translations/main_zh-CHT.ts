@@ -599,6 +599,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>請連接至網際網路以檢查更新。在連接至網際網路並完成更新檢查之前，TOP 將不會自動啟動。</translation>
     </message>
     <message>
+        <source>NVMe drive not mounted.</source>
+        <translation>NVMe 硬碟未掛載。</translation>
+    </message>
+    <message>
         <source>TOP was unable to identify your car. Your car is either unsupported or its ECUs are not recognized. Please submit a pull request to add the firmware versions to the proper vehicle. Need help? Join discord.comma.ai.</source>
         <translation>TOP 無法識別您的車輛。您的車輛可能未被支援，或是其電控單元 (ECU) 未被識別。請提交一個 Pull Request 為您的車輛添加正確的韌體版本。需要幫助嗎？請加入 discord.comma.ai 。</translation>
     </message>
