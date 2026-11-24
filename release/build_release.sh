@@ -45,6 +45,8 @@ cd $BUILD_DIR
 
 rm -f panda/board/obj/panda.bin.signed
 rm -f panda/board/obj/panda_h7.bin.signed
+rm -f panda_tici/board/obj/panda.bin.signed
+rm -f panda_tici/board/obj/panda_h7.bin.signed
 
 # make sure LFS objects were pulled, not just pointer files
 if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_supercombo.onnx; then
@@ -63,10 +65,10 @@ scons -j$(nproc) --minimal
 
 if [ -z "$PANDA_DEBUG_BUILD" ]; then
   # release panda fw
-  CERT=/data/pandaextra/certs/release RELEASE=1 scons -j$(nproc) panda/
+  CERT=/data/pandaextra/certs/release RELEASE=1 scons -j$(nproc) panda/ panda_tici/
 else
   # build with ALLOW_DEBUG=1 to enable features like experimental longitudinal
-  scons -j$(nproc) panda/
+  scons -j$(nproc) panda/ panda_tici/
 fi
 
 # Ensure no submodules in release

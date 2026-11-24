@@ -44,6 +44,7 @@ cp -pR --parents $(./release/release_files.py; cat release/files_*) $TARGET_DIR/
 cd $TARGET_DIR
 rm -rf .git/modules/
 rm -f panda/board/obj/panda.bin.signed
+rm -f panda_tici/board/obj/panda.bin.signed
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)

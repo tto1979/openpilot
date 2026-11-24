@@ -246,6 +246,8 @@ Export('messaging')
 
 # Build other submodules
 SConscript(['panda/SConscript'])
+# comma three "dos" (STM32F4) panda, see selfdrive/pandad_tici
+SConscript(['panda_tici/SConscript'])
 
 # Build rednose library
 SConscript(['rednose/SConscript'])

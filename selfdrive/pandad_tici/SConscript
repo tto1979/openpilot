@@ -1,0 +1,9 @@
+Import('env', 'common', 'messaging')
+
+# pandad for the comma three internal "dos" panda (STM32F4, USB), built against the frozen
+# F4-capable panda_tici instead of upstream panda. The python CAN API (pandad_api_impl) is
+# panda-agnostic and shared with selfdrive/pandad.
+libs = ['usb-1.0', common, messaging, 'pthread']
+panda = env.Library('panda_tici', ['panda.cc', 'panda_comms.cc', 'spi.cc'])
+
+env.Program('pandad', ['main.cc', 'pandad.cc', 'panda_safety.cc'], LIBS=[panda] + libs)

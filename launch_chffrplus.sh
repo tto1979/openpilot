@@ -27,6 +27,91 @@ function agnos_init {
   fi
 }
 
+# comma three (tici) family only: pick the panda stack by the internal panda's MCU.
+#   F4 (dos, the stock C3 panda) -> TICI_DOS=1: panda_tici + selfdrive/pandad_tici
+#   H7 (tres)                    -> TICI_TRES=1: upstream panda + selfdrive/pandad
+# comma 3X is never touched. The MCU type is a hardware fact, so it's cached in /data
+# (survives branch/fork switches, re-detected after a reset). If detection fails,
+# fall back to dos (pandad_tici can flash both F4 and H7) without caching.
+# Based on dragonpilot's set_tici_hw (credit: Rick Lan).
+function set_tici_hw {
+  grep -q "tici" /sys/firmware/devicetree/base/model 2>/dev/null || return 0
+  export TICI_HW=1
+
+  local cache="/data/tici_panda_mcu"
+  local attempts=15 confirm=3
+  local mcu="" count=0 last="" cur=""
+
+  case "$(cat $cache 2>/dev/null)" in
+    F4|H7) mcu="$(cat $cache)"; echo "panda MCU $mcu [cached]" ;;
+  esac
+
+  if [ -z "$mcu" ]; then
+    echo "Querying panda MCU type..."
+    for attempt in $(seq 1 $attempts); do
+      # wait longer while the panda is still enumerating, short between confirmations
+      if [ -n "$last" ]; then sleep 1; else sleep 3; fi
+
+      # only the internal panda is visible here: the aux USB-C port is still in device mode
+      case "$(python -c "from panda_tici import Panda; p = Panda(cli=False); print(p.get_mcu_type()); p.close()" 2>/dev/null)" in
+        *McuType.F4*) cur="F4" ;;
+        *McuType.H7*) cur="H7" ;;
+        *)            cur="" ;;
+      esac
+
+      if [ -n "$cur" ] && [ "$cur" = "$last" ]; then
+        count=$((count + 1))
+      else
+        count=1
+        last="$cur"
+      fi
+
+      if [ -n "$cur" ] && [ $count -ge $confirm ]; then
+        mcu="$cur"
+        { echo "$mcu" > $cache; } 2>/dev/null
+        break
+      fi
+      echo "panda MCU read='${cur:-UNKNOWN}' (confirmed $count/$confirm, attempt $attempt/$attempts)"
+    done
+  fi
+
+  if [ -z "$mcu" ]; then
+    echo "panda MCU unknown after $attempts attempts, assuming dos (F4)"
+    mcu="F4"
+  fi
+
+  if [ "$mcu" = "F4" ]; then
+    echo "TICI (DOS) detected"
+    export TICI_DOS=1
+    set_aux_panda
+  else
+    echo "TICI (TRES) detected"
+    export TICI_TRES=1
+  fi
+}
+
+# The aux USB-C port boots in OTG idle ("none"); a 2nd (external) panda there only enumerates
+# once the port is in host mode. Keep host mode only if a 2nd panda shows up, otherwise revert
+# so the port still works as a USB device (PC connect). Probed every boot (plug/unplug).
+# From dragonpilot (credit: Rick Lan).
+function set_aux_panda {
+  local mode="/sys/devices/platform/soc/a600000.ssusb/mode"
+  [ -e "$mode" ] || return 0
+
+  echo "Checking for aux panda (switching USB-C port to host mode)..."
+  echo host | sudo tee "$mode" > /dev/null 2>&1
+  for i in $(seq 1 6); do
+    sleep 0.5
+    if [ "$(lsusb 2>/dev/null | grep -c 'comma.ai panda')" -ge 2 ]; then
+      echo "aux panda detected (USB host mode kept)"
+      return 0
+    fi
+  done
+
+  echo "no aux panda found; reverting USB-C port to device mode"
+  echo none | sudo tee "$mode" > /dev/null 2>&1
+}
+
 # comma three (tici) family only: a unit without the amplifier at i2c 0x10
 # (e.g. O3 Lite) has no speaker, driver camera or modem
 function set_lite_hw {
@@ -112,6 +197,7 @@ function launch {
 
   # hardware specific init
   if [ -f /AGNOS ]; then
+    set_tici_hw
     set_lite_hw
     mount_nvme
     agnos_init
