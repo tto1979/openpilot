@@ -1,5 +1,6 @@
 import os
 import threading
+import time
 import json
 import pyray as rl
 from enum import IntEnum
@@ -10,7 +11,9 @@ from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.system.ui.lib.scroll_panel2 import GuiScrollPanel2
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton, BigParamControl
+from openpilot.selfdrive.ui.mici.widgets.top_dialogs import FootageDialogMici, TextModalMici
+from openpilot.selfdrive.ui.layouts.settings.top_common import read_error_log, error_log_html, run_flash_panda
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigMultiOptionDialog, BigDialog, BigConfirmationDialogV2
 from openpilot.selfdrive.ui.mici.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.mici.onroad.driver_camera_dialog import DriverCameraDialog
@@ -326,6 +329,22 @@ class DeviceLayoutMici(NavWidget):
     driver_cam_btn.set_click_callback(self._show_driver_camera)
     driver_cam_btn.set_enabled(lambda: ui_state.is_offroad())
 
+    # TOP
+    footage_btn = BigButton("dashcam footage", "", "icons_mici/settings/device/cameras.png")
+    footage_btn.set_click_callback(lambda: gui_app.set_modal_overlay(FootageDialogMici()))
+
+    self._flash_status = ""
+    self._flash_panda_btn = BigButton("flash panda", "", "icons_mici/settings/device/update.png")
+    self._flash_panda_btn.set_click_callback(lambda: _engaged_confirmation_callback(self._start_flash_panda, "flash panda"))
+    self._flash_panda_btn.set_enabled(lambda: not self._flash_status)
+
+    # dp_device_offroad: hardwared keeps openpilot offroad while set, cleared on manager start
+    self._offroad_toggle = BigParamControl("force offroad mode", "dp_device_offroad")
+    self._offroad_toggle.set_enabled(lambda: not ui_state.engaged)
+
+    error_log_btn = BigButton("error log", "", "icons_mici/settings/device/info.png")
+    error_log_btn.set_click_callback(self._show_error_log)
+
     review_training_guide_btn = BigButton("review training guide", "", "icons_mici/settings/device/info.png")
     review_training_guide_btn.set_click_callback(self._on_review_training_guide)
     review_training_guide_btn.set_enabled(lambda: ui_state.is_offroad())
@@ -336,6 +355,10 @@ class DeviceLayoutMici(NavWidget):
       PairBigButton(),
       review_training_guide_btn,
       driver_cam_btn,
+      footage_btn,
+      self._offroad_toggle,
+      self._flash_panda_btn,
+      error_log_btn,
       # lang_button,
       reset_calibration_btn,
       uninstall_openpilot_btn,
@@ -358,6 +381,33 @@ class DeviceLayoutMici(NavWidget):
   def _offroad_transition(self):
     self._power_off_btn.set_visible(ui_state.is_offroad())
 
+  # *** TOP ***
+
+  def _start_flash_panda(self):
+    def flash():
+      self._flash_status = "flashing..."
+      if run_flash_panda():
+        self._flash_status = "flashed, rebooting..."
+        time.sleep(3)
+        ui_state.params.put_bool("DoReboot", True)
+      else:
+        self._flash_status = "failed"
+        time.sleep(3)
+        self._flash_status = ""
+
+    threading.Thread(target=flash, daemon=True).start()
+
+  def _show_error_log(self):
+    text = read_error_log()
+    if not text:
+      gui_app.set_modal_overlay(BigDialog("no error log", ""))
+      return
+    gui_app.set_modal_overlay(TextModalMici(error_log_html(text)))
+
+  def _update_state(self):
+    super()._update_state()
+    self._flash_panda_btn.set_value(self._flash_status)
+
   def _show_driver_camera(self):
     if not self._driver_camera:
       self._driver_camera = DriverCameraDialog()
@@ -378,6 +428,7 @@ class DeviceLayoutMici(NavWidget):
   def show_event(self):
     super().show_event()
     self._scroller.show_event()
+    self._offroad_toggle.refresh()
 
   def _render(self, rect: rl.Rectangle):
     self._scroller.render(rect)

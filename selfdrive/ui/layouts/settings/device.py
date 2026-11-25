@@ -1,6 +1,5 @@
 import os
 import math
-import subprocess
 import threading
 import time
 
@@ -11,6 +10,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.ui.onroad.driver_camera_dialog import DriverCameraDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.layouts.onboarding import TrainingGuide
+from openpilot.selfdrive.ui.layouts.settings.top_common import run_flash_panda
 from openpilot.selfdrive.ui.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.widgets.footage_dialog import FootageDialog
 from openpilot.system.hardware import TICI
@@ -130,14 +130,7 @@ class DeviceLayout(Widget):
 
   def _flash_panda(self):
     self._flash_status = tr("Flashing...")
-    try:
-      with open("/data/flash_panda.log", "w") as log_file:
-        ret = subprocess.call(["python3", "top/system/flash_panda.py"], cwd=BASEDIR, stdout=log_file, stderr=subprocess.STDOUT)
-    except Exception:
-      cloudlog.exception("flash panda failed")
-      ret = -1
-
-    if ret == 0:
+    if run_flash_panda():
       self._flash_status = tr("Flashed!")
       time.sleep(2.5)
       self._flash_status = tr("Rebooting...")

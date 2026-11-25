@@ -142,3 +142,34 @@ def apply_toggle(params: Params, param: str, state: bool) -> None:
 def lag_learning_locked(params: Params) -> bool:
   """NNFF always runs on a fixed steering delay, so delay learning is forced off while NNFF is on."""
   return bool(params.get_bool("NNFF"))
+
+
+# *** device / software actions ***
+
+ERROR_LOG_PATH = "/data/community/crashes/error.txt"  # written by system/sentry.py save_exception()
+FLASH_PANDA_LOG = "/data/flash_panda.log"
+
+
+def read_error_log() -> str:
+  """Last crash traceback, empty if there is none."""
+  try:
+    with open(ERROR_LOG_PATH, encoding="utf-8", errors="replace") as f:
+      return f.read().strip()
+  except OSError:
+    return ""
+
+
+def error_log_html(text: str) -> str:
+  # the HTML renderer keeps unknown tags like <module> as text, only line breaks need converting
+  return "<p>" + "<br>".join(text.splitlines()) + "</p>"
+
+
+def run_flash_panda() -> bool:
+  """Reflash the panda through pandad (top/system/flash_panda.py). Blocking, run it in a thread."""
+  try:
+    with open(FLASH_PANDA_LOG, "w") as log_file:
+      ret = subprocess.call(["python3", "top/system/flash_panda.py"], cwd=BASEDIR, stdout=log_file, stderr=subprocess.STDOUT)
+  except Exception:
+    cloudlog.exception("flash panda failed")
+    ret = -1
+  return ret == 0

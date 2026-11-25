@@ -18,6 +18,32 @@ from openpilot.system.ui.widgets.button import IconButton
 FLEETMANAGER_PORT = 8082
 
 
+def footage_url() -> str:
+  """fleetmanager footage page on the device's current IP, empty when not on a network."""
+  ip = HARDWARE.get_ip_address() or ""
+  return f"http://{ip}:{FLEETMANAGER_PORT}/footage" if ip and ip != "--" else ""
+
+
+def make_qr_texture(data: str, fill_color: str = "black", back_color: str = "white", border: int = 4) -> "rl.Texture | None":
+  try:
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=border)
+    qr.add_data(data)
+    qr.make(fit=True)
+    pil_img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGBA')
+    img_array = np.array(pil_img, dtype=np.uint8)
+
+    rl_image = rl.Image()
+    rl_image.data = rl.ffi.cast("void *", img_array.ctypes.data)
+    rl_image.width = pil_img.width
+    rl_image.height = pil_img.height
+    rl_image.mipmaps = 1
+    rl_image.format = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
+    return rl.load_texture_from_image(rl_image)
+  except Exception:
+    cloudlog.exception("QR code generation failed")
+    return None
+
+
 class FootageDialog(Widget):
   REFRESH_INTERVAL = 30  # s, the IP can change when switching networks
 
@@ -30,8 +56,7 @@ class FootageDialog(Widget):
     self._close_btn.set_click_callback(lambda: gui_app.set_modal_overlay(None))
 
   def _refresh(self):
-    ip = HARDWARE.get_ip_address() or ""
-    url = f"http://{ip}:{FLEETMANAGER_PORT}/footage" if ip and ip != "--" else ""
+    url = footage_url()
     if url == self._url and self._qr_texture is not None:
       return
     self._url = url
@@ -39,23 +64,7 @@ class FootageDialog(Widget):
     if not url:
       return
 
-    try:
-      qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
-      qr.add_data(url)
-      qr.make(fit=True)
-      pil_img = qr.make_image(fill_color="black", back_color="white").convert('RGBA')
-      img_array = np.array(pil_img, dtype=np.uint8)
-
-      rl_image = rl.Image()
-      rl_image.data = rl.ffi.cast("void *", img_array.ctypes.data)
-      rl_image.width = pil_img.width
-      rl_image.height = pil_img.height
-      rl_image.mipmaps = 1
-      rl_image.format = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
-      self._qr_texture = rl.load_texture_from_image(rl_image)
-    except Exception:
-      cloudlog.exception("footage QR code generation failed")
-      self._qr_texture = None
+    self._qr_texture = make_qr_texture(url)
 
   def _unload(self):
     if self._qr_texture is not None and self._qr_texture.id != 0:

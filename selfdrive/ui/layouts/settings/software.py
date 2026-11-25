@@ -7,6 +7,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr, trn
 from openpilot.system.ui.widgets import Widget, DialogResult
+from openpilot.selfdrive.ui.layouts.settings.top_common import read_error_log, error_log_html
 from openpilot.system.hardware import HARDWARE
 from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog, alert_dialog
 from openpilot.system.ui.widgets.html_render import HtmlModal
@@ -18,7 +19,6 @@ from openpilot.system.ui.widgets.scroller_tici import Scroller
 UPDATED_TIMEOUT = 10  # seconds to wait for updated to respond
 
 # TOP
-ERROR_LOG_PATH = "/data/community/crashes/error.txt"  # written by system/sentry.py save_exception()
 TOP_C3_BRANCH_RE = re.compile(r"^TOP\d+-c3$", re.IGNORECASE)
 
 # Mapping updater internal states to translated display strings
@@ -201,16 +201,11 @@ class SoftwareLayout(Widget):
     gui_app.set_modal_overlay(dialog, callback=handle_confirmation)
 
   def _on_error_log(self):
-    try:
-      with open(ERROR_LOG_PATH, encoding="utf-8", errors="replace") as f:
-        text = f.read().strip()
-    except OSError:
-      text = ""
+    text = read_error_log()
     if not text:
       gui_app.set_modal_overlay(alert_dialog(tr("No error log found.")))
       return
-    # the HTML renderer keeps unknown tags like <module> as text, only line breaks need converting
-    gui_app.set_modal_overlay(HtmlModal(text="<p>" + "<br>".join(text.splitlines()) + "</p>"))
+    gui_app.set_modal_overlay(HtmlModal(text=error_log_html(text)))
 
   def _on_install_update(self):
     # Trigger reboot to install update
