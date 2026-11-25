@@ -93,7 +93,7 @@ def test_integral_leaks_away_once_the_plan_is_centred():
   settle(L, model(plan_y=-0.4), secs=6.0)
   held = L.integral
   assert held > 0.0
-  settle(L, model(plan_y=0.0), secs=lc.LEAK_T)
+  settle(L, model(plan_y=0.0), secs=lc.LEAK_T + lc.PROPORTIONAL_TC)  # the smoothed proportional part adds for ~1 s
   assert 0.0 <= L.integral < held * 0.45
 
 
@@ -145,11 +145,11 @@ def test_held_wheel_stops_the_integral():
 
 def test_no_more_push_when_the_car_already_heads_back():
   L = LaneCentering()
-  L.update(True, model(**OFF_CENTRE), True, V, False, 0.0, 0.0, 0.4)
+  settle_full(L, model(**OFF_CENTRE), measured=0.0, secs=2.0)
   full = L.target
   # already turning right at 0.6 m/s^2: its path crosses the centre within the next 1.5 s
   L = LaneCentering()
-  L.update(True, model(**OFF_CENTRE), True, V, False, 0.6 / V ** 2, 0.6 / V ** 2, 0.4)
+  settle_full(L, model(**OFF_CENTRE), model_curvature=0.6 / V ** 2, measured=0.6 / V ** 2, secs=2.0)
   assert full > 0.0 and L.recovery < 0.5 and L.target < 0.5 * full
 
 
@@ -169,3 +169,14 @@ def test_not_toward_a_road_edge_the_body_is_already_close_to():
   L = LaneCentering()
   settle_full(L, model(**dict(OFF_CENTRE, edges=(-1.1, 6.0), edge_stds=(0.1, 0.5))), secs=1.0)
   assert L.edge == 1.0
+
+
+def test_proportional_part_follows_the_offset_smoothly():
+  L = LaneCentering()
+  settle(L, model(plan_y=-0.3), secs=lc.PROPORTIONAL_TC)
+  assert 0.55 * proportional(0.3) < L.proportional < 0.7 * proportional(0.3)  # 1 - 1/e after one time constant
+  # the offset flips +-0.1 m every model frame (lane lines far out jump): the correction hardly moves
+  L = LaneCentering()
+  for k in range(300):
+    L.update(True, model(plan_y=0.1 if (k // 5) % 2 else -0.1), k % 5 == 0, V, False)
+  assert abs(L.curvature) * V ** 2 < 0.01

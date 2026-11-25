@@ -12,9 +12,10 @@ Where the model sees the lane lines, this aims the plan part of the way back to 
              line fades or opens up (a turn bay, a bus stop, a wide shoulder) the centre stays a lane's half width from
              the other line
   offset     plan minus centre at the aim point
-  correction curvature that moves the aim point WEIGHT x the offset toward the centre (2 x offset / distance^2), plus
-             an integral: while the offset persists, the same amount again every INTEGRAL_T, leaking away over LEAK_T.
-             At most MAX_LAT_ACCEL of lateral acceleration, fading in and out at MAX_LAT_JERK
+  correction curvature that moves the aim point WEIGHT x the offset toward the centre (2 x offset / distance^2),
+             smoothed over PROPORTIONAL_TC, plus an integral: while the offset persists, the same amount again every
+             INTEGRAL_T, leaking away over LEAK_T. At most MAX_LAT_ACCEL of lateral acceleration, fading in and out at
+             MAX_LAT_JERK
 
 The weight drops to 0 without a usable lane line (probability, and the model's std of the line), where both lines are
 clear but the lane is far off a normal width (merges, splits), in narrow lanes, below 45 km/h (full from 60), during a
@@ -62,6 +63,18 @@ holds until the command differs by 0.1 / 0.2 m/s^2, the car swung 0.21 / 0.41 m 
 0.10 / 0.27 m with them (with 0.55 s of delay 0.25 / 0.49 m -> 0.10 / 0.32 m) and settles on the centre instead of
 0.07 m past it. A barrier 0.6 m right of the lane centre with the model keeping the car 0.5 m left: without the road
 edge limit the body ended up 0.40 m into it, with it the car stays where the model put it (0.15 m clear).
+
+The proportional part is smoothed: the offset at the aim point moves 0.03-0.07 m from one model frame to the next
+(mostly the lane lines that far out) and the model's plan wanders at 0.3-0.7 Hz; at weight 1 the correction followed
+all of it. On the road (0000003d--ca235d1ccc--0..2, 80-90 km/h, gentle curves and straights) the steering torque
+hunted +-0.1-0.2 of max every 2-3 s while the wheel held 80-90% of the time; the driver felt constant small
+corrections, far fewer with lane centering off. Across 5 s windows that hunting followed the correction's 0.25-0.7 Hz
+part (correlation 0.42, 3x as strongly as the model's own). Replayed on those segments, smoothing over 1 s halves
+that part (0.010-0.016 -> 0.006-0.008 m/s^2) and the correction turns round 1-1.6 times a second instead of 6-7. In
+closed loop on the 11 rlogs: the request lane centering adds (with the model's reaction) at 0.25-0.7 Hz 0.021 ->
+0.011 m/s^2; wheel within 0.2 m of a line 4.0% -> 5.1%, over it 2.1% -> 2.6% (without lane centering 15% / 9.4%),
+the long curve 0.12 m inside; a held wheel (0.1 / 0.2 m/s^2) swings 0.13 / 0.41 m (0.10 / 0.27 m unsmoothed); when
+the model steers round something it gets 0.20 m over instead of 0.11 m.
 """
 from collections import deque
 
@@ -98,6 +111,7 @@ EDGE_MARGIN = 0.1      # m, plus the road edge's std
 EDGE_STD_MAX = 0.3     # m: road edges the model is less sure of are ignored
 EDGE_FACTORS = (1.0, 0.75, 0.5, 0.25)
 HISTORY = 150          # commands kept, at DT_CTRL (1.5 s)
+PROPORTIONAL_TC = 1.0  # s: the proportional part follows the offset this slowly
 
 
 class LaneCentering:
@@ -114,6 +128,7 @@ class LaneCentering:
     self.centre_x = np.zeros(0)  # lane centre path of the last modelV2 (m)
     self.centre_y = np.zeros(0)
     self.history: deque[tuple[float, float]] = deque(maxlen=HISTORY)  # (model's curvature, command)
+    self.proportional = 0.0  # 1/m, smoothed
 
   def compute(self, model_v2, v_ego: float) -> tuple[float, float, float]:
     """(correction curvature before the fade, offset, weight) for one modelV2 message; learns the lane width."""
@@ -206,6 +221,11 @@ class LaneCentering:
     limit = MAX_LAT_ACCEL / max(v_ego, 1.0) ** 2
     if model_updated:
       p, self.offset, self.weight = self.compute(model_v2, v_ego)
+      if active and self.weight > 0.0:
+        self.proportional += (p - self.proportional) * DT_MDL / PROPORTIONAL_TC
+      else:
+        self.proportional = 0.0
+      p = self.proportional
       self.held, self.recovery, self.edge = False, 1.0, 1.0
       if active and self.weight > 0.0:
         grow = p * DT_MDL / INTEGRAL_T
