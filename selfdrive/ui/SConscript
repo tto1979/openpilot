@@ -21,7 +21,9 @@ output_files += [
 ]
 env.Command(
   target=output_files,
-  source=[generator, source_files, Glob("#selfdrive/ui/translations/app_*.po")],
+  source=[generator, source_files, Glob("#selfdrive/ui/translations/app_*.po"),
+          # TOP: untranslated Chinese text, see TOP_TEXT_SOURCES in process.py
+          File("#selfdrive/selfdrived/events.py"), File("#selfdrive/ui/onroad/top_hud.py")],
   action=f"python3 {generator}",
 )
 

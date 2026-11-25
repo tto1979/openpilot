@@ -16,6 +16,9 @@ UNIFONT_LANGUAGES = {"ar", "th", "zh-CHT", "zh-CHS", "ko", "ja"}
 OPFONT_LANGUAGES = ("zh-CHT", "zh-CHS", "ja", "ko", "th")  # keep in sync with selfdrive/ui/SConscript
 OPFONT_WEIGHTS = ("Regular", "Medium", "SemiBold", "Bold")
 OPFONT_SIZE = 64
+# TOP: source files with Chinese text that isn't translated (the alerts are written in Traditional Chinese),
+# their characters go into every OpFont atlas. Keep in sync with selfdrive/ui/SConscript
+TOP_TEXT_SOURCES = ("selfdrive/selfdrived/events.py", "selfdrive/ui/onroad/top_hud.py")
 
 
 def _languages():
@@ -25,9 +28,19 @@ def _languages():
     return json.load(f)
 
 
+def _top_text_chars() -> set[str]:
+  chars: set[str] = set()
+  for src in TOP_TEXT_SOURCES:
+    try:
+      chars |= {c for c in (SELFDRIVE_DIR.parent / src).read_text(encoding="utf-8") if not c.isascii()}
+    except FileNotFoundError:
+      pass
+  return chars
+
+
 def _opfont_char_sets() -> dict[str, tuple[int, ...]]:
-  """ASCII + the characters of that language's translations."""
-  base = set(map(chr, range(32, 127))) | set(EXTRA_CHARS)
+  """ASCII + TOP's untranslated Chinese text + the characters of that language's translations."""
+  base = set(map(chr, range(32, 127))) | set(EXTRA_CHARS) | _top_text_chars()
   sets = {}
   for code in OPFONT_LANGUAGES:
     po_path = TRANSLATIONS_DIR / f"app_{code}.po"

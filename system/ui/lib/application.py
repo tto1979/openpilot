@@ -1,5 +1,6 @@
 import atexit
 import cffi
+import functools
 import os
 import time
 import signal
@@ -113,11 +114,23 @@ OPFONT_WEIGHTS = {
 }
 
 
+OPFONT_LANGUAGES = ("zh-CHT", "zh-CHS", "ja", "ko", "th")  # languages with OpFont atlases, see process.py
+OPFONT_DEFAULT_LANGUAGE = "zh-CHT"  # TOP's alerts (selfdrived/events.py) are Traditional Chinese in every language
+
+
+@functools.lru_cache(maxsize=512)
+def has_cjk(text: str) -> bool:
+  return any(ord(c) >= 0x2E80 for c in text)
+
+
 def font_fallback(font: rl.Font, text: str | None = None) -> rl.Font:
-  """For languages Inter can't render: plain ASCII text stays in Inter (sharper, the Inter atlases are 200 px),
-  other text uses OpFont of the same weight, or unifont where there is no OpFont atlas (Arabic)."""
-  if multilang.requires_unifont() and (text is None or not text.isascii()):
-    return gui_app.cjk_font(font)
+  """For text Inter can't render: plain ASCII text stays in Inter (sharper, the Inter atlases are 200 px),
+  other text uses OpFont of the same weight, or unifont where there is no OpFont atlas (Arabic).
+  Chinese text also switches in other languages: TOP's alerts are always Chinese."""
+  if text is not None and text.isascii():
+    return font
+  if multilang.requires_unifont() or (text is not None and has_cjk(text)):
+    return gui_app.cjk_font(font, text)
   return font
 
 
@@ -560,13 +573,17 @@ class GuiApplication:
   def font(self, font_weight: FontWeight = FontWeight.NORMAL) -> rl.Font:
     return self._fonts[font_weight]
 
-  def cjk_font(self, font: rl.Font) -> rl.Font:
+  def cjk_font(self, font: rl.Font, text: str | None = None) -> rl.Font:
     """OpFont atlas matching an Inter font's weight for the current language, loaded on first use.
+    Chinese text in a language without an OpFont atlas uses the Traditional Chinese one.
     Fonts that aren't one of the Inter weights (unifont, fonts loaded at runtime) are returned unchanged."""
     font_file = self._font_file_by_texture.get(font.texture.id)
     if font_file is None or font_file == FontWeight.UNIFONT.value:
       return font
-    name = f"OpFont-{OPFONT_WEIGHTS.get(font_file, 'Regular')}-{multilang.language}.fnt"
+    language = multilang.language
+    if language not in OPFONT_LANGUAGES and text is not None and has_cjk(text):
+      language = OPFONT_DEFAULT_LANGUAGE
+    name = f"OpFont-{OPFONT_WEIGHTS.get(font_file, 'Regular')}-{language}.fnt"
     if name not in self._cjk_fonts:
       with as_file(FONT_DIR) as fspath:
         fnt_path = fspath / name
