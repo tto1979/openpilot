@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:14+0800\n"
+"POT-Creation-Date: 2026-11-25 08:41+0800\n"
 "PO-Revision-Date: 2025-10-22 16:32-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -167,7 +167,12 @@ msgstr ""
 msgid "Are you sure you want to reset calibration?"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:172
+#: selfdrive/ui/layouts/settings/software.py:200
+#, python-format
+msgid "Are you sure you want to switch driving mode?"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:192
 #, python-format
 msgid "Are you sure you want to uninstall?"
 msgstr ""
@@ -213,10 +218,10 @@ msgstr ""
 msgid "CHANGE"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:57
-#: selfdrive/ui/layouts/settings/software.py:116
-#: selfdrive/ui/layouts/settings/software.py:127
-#: selfdrive/ui/layouts/settings/software.py:156
+#: selfdrive/ui/layouts/settings/software.py:64
+#: selfdrive/ui/layouts/settings/software.py:136
+#: selfdrive/ui/layouts/settings/software.py:147
+#: selfdrive/ui/layouts/settings/software.py:176
 #, python-format
 msgid "CHECK"
 msgstr ""
@@ -229,6 +234,11 @@ msgstr ""
 #: selfdrive/ui/layouts/settings/osm.py:108
 #, python-format
 msgid "CONFIGURE"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:200
+#, python-format
+msgid "CONFIRM"
 msgstr ""
 
 #: selfdrive/ui/layouts/sidebar.py:73 selfdrive/ui/layouts/sidebar.py:134
@@ -362,7 +372,7 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:56
+#: selfdrive/ui/layouts/settings/software.py:63
 #, python-format
 msgid "Current Version"
 msgstr ""
@@ -372,7 +382,7 @@ msgstr ""
 msgid "DELETE"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:119
+#: selfdrive/ui/layouts/settings/software.py:139
 #, python-format
 msgid "DOWNLOAD"
 msgstr ""
@@ -449,7 +459,7 @@ msgstr ""
 msgid "Dongle ID"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:57
+#: selfdrive/ui/layouts/settings/software.py:64
 #, python-format
 msgid "Download"
 msgstr ""
@@ -659,6 +669,11 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/software.py:87
+#, python-format
+msgid "Error Log"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/toggles.py:62
 #, python-format
 msgid "Experimental Mode"
@@ -789,6 +804,16 @@ msgstr ""
 msgid "GOOD"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/software.py:82
+#, python-format
+msgid "Go Offroad"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:82
+#, python-format
+msgid "Go Onroad"
+msgstr ""
+
 #: selfdrive/ui/widgets/pairing_dialog.py:117
 #, python-format
 msgid "Go to https://connect.comma.ai on your phone"
@@ -803,8 +828,8 @@ msgstr ""
 msgid "Hidden Network"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:60
-#: selfdrive/ui/layouts/settings/software.py:145
+#: selfdrive/ui/layouts/settings/software.py:67
+#: selfdrive/ui/layouts/settings/software.py:165
 #, python-format
 msgid "INSTALL"
 msgstr ""
@@ -823,7 +848,7 @@ msgstr ""
 msgid "Information: Displays the current road's speed limit."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:60
+#: selfdrive/ui/layouts/settings/software.py:67
 #, python-format
 msgid "Install Update"
 msgstr ""
@@ -831,6 +856,13 @@ msgstr ""
 #: selfdrive/ui/layouts/settings/developer.py:56
 #, python-format
 msgid "Joystick Debug Mode"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:83
+#, python-format
+msgid ""
+"Keep openpilot offroad while the car is on, e.g. to change settings or "
+"update. Back to normal after a reboot. Not available while engaged."
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/top.py:42
@@ -942,6 +974,11 @@ msgstr ""
 msgid "No SSH keys found for user '{}'"
 msgstr ""
 
+#: selfdrive/ui/layouts/settings/software.py:210
+#, python-format
+msgid "No error log found."
+msgstr ""
+
 #: selfdrive/ui/widgets/offroad_alerts.py:320
 #, python-format
 msgid "No release notes available."
@@ -1011,6 +1048,11 @@ msgstr ""
 #: selfdrive/ui/layouts/settings/speed_limit.py:141
 #, python-format
 msgid "Offset"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:81
+#, python-format
+msgid "Onroad/Offroad Mode"
 msgstr ""
 
 #: selfdrive/ui/widgets/setup.py:20
@@ -1228,7 +1270,7 @@ msgstr ""
 
 #: selfdrive/ui/layouts/settings/osm.py:99
 #: selfdrive/ui/layouts/settings/osm.py:103
-#: selfdrive/ui/layouts/settings/software.py:68
+#: selfdrive/ui/layouts/settings/software.py:75
 #: selfdrive/ui/layouts/settings/top.py:195
 #, python-format
 msgid "SELECT"
@@ -1280,7 +1322,7 @@ msgstr ""
 msgid "Select State"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:192
+#: selfdrive/ui/layouts/settings/software.py:243
 #, python-format
 msgid "Select a branch"
 msgstr ""
@@ -1409,7 +1451,7 @@ msgstr ""
 msgid "TSS-P Longitudinal Tuning"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:68
+#: selfdrive/ui/layouts/settings/software.py:75
 #, python-format
 msgid "Target Branch"
 msgstr ""
@@ -1472,7 +1514,7 @@ msgstr ""
 msgid "UI Debug Mode"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:79
+#: selfdrive/ui/layouts/settings/software.py:98
 #, python-format
 msgid "UNINSTALL"
 msgstr ""
@@ -1487,8 +1529,8 @@ msgstr ""
 msgid "Unable to fetch the list. Check the internet connection."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:79
-#: selfdrive/ui/layouts/settings/software.py:172
+#: selfdrive/ui/layouts/settings/software.py:98
+#: selfdrive/ui/layouts/settings/software.py:192
 #, python-format
 msgid "Uninstall"
 msgstr ""
@@ -1497,7 +1539,7 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:55
+#: selfdrive/ui/layouts/settings/software.py:62
 #, python-format
 msgid "Updates are only downloaded while the car is off."
 msgstr ""
@@ -1557,8 +1599,14 @@ msgid "VEHICLE"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:84
+#: selfdrive/ui/layouts/settings/software.py:87
 #, python-format
 msgid "VIEW"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/software.py:88
+#, python-format
+msgid "View the error log for debugging purposes when openpilot crashes."
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/top.py:79
@@ -1665,7 +1713,7 @@ msgstr ""
 msgid "camera starting"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:19
+#: selfdrive/ui/layouts/settings/software.py:26
 #, python-format
 msgid "checking..."
 msgstr ""
@@ -1685,17 +1733,17 @@ msgstr ""
 msgid "down"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:20
+#: selfdrive/ui/layouts/settings/software.py:27
 #, python-format
 msgid "downloading..."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:115
+#: selfdrive/ui/layouts/settings/software.py:135
 #, python-format
 msgid "failed to check for update"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:21
+#: selfdrive/ui/layouts/settings/software.py:28
 #, python-format
 msgid "finalizing update..."
 msgstr ""
@@ -1755,12 +1803,12 @@ msgstr ""
 msgid "mph"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:27
+#: selfdrive/ui/layouts/settings/software.py:34
 #, python-format
 msgid "never"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:38
+#: selfdrive/ui/layouts/settings/software.py:45
 #, python-format
 msgid "now"
 msgstr ""
@@ -1838,17 +1886,17 @@ msgstr ""
 msgid "up"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:126
+#: selfdrive/ui/layouts/settings/software.py:146
 #, python-format
 msgid "up to date, last checked never"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:124
+#: selfdrive/ui/layouts/settings/software.py:144
 #, python-format
 msgid "up to date, last checked {}"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:118
+#: selfdrive/ui/layouts/settings/software.py:138
 #, python-format
 msgid "update available"
 msgstr ""
@@ -1860,21 +1908,21 @@ msgid_plural "{} ALERTS"
 msgstr[0] ""
 msgstr[1] ""
 
-#: selfdrive/ui/layouts/settings/software.py:47
+#: selfdrive/ui/layouts/settings/software.py:54
 #, python-format
 msgid "{} day ago"
 msgid_plural "{} days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: selfdrive/ui/layouts/settings/software.py:44
+#: selfdrive/ui/layouts/settings/software.py:51
 #, python-format
 msgid "{} hour ago"
 msgid_plural "{} hours ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: selfdrive/ui/layouts/settings/software.py:41
+#: selfdrive/ui/layouts/settings/software.py:48
 #, python-format
 msgid "{} minute ago"
 msgid_plural "{} minutes ago"

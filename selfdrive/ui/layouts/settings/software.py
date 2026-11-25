@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import datetime
 from openpilot.common.time_helpers import system_time_valid
@@ -6,13 +7,19 @@ from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr, trn
 from openpilot.system.ui.widgets import Widget, DialogResult
-from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog
+from openpilot.system.hardware import HARDWARE
+from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog, alert_dialog
+from openpilot.system.ui.widgets.html_render import HtmlModal
 from openpilot.system.ui.widgets.list_view import button_item, text_item, ListItem
 from openpilot.system.ui.widgets.option_dialog import MultiOptionDialog
 from openpilot.system.ui.widgets.scroller_tici import Scroller
 
 # TODO: remove this. updater fails to respond on startup if time is not correct
 UPDATED_TIMEOUT = 10  # seconds to wait for updated to respond
+
+# TOP
+ERROR_LOG_PATH = "/data/community/crashes/error.txt"  # written by system/sentry.py save_exception()
+TOP_C3_BRANCH_RE = re.compile(r"^TOP\d+-c3$", re.IGNORECASE)
 
 # Mapping updater internal states to translated display strings
 STATE_TO_DISPLAY_TEXT = {
@@ -70,13 +77,26 @@ class SoftwareLayout(Widget):
     self._branch_btn.action_item.set_value(ui_state.params.get("UpdaterTargetBranch") or "")
     self._branch_dialog: MultiOptionDialog | None = None
 
+    # TOP: keep openpilot offroad with the car on (dp_device_offroad, cleared on manager start)
+    self._offroad_btn = button_item(lambda: tr("Onroad/Offroad Mode"),
+                                    lambda: tr("Go Onroad") if ui_state.params.get_bool("dp_device_offroad") else tr("Go Offroad"),
+                                    lambda: tr("Keep openpilot offroad while the car is on, e.g. to change settings or update. " +
+                                               "Back to normal after a reboot. Not available while engaged."),
+                                    callback=self._on_offroad_mode, enabled=lambda: not ui_state.engaged)
+    # TOP: last crash traceback
+    self._error_log_btn = button_item(lambda: tr("Error Log"), lambda: tr("VIEW"),
+                                      lambda: tr("View the error log for debugging purposes when openpilot crashes."),
+                                      callback=self._on_error_log)
+
     self._scroller = Scroller([
       self._onroad_label,
       self._version_item,
+      self._offroad_btn,
       self._download_btn,
       self._install_btn,
       self._branch_btn,
       button_item(lambda: tr("Uninstall"), lambda: tr("UNINSTALL"), callback=self._on_uninstall),
+      self._error_log_btn,
     ], line_separator=True, spacing=0)
 
   def show_event(self):
@@ -172,6 +192,26 @@ class SoftwareLayout(Widget):
     dialog = ConfirmDialog(tr("Are you sure you want to uninstall?"), tr("Uninstall"))
     gui_app.set_modal_overlay(dialog, callback=handle_uninstall_confirmation)
 
+  def _on_offroad_mode(self):
+    def handle_confirmation(result):
+      if result == DialogResult.CONFIRM and not ui_state.engaged:
+        ui_state.params.put_bool("dp_device_offroad", not ui_state.params.get_bool("dp_device_offroad"))
+
+    dialog = ConfirmDialog(tr("Are you sure you want to switch driving mode?"), tr("CONFIRM"))
+    gui_app.set_modal_overlay(dialog, callback=handle_confirmation)
+
+  def _on_error_log(self):
+    try:
+      with open(ERROR_LOG_PATH, encoding="utf-8", errors="replace") as f:
+        text = f.read().strip()
+    except OSError:
+      text = ""
+    if not text:
+      gui_app.set_modal_overlay(alert_dialog(tr("No error log found.")))
+      return
+    # the HTML renderer keeps unknown tags like <module> as text, only line breaks need converting
+    gui_app.set_modal_overlay(HtmlModal(text="<p>" + "<br>".join(text.splitlines()) + "</p>"))
+
   def _on_install_update(self):
     # Trigger reboot to install update
     self._install_btn.action_item.set_enabled(False)
@@ -183,10 +223,21 @@ class SoftwareLayout(Widget):
     branches_str = ui_state.params.get("UpdaterAvailableBranches") or ""
     branches = [b for b in branches_str.split(",") if b]
 
-    for b in [current_git_branch, "devel-staging", "devel", "nightly", "nightly-dev", "master"]:
-      if b in branches:
-        branches.remove(b)
-        branches.insert(0, b)
+    # TOP: same ordering as the Qt UI. Legacy -c3 branches only run on the comma three.
+    def move_to(branch: str, index: int):
+      if branch in branches:
+        branches.remove(branch)
+        branches.insert(index, branch)
+
+    if HARDWARE.get_device_type() == "tici":
+      for b in [current_git_branch, "top-c3", "dev-c3", "release-c3"]:
+        move_to(b, 0)
+      for b in [b for b in branches if TOP_C3_BRANCH_RE.match(b)]:
+        move_to(b, 1)
+    else:
+      branches = [b for b in branches if not b.lower().endswith("-c3")]
+      for b in [current_git_branch, "devel-staging", "devel", "nightly", "nightly-dev", "master"]:
+        move_to(b, 0)
 
     current_target = ui_state.params.get("UpdaterTargetBranch") or ""
     self._branch_dialog = MultiOptionDialog(tr("Select a branch"), branches, current_target)
