@@ -10,11 +10,18 @@ source_files = Glob("#selfdrive/assets/fonts/*.ttf") + Glob("#selfdrive/assets/f
 output_files = [
   (f.abspath.split('.')[0] + ".fnt", f.abspath.split('.')[0] + ".png")
   for f in source_files
-  if "NotoColor" not in f.name
+  if "NotoColor" not in f.name and not f.name.startswith("OpFont")
+]
+# TOP: OpFont atlases, one per weight and CJK/Thai language (see process.py)
+opfont_langs = ("zh-CHT", "zh-CHS", "ja", "ko", "th")
+opfont_weights = ("Regular", "Medium", "SemiBold", "Bold")
+output_files += [
+  (File(f"#selfdrive/assets/fonts/OpFont-{w}-{l}.fnt").abspath, File(f"#selfdrive/assets/fonts/OpFont-{w}-{l}.png").abspath)
+  for w in opfont_weights for l in opfont_langs
 ]
 env.Command(
   target=output_files,
-  source=[generator, source_files],
+  source=[generator, source_files, Glob("#selfdrive/ui/translations/app_*.po")],
   action=f"python3 {generator}",
 )
 

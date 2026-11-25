@@ -12,6 +12,10 @@ LANGUAGES_FILE = TRANSLATIONS_DIR / "languages.json"
 GLYPH_PADDING = 6
 EXTRA_CHARS = "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"
 UNIFONT_LANGUAGES = {"ar", "th", "zh-CHT", "zh-CHS", "ko", "ja"}
+# TOP: OpFont (from dragonpilot) for these instead of the 16 px unifont, one atlas per weight and language
+OPFONT_LANGUAGES = ("zh-CHT", "zh-CHS", "ja", "ko", "th")  # keep in sync with selfdrive/ui/SConscript
+OPFONT_WEIGHTS = ("Regular", "Medium", "SemiBold", "Bold")
+OPFONT_SIZE = 64
 
 
 def _languages():
@@ -19,6 +23,20 @@ def _languages():
     return {}
   with LANGUAGES_FILE.open(encoding="utf-8") as f:
     return json.load(f)
+
+
+def _opfont_char_sets() -> dict[str, tuple[int, ...]]:
+  """ASCII + the characters of that language's translations."""
+  base = set(map(chr, range(32, 127))) | set(EXTRA_CHARS)
+  sets = {}
+  for code in OPFONT_LANGUAGES:
+    po_path = TRANSLATIONS_DIR / f"app_{code}.po"
+    try:
+      chars = set(po_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+      chars = set()
+    sets[code] = tuple(sorted(ord(c) for c in (base | chars) if c.isprintable()))
+  return sets
 
 
 def _char_sets():
@@ -86,12 +104,13 @@ def _write_bmfont(path: Path, font_size: int, face: str, atlas_name: str, line_h
   path.write_text("\n".join(lines) + "\n")
 
 
-def _process_font(font_path: Path, codepoints: tuple[int, ...]):
-  print(f"Processing {font_path.name}...")
+def _process_font(font_path: Path, codepoints: tuple[int, ...], output_name: str | None = None):
+  stem = output_name or font_path.stem
+  print(f"Processing {font_path.name} -> {stem}...")
 
   font_size = {
     "unifont.otf": 16,  # unifont is only 16x8 or 16x16 pixels per glyph
-  }.get(font_path.name, 200)
+  }.get(font_path.name, OPFONT_SIZE if font_path.stem.startswith("OpFont") else 200)
 
   data = font_path.read_bytes()
   file_buf = rl.ffi.new("unsigned char[]", data)
@@ -107,24 +126,31 @@ def _process_font(font_path: Path, codepoints: tuple[int, ...]):
     raise RuntimeError("raylib returned an empty atlas")
 
   rects = rects_ptr[0]
-  atlas_name = f"{font_path.stem}.png"
+  atlas_name = f"{stem}.png"
   atlas_path = FONT_DIR / atlas_name
   entries, line_height, base = _glyph_metrics(glyphs, rects, codepoints)
 
   if not rl.export_image(image, atlas_path.as_posix()):
     raise RuntimeError("Failed to export atlas image")
 
-  _write_bmfont(FONT_DIR / f"{font_path.stem}.fnt", font_size, font_path.stem, atlas_name, line_height, base, (image.width, image.height), entries)
+  _write_bmfont(FONT_DIR / f"{stem}.fnt", font_size, stem, atlas_name, line_height, base, (image.width, image.height), entries)
 
 
 def main():
   base_cp, unifont_cp = _char_sets()
   fonts = sorted(FONT_DIR.glob("*.ttf")) + sorted(FONT_DIR.glob("*.otf"))
   for font in fonts:
-    if "emoji" in font.name.lower():
+    if "emoji" in font.name.lower() or font.stem.startswith("OpFont"):
       continue
     glyphs = unifont_cp if font.stem.lower().startswith("unifont") else base_cp
     _process_font(font, glyphs)
+
+  # TOP: OpFont atlases per weight and language
+  opfont_sets = _opfont_char_sets()
+  for weight in OPFONT_WEIGHTS:
+    font = FONT_DIR / f"OpFont-{weight}.otf"
+    for code, codepoints in opfont_sets.items():
+      _process_font(font, codepoints, output_name=f"OpFont-{weight}-{code}")
   return 0
 
 

@@ -126,3 +126,6 @@ top/selfdrive/assets/icons/star-filled.png !filter !diff !merge
 top/selfdrive/assets/img_minus_arrow_down.png !filter !diff !merge
 top/selfdrive/assets/img_plus_arrow_up.png !filter !diff !merge
 top/selfdrive/assets/offroad/icon_map.png !filter !diff !merge
+
+# TOP: OpFont (CJK UI font from dragonpilot) as plain files, TOP's LFS remote isn't writable
+selfdrive/assets/fonts/OpFont-*.otf !filter !diff !merge

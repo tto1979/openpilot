@@ -103,10 +103,21 @@ class FontWeight(StrEnum):
   DISPLAY = "Inter-Bold.fnt"
 
 
-def font_fallback(font: rl.Font) -> rl.Font:
-  """Fall back to unifont for languages that require it."""
-  if multilang.requires_unifont():
-    return gui_app.font(FontWeight.UNIFONT)
+# TOP: Inter weight -> OpFont weight (CJK / Thai font from dragonpilot, see selfdrive/assets/fonts/process.py)
+OPFONT_WEIGHTS = {
+  "Inter-Light.fnt": "Regular",
+  "Inter-Regular.fnt": "Regular",
+  "Inter-Medium.fnt": "Medium",
+  "Inter-SemiBold.fnt": "SemiBold",
+  "Inter-Bold.fnt": "Bold",
+}
+
+
+def font_fallback(font: rl.Font, text: str | None = None) -> rl.Font:
+  """For languages Inter can't render: plain ASCII text stays in Inter (sharper, the Inter atlases are 200 px),
+  other text uses OpFont of the same weight, or unifont where there is no OpFont atlas (Arabic)."""
+  if multilang.requires_unifont() and (text is None or not text.isascii()):
+    return gui_app.cjk_font(font)
   return font
 
 
@@ -193,6 +204,8 @@ class MouseState:
 class GuiApplication:
   def __init__(self, width: int | None = None, height: int | None = None):
     self._fonts: dict[FontWeight, rl.Font] = {}
+    self._font_file_by_texture: dict[int, str] = {}  # TOP: Inter font texture id -> .fnt file
+    self._cjk_fonts: dict[str, rl.Font] = {}  # TOP: OpFont atlases by .fnt file
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
 
@@ -427,9 +440,15 @@ class GuiApplication:
       rl.unload_texture(texture)
     self._textures = {}
 
+    base_font_ids = {font.texture.id for font in self._fonts.values()}
     for font in self._fonts.values():
       rl.unload_font(font)
     self._fonts = {}
+    for font in self._cjk_fonts.values():
+      if font.texture.id not in base_font_ids:  # unifont stand-ins are unloaded above
+        rl.unload_font(font)
+    self._cjk_fonts = {}
+    self._font_file_by_texture = {}
 
     if self._render_texture is not None:
       rl.unload_render_texture(self._render_texture)
@@ -541,6 +560,24 @@ class GuiApplication:
   def font(self, font_weight: FontWeight = FontWeight.NORMAL) -> rl.Font:
     return self._fonts[font_weight]
 
+  def cjk_font(self, font: rl.Font) -> rl.Font:
+    """OpFont atlas matching an Inter font's weight for the current language, loaded on first use.
+    Fonts that aren't one of the Inter weights (unifont, fonts loaded at runtime) are returned unchanged."""
+    font_file = self._font_file_by_texture.get(font.texture.id)
+    if font_file is None or font_file == FontWeight.UNIFONT.value:
+      return font
+    name = f"OpFont-{OPFONT_WEIGHTS.get(font_file, 'Regular')}-{multilang.language}.fnt"
+    if name not in self._cjk_fonts:
+      with as_file(FONT_DIR) as fspath:
+        fnt_path = fspath / name
+        if fnt_path.exists():
+          cjk = rl.load_font(fnt_path.as_posix())
+          rl.set_texture_filter(cjk.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+        else:
+          cjk = self._fonts[FontWeight.UNIFONT]
+      self._cjk_fonts[name] = cjk
+    return self._cjk_fonts[name]
+
   @property
   def width(self):
     return self._width
@@ -584,6 +621,7 @@ class GuiApplication:
         if font_weight_file != FontWeight.UNIFONT:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
+        self._font_file_by_texture[font.texture.id] = font_weight_file.value
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def _set_styles(self):
@@ -599,7 +637,7 @@ class GuiApplication:
       rl._orig_draw_text_ex = rl.draw_text_ex
 
     def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
-      font = font_fallback(font)
+      font = font_fallback(font, text)
       return rl._orig_draw_text_ex(font, text, position, font_size * FONT_SCALE, spacing, tint)
 
     rl.draw_text_ex = _draw_text_ex_scaled

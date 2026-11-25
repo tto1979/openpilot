@@ -18,6 +18,7 @@ from openpilot.selfdrive.ui.onroad.top_state import TopOnroadState, AssistState,
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.multilang import tr, tr_noop
+from openpilot.system.ui.lib.runtime_font import RuntimeFont
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 
 SIGN_Y = 45
@@ -50,6 +51,8 @@ class TopHudRenderer(TopOnroadState, HudRenderer):
     self._exp_button._black_bg = rl.Color(0, 0, 0, 0)
 
     self._init_top_state()
+    # road names have characters the prebuilt atlases don't (they only hold the translations' characters)
+    self._road_font = RuntimeFont("OpFont-SemiBold.otf")
 
     # personality name fade
     self._last_personality: int | None = None
@@ -125,6 +128,23 @@ class TopHudRenderer(TopOnroadState, HudRenderer):
     set_speed_text = str(_round(self.set_speed)) if self.is_cruise_set else CRUISE_DISABLED_CHAR
     self._text_centered(self._font_bold, set_speed_text, FONT_SIZES.set_speed, cx, y + 77, set_speed_color)
 
+  # ---------- current speed ----------
+
+  def _draw_current_speed(self, rect: rl.Rectangle) -> None:
+    unit_text = tr("km/h") if ui_state.is_metric else tr("mph")
+    if unit_text.isascii():
+      super()._draw_current_speed(rect)
+      return
+
+    # translated unit (公里/時): the glyphs fill the line height and touched the digits, move them apart
+    speed_text = str(round(self.speed))
+    speed_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
+    rl.draw_text_ex(self._font_bold, speed_text, rl.Vector2(rect.x + rect.width / 2 - speed_size.x / 2, 172 - speed_size.y / 2),
+                    FONT_SIZES.current_speed, 0, COLORS.WHITE)
+    unit_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
+    rl.draw_text_ex(self._font_medium, unit_text, rl.Vector2(rect.x + rect.width / 2 - unit_size.x / 2, 306 - unit_size.y / 2),
+                    FONT_SIZES.speed_unit, 0, COLORS.WHITE_TRANSLUCENT)
+
   # ---------- road name ----------
 
   def _draw_road_name(self, rect: rl.Rectangle) -> None:
@@ -132,17 +152,18 @@ class TopHudRenderer(TopOnroadState, HudRenderer):
       return
     size = 48
     text = self.road_name
+    font = self._font_semi_bold if text.isascii() else self._road_font.get(text, self._font_semi_bold)
     max_width = rect.width - 40
-    text_w = measure_text_cached(self._font_semi_bold, text, size).x
+    text_w = measure_text_cached(font, text, size).x
     if text_w + 40 > max_width:
-      while text and measure_text_cached(self._font_semi_bold, text + "...", size).x + 40 > max_width:
+      while text and measure_text_cached(font, text + "...", size).x + 40 > max_width:
         text = text[:-1]
       text += "..."
-      text_w = measure_text_cached(self._font_semi_bold, text, size).x
+      text_w = measure_text_cached(font, text, size).x
     w = max(200.0, min(text_w + 40, max_width))
     r = rl.Rectangle(rect.x + rect.width / 2 - w / 2, rect.y - 4, w, 60)
     rl.draw_rectangle_rounded(r, 12 * 2 / 60, 10, rl.Color(0, 0, 0, 120))
-    self._text_in_rect(self._font_semi_bold, text, size, r, ROAD_NAME_COLOR)
+    self._text_in_rect(font, text, size, r, ROAD_NAME_COLOR)
 
   # ---------- smart cruise control ----------
 
