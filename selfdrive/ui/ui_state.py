@@ -60,6 +60,7 @@ class UIState:
         "liveMapDataTOP",
         "topControlsState",
         "carStateTOP",
+        "deviceStateTOP",
       ]
     )
 

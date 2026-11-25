@@ -7,6 +7,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos, FONT_SCALE
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.lib.text_measure import measure_text_cached
+from openpilot.system.ui.lib.wifi_manager import TETHERING_IP_ADDRESS
 from openpilot.system.ui.widgets import Widget
 
 SIDEBAR_WIDTH = 300
@@ -14,6 +15,9 @@ METRIC_HEIGHT = 126
 METRIC_WIDTH = 240
 METRIC_MARGIN = 30
 FONT_SIZE = 35
+NET_TEXT_MAX_WIDTH = SIDEBAR_WIDTH - 40
+LINK_ICON_SIZE = 60
+NO_IP = ("", "--", "N/A")
 
 SETTINGS_BTN = rl.Rectangle(50, 35, 200, 117)
 HOME_BTN = rl.Rectangle(60, 860, 180, 180)
@@ -67,6 +71,8 @@ class Sidebar(Widget):
     super().__init__()
     self._net_type = NETWORK_TYPES.get(NetworkType.none)
     self._net_strength = 0
+    self._wifi_ip = ""  # TOP: shown instead of "Wi-Fi", from deviceStateTOP
+    self._hotspot = False
 
     self._temp_status = MetricData(tr_noop("TEMP"), tr_noop("GOOD"), Colors.GOOD)
     self._panda_status = MetricData(tr_noop("VEHICLE"), tr_noop("ONLINE"), Colors.GOOD)
@@ -77,6 +83,7 @@ class Sidebar(Widget):
     self._flag_img = gui_app.texture("images/button_flag.png", HOME_BTN.width, HOME_BTN.height)
     self._settings_img = gui_app.texture("images/button_settings.png", SETTINGS_BTN.width, SETTINGS_BTN.height)
     self._mic_img = gui_app.texture("icons/microphone.png", 30, 30)
+    self._link_img = gui_app.texture("icons/link.png", LINK_ICON_SIZE, LINK_ICON_SIZE)
     self._mic_indicator_rect = rl.Rectangle(0, 0, 0, 0)
     self._font_regular = gui_app.font(FontWeight.NORMAL)
     self._font_bold = gui_app.font(FontWeight.SEMI_BOLD)
@@ -102,6 +109,8 @@ class Sidebar(Widget):
 
   def _update_state(self):
     sm = ui_state.sm
+    if sm.updated['deviceStateTOP']:
+      self._wifi_ip = sm['deviceStateTOP'].wifiIpAddress
     if not sm.updated['deviceState']:
       return
 
@@ -115,18 +124,21 @@ class Sidebar(Widget):
 
   def _update_network_status(self, device_state):
     self._net_type = NETWORK_TYPES.get(device_state.networkType.raw, tr_noop("Unknown"))
-    strength = device_state.networkStrength
-    self._net_strength = max(0, min(5, strength.raw + 1)) if strength.raw > 0 else 0
+    # TOP: the hotspot gives wlan0 its fixed address, shown with the link icon and full strength like the Qt UI
+    self._hotspot = self._wifi_ip == TETHERING_IP_ADDRESS
+    strength = 4 if self._hotspot else device_state.networkStrength.raw
+    self._net_strength = max(0, min(5, strength + 1)) if strength > 0 else 0
 
   def _update_temperature_status(self, device_state):
     thermal_status = device_state.thermalStatus
+    temp = f"{device_state.maxTempC:.0f}°C"  # TOP: the temperature instead of GOOD / OK / HIGH
 
     if thermal_status == ThermalStatus.green:
-      self._temp_status.update(tr_noop("TEMP"), tr_noop("GOOD"), Colors.GOOD)
+      self._temp_status.update(tr_noop("TEMP"), temp, Colors.GOOD)
     elif thermal_status == ThermalStatus.yellow:
-      self._temp_status.update(tr_noop("TEMP"), tr_noop("OK"), Colors.WARNING)
+      self._temp_status.update(tr_noop("TEMP"), temp, Colors.WARNING)
     else:
-      self._temp_status.update(tr_noop("TEMP"), tr_noop("HIGH"), Colors.DANGER)
+      self._temp_status.update(tr_noop("TEMP"), temp, Colors.DANGER)
 
   def _update_connection_status(self, device_state):
     last_ping = device_state.lastAthenaPingTime
@@ -194,10 +206,20 @@ class Sidebar(Widget):
       y = int(y_pos + dot_size // 2)
       rl.draw_circle(x, y, dot_size // 2, color)
 
-    # Network type text
+    # Network type text. TOP: link icon with the hotspot on, the IP address on Wi-Fi
     text_y = rect.y + 247
-    text_pos = rl.Vector2(rect.x + 58, text_y)
-    rl.draw_text_ex(self._font_regular, tr(self._net_type), text_pos, FONT_SIZE, 0, Colors.WHITE)
+    if self._hotspot:
+      rl.draw_texture(self._link_img, int(rect.x + (rect.width - LINK_ICON_SIZE) / 2), int(text_y + (50 - LINK_ICON_SIZE) / 2), Colors.WHITE)
+      return
+    on_wifi = self._net_type == NETWORK_TYPES[NetworkType.wifi] and self._wifi_ip not in NO_IP
+    text = self._wifi_ip if on_wifi else tr(self._net_type)
+    font_size = FONT_SIZE
+    text_size = measure_text_cached(self._font_regular, text, font_size)
+    if text_size.x > NET_TEXT_MAX_WIDTH:
+      font_size = int(FONT_SIZE * NET_TEXT_MAX_WIDTH / text_size.x)
+      text_size = measure_text_cached(self._font_regular, text, font_size)
+    text_pos = rl.Vector2(rect.x + (rect.width - text_size.x) / 2, text_y)
+    rl.draw_text_ex(self._font_regular, text, text_pos, font_size, 0, Colors.WHITE)
 
   def _draw_metrics(self, rect: rl.Rectangle):
     metrics = [(self._temp_status, 338), (self._panda_status, 496), (self._connect_status, 654)]
