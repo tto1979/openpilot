@@ -3,6 +3,8 @@
 import argparse
 import asyncio
 import json
+import os
+import struct
 import uuid
 import logging
 from dataclasses import dataclass, field
@@ -20,6 +22,35 @@ if TYPE_CHECKING:
 
 from openpilot.system.webrtc.schema import generate_field
 from cereal import messaging, log
+
+
+MSGQ_NUM_READERS = 15  # NUM_READERS in msgq_repo/msgq/msgq.h
+
+
+def msgq_reader_slot_free(service: str) -> bool:
+  """Whether one more subscriber fits in a msgq queue. msgq has 15 reader slots per queue: a 16th subscriber
+  evicts all of them, they reconnect and evict each other again, so the processes keep losing messages
+  (commIssue). Counts the live subscribers of other processes from the queue header (thread id in the low 32
+  bits of each reader uid). Unknown (ZMQ, queue not created yet) counts as free."""
+  if "ZMQ" in os.environ:
+    return True
+  prefix = os.environ.get("OPENPILOT_PREFIX")
+  path = "/dev/shm/msgq_" + (f"{prefix}/" if prefix else "") + service
+  n_fields = 3 + 3 * MSGQ_NUM_READERS  # num_readers, write_pointer, write_uid, read_pointers, read_valids, read_uids
+  try:
+    with open(path, "rb") as f:
+      header = struct.unpack(f"<{n_fields}Q", f.read(8 * n_fields))
+  except (OSError, struct.error):
+    return True
+  num_readers = min(header[0], MSGQ_NUM_READERS)
+  read_uids = header[3 + 2 * MSGQ_NUM_READERS:]
+  live_tids = set()
+  for uid in read_uids[:num_readers]:
+    tid = uid & 0xFFFFFFFF
+    # closed sockets keep their slot until the next eviction: skip our own (old sessions) and dead threads
+    if uid and not os.path.exists(f"/proc/self/task/{tid}") and os.path.exists(f"/proc/{tid}"):
+      live_tids.add(tid)
+  return len(live_tids) < MSGQ_NUM_READERS
 
 
 class CerealOutgoingMessageProxy:
@@ -151,6 +182,11 @@ class StreamSession:
     self.outgoing_bridge_runner: CerealProxyRunner | None = None
     if len(incoming_services) > 0:
       self.incoming_bridge = CerealIncomingMessageProxy(self.shared_pub_master)
+    full = [s for s in outgoing_services if not msgq_reader_slot_free(s)]
+    if full:
+      # subscribing anyway would make openpilot's own processes lose messages while driving
+      logging.getLogger("webrtcd").warning("No free msgq reader slot, not streaming %s", full)
+      outgoing_services = [s for s in outgoing_services if s not in full]
     if len(outgoing_services) > 0:
       self.outgoing_bridge = CerealOutgoingMessageProxy(messaging.SubMaster(outgoing_services))
       self.outgoing_bridge_runner = CerealProxyRunner(self.outgoing_bridge)

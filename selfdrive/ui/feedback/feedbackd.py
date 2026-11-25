@@ -12,7 +12,9 @@ ButtonType = car.CarState.ButtonEvent.Type
 def main():
   params = Params()
   pm = messaging.PubMaster(['userBookmark', 'audioFeedback'])
-  sm = messaging.SubMaster(['rawAudioData', 'bookmarkButton', 'carState'])
+  # TOP: no carState while its LKAS button handling below is disabled upstream. Every subscriber takes one of
+  # msgq's 15 reader slots and TOP is at the limit for carState (locationd_llk); add it back with that code.
+  sm = messaging.SubMaster(['rawAudioData', 'bookmarkButton'])
   should_record_audio = False
   block_num = 0
   waiting_for_release = False
