@@ -14,7 +14,7 @@ from openpilot.selfdrive.ui.layouts.settings.osm_common import NATIONS_URL, US_S
 from openpilot.selfdrive.ui.layouts.settings.speed_limit import SpeedLimitOffsetType
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigMultiParamToggle
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigMultiOptionDialog, BigConfirmationDialogV2
-from openpilot.selfdrive.ui.mici.widgets.top_dialogs import elide_value
+from openpilot.selfdrive.ui.mici.widgets.top_dialogs import CompactOptionDialog, elide_value
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
@@ -169,7 +169,7 @@ class OsmLayoutMici(NavWidget):
 
     titles = [loc[0] for loc in locations]
     current = self._params.get("OsmLocationTitle" if kind == "country" else "OsmStateTitle") or titles[0]
-    dlg: BigMultiOptionDialog
+    dlg: CompactOptionDialog
 
     def on_confirm():
       title = dlg.get_selected_option()
@@ -185,7 +185,7 @@ class OsmLayoutMici(NavWidget):
         self._osm.set_state(title, code)
       self._pending_download = True
 
-    dlg = BigMultiOptionDialog(titles, current if current in titles else titles[0], right_btn_callback=on_confirm)
+    dlg = CompactOptionDialog(titles, current if current in titles else titles[0], right_btn_callback=on_confirm)
     gui_app.set_modal_overlay(dlg)
 
   # *** speed limit ***

@@ -2,12 +2,16 @@
 TOP dialogs for the comma four (mici) UI: dashcam footage QR code and the error log.
 """
 import time
+from collections.abc import Callable
+from typing import cast
 
 import pyray as rl
 
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialogOptionButton, BigMultiOptionDialog
+from openpilot.selfdrive.ui.mici.widgets.side_button import WIDTH as SIDE_BUTTON_WIDTH
 from openpilot.selfdrive.ui.widgets.footage_dialog import footage_url, make_qr_texture
 from openpilot.system.ui.lib.application import gui_app, FontWeight
-from openpilot.system.ui.lib.scroll_panel2 import GuiScrollPanel2
+from openpilot.system.ui.lib.scroll_panel2 import GuiScrollPanel2, ScrollState
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.system.ui.widgets.html_render import HtmlRenderer, ElementType
@@ -103,3 +107,65 @@ class TextModalMici(NavWidget):
     offset = round(self._scroll_panel.update(content_rect, height))
     self._content.render(rl.Rectangle(content_rect.x, content_rect.y + margin + offset, content_rect.width, height))
     return -1
+
+
+class CompactOptionButton(BigDialogOptionButton):
+  """Smaller option row for long names (car models, countries), kept clear of the check button."""
+  HEIGHT = 40
+  SELECTED_HEIGHT = 46
+  LEFT = 16
+
+  def __init__(self, option: str, display: str | None = None):
+    super().__init__(option)
+    self.set_rect(rl.Rectangle(0, 0, int(gui_app.width / 2 + 220), self.HEIGHT))
+    if display is not None:
+      self._label.set_text(display)
+
+  def _render(self, _):
+    # the scroller centers rows horizontally, draw the text from the left edge up to the check button instead
+    rect = self._rect
+    self._rect = rl.Rectangle(self.LEFT, rect.y, gui_app.width - SIDE_BUTTON_WIDTH - self.LEFT - 8, rect.height)
+    super()._render(_)
+    self._rect = rect
+
+
+class CompactOptionDialog(BigMultiOptionDialog):
+  """BigMultiOptionDialog with CompactOptionButton rows. `display` maps an option to the text shown for it."""
+
+  def __init__(self, options: list[str], default: str | None, right_btn_callback: Callable[[], None] | None = None,
+               display: dict[str, str] | None = None):
+    super().__init__(options, default, right_btn_callback=right_btn_callback)
+    self._scroller._items.clear()
+    for option in options:
+      self._scroller.add_widget(CompactOptionButton(option, (display or {}).get(option)))
+    self._recenter_pending = False
+
+  def show_event(self):
+    super().show_event()
+    self._recenter_pending = True
+
+  def _update_state(self):
+    super()._update_state()
+    # while sliding in, the rows lag the dialog by a frame and the snap pulls the wheel towards the wrong row
+    # (more than half of a compact row): center the default once the slide in is over, unless the user scrolled
+    if self._recenter_pending and abs(self._pos_filter.x) < 1:
+      self._recenter_pending = False
+      if self._default_option is not None and self._scroller.scroll_panel.state == ScrollState.STEADY:
+        self._on_option_selected(self._default_option)
+
+  def _on_option_selected(self, option: str):
+    # same as BigMultiOptionDialog, with the compact row heights
+    y_pos = 0.0
+    for btn in self._scroller._items:
+      btn = cast(CompactOptionButton, btn)
+      if btn.option == option:
+        rect_center_y = self._rect.y + self._rect.height / 2
+        if btn._selected:
+          height = btn.rect.height
+        else:
+          btn_center_y = btn.rect.y + btn.rect.height / 2
+          height_offset = CompactOptionButton.SELECTED_HEIGHT - CompactOptionButton.HEIGHT
+          height = (CompactOptionButton.HEIGHT - height_offset) if rect_center_y < btn_center_y else CompactOptionButton.SELECTED_HEIGHT
+        y_pos = rect_center_y - (btn.rect.y + height / 2)
+        break
+    self._scroller.scroll_to(-y_pos)

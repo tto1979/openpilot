@@ -13,6 +13,10 @@ from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.ui_state import ui_state
 
 OUT_DIR = os.path.join(DIFF_OUT_DIR, "top")
+CARS = ["HONDA_CIVIC", "LEXUS_ES_TSS2", "LEXUS_RX_TSS2", "TOYOTA_ALPHARD_TSS2", "TOYOTA_CAMRY", "TOYOTA_CHR_TSS2",
+        "TOYOTA_COROLLA_TSS2", "TOYOTA_HIGHLANDER_TSS2", "TOYOTA_PRIUS_TSS2", "TOYOTA_RAV4_TSS2", "TOYOTA_RAV4_TSS2_2023"]
+COUNTRIES = [("== None ==", ""), ("Taiwan", "TW"), ("Thailand", "TH"), ("United Kingdom of Great Britain and Northern Ireland", "GB"),
+             ("United States of America", "US")]
 FRAMES_PER_STEP = 30
 
 
@@ -71,11 +75,12 @@ def main():
     ("hub_2", lambda: settings._scroller.scroll_panel.set_offset(-420)),
     ("top", panel(PanelType.TOP)),
     ("top_2", scroll(PanelType.TOP, -1300)),
-    ("top_car_picker", lambda: (setattr(top, "_car_list", ["TOYOTA_COROLLA_TSS2", "TOYOTA_RAV4_TSS2", "LEXUS_ES_TSS2"]),
-                                top._show_car_dialog())),
+    ("top_car_brand_picker", lambda: (setattr(top, "_car_list", CARS), top._show_car_dialog())),
+    ("top_car_model_picker", lambda: (close_overlay(), top._show_model_dialog("TOYOTA"))),
     ("maps", lambda: (close_overlay(), panel(PanelType.MAPS)())),
     ("maps_2", scroll(PanelType.MAPS, -1300)),
-    ("maps_source_picker", lambda: maps._select_source()),
+    ("maps_country_picker", lambda: (setattr(maps, "_pending", ("country", COUNTRIES)), maps._handle_pending())),
+    ("maps_source_picker", lambda: (close_overlay(), maps._select_source())),
     ("maps_offset_picker", lambda: (close_overlay(), maps._select_offset())),
     ("toggles", lambda: (close_overlay(), panel(PanelType.TOGGLES)())),
     ("device_top", lambda: (panel(PanelType.DEVICE)(), scroll(PanelType.DEVICE, -1700)())),
