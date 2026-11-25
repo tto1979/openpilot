@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 08:41+0800\n"
+"POT-Creation-Date: 2026-11-25 21:30+0800\n"
 "PO-Revision-Date: 2025-10-20 16:35-0700\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: selfdrive/ui/layouts/settings/device.py:216
+#: selfdrive/ui/layouts/settings/device.py:209
 #, python-format
 msgid " Steering torque response calibration is complete."
 msgstr " Die Lenkmoment-Reaktionskalibrierung ist abgeschlossen."
 
-#: selfdrive/ui/layouts/settings/device.py:214
+#: selfdrive/ui/layouts/settings/device.py:207
 #, python-format
 msgid " Steering torque response calibration is {}% complete."
 msgstr " Die Lenkmoment-Reaktionskalibrierung ist zu {}% abgeschlossen."
 
-#: selfdrive/ui/layouts/settings/device.py:189
+#: selfdrive/ui/layouts/settings/device.py:182
 #, python-format
 msgid " Your device is pointed {:.1f}° {} and {:.1f}° {}."
 msgstr " Ihr Gerät ist um {:.1f}° {} und {:.1f}° {} ausgerichtet."
@@ -76,17 +76,17 @@ msgstr ""
 "Experimentalmodus wird empfohlen, wenn Sie die openpilot-Längsregelung "
 "(Alpha) aktivieren."
 
-#: selfdrive/ui/layouts/settings/device.py:204
+#: selfdrive/ui/layouts/settings/device.py:197
 #, python-format
 msgid "<br><br>Steering lag calibration is complete."
 msgstr "<br><br>Kalibrierung der Lenkverzögerung abgeschlossen."
 
-#: selfdrive/ui/layouts/settings/device.py:202
+#: selfdrive/ui/layouts/settings/device.py:195
 #, python-format
 msgid "<br><br>Steering lag calibration is {}% complete."
 msgstr "<br><br>Kalibrierung der Lenkverzögerung zu {}% abgeschlossen."
 
-#: selfdrive/ui/layouts/settings/top.py:108
+#: selfdrive/ui/layouts/settings/top_common.py:105
 msgid "ACC +/-: Long Press Reverse"
 msgstr ""
 
@@ -103,7 +103,7 @@ msgstr ""
 msgid "ADD"
 msgstr "HINZUFÜGEN"
 
-#: selfdrive/ui/onroad/top_hud.py:399
+#: selfdrive/ui/onroad/top_hud.py:287
 #, python-format
 msgid "AHEAD"
 msgstr ""
@@ -123,7 +123,7 @@ msgstr ""
 msgid "Acknowledge Excessive Actuation"
 msgstr "Übermäßige Betätigung bestätigen"
 
-#: selfdrive/ui/layouts/settings/top.py:103
+#: selfdrive/ui/layouts/settings/top_common.py:100
 msgid ""
 "Activates the car's brakes after 1 seconds stopped. (Only support on Toyota "
 "TSS2 Hybrid vehicles)"
@@ -135,7 +135,7 @@ msgid "Advanced"
 msgstr "Erweitert"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
-#: selfdrive/ui/onroad/top_hud.py:37
+#: selfdrive/ui/onroad/top_hud.py:28
 #, python-format
 msgid "Aggressive"
 msgstr "Aggressiv"
@@ -164,17 +164,17 @@ msgstr ""
 msgid "Are you sure you want to flash the Panda firmware?"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/device.py:243
+#: selfdrive/ui/layouts/settings/device.py:236
 #, python-format
 msgid "Are you sure you want to power off?"
 msgstr "Sind Sie sicher, dass Sie ausschalten möchten?"
 
-#: selfdrive/ui/layouts/settings/device.py:231
+#: selfdrive/ui/layouts/settings/device.py:224
 #, python-format
 msgid "Are you sure you want to reboot?"
 msgstr "Sind Sie sicher, dass Sie neu starten möchten?"
 
-#: selfdrive/ui/layouts/settings/device.py:175
+#: selfdrive/ui/layouts/settings/device.py:168
 #, python-format
 msgid "Are you sure you want to reset calibration?"
 msgstr "Sind Sie sicher, dass Sie die Kalibrierung zurücksetzen möchten?"
@@ -200,13 +200,12 @@ msgid ""
 "limit when operating the +/- buttons."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:102
+#: selfdrive/ui/layouts/settings/top_common.py:99
 msgid "Automatic Brake Hold"
 msgstr ""
 
-#: selfdrive/ui/layouts/onboarding.py:148
+#: system/ui/widgets/network.py:99 selfdrive/ui/layouts/onboarding.py:148
 #: selfdrive/ui/layouts/settings/speed_limit.py:77
-#: system/ui/widgets/network.py:99
 #, python-format
 msgid "Back"
 msgstr "Zurück"
@@ -216,7 +215,7 @@ msgstr "Zurück"
 msgid "Become a comma prime member at connect.comma.ai"
 msgstr "Werden Sie comma prime Mitglied auf connect.comma.ai"
 
-#: selfdrive/ui/layouts/settings/top.py:70
+#: selfdrive/ui/layouts/settings/top_common.py:63
 msgid "Blinker Lane Change"
 msgstr ""
 
@@ -245,7 +244,7 @@ msgstr "PRÜFEN"
 msgid "CHILL MODE ON"
 msgstr "CHILL‑MODUS AKTIV"
 
-#: selfdrive/ui/layouts/settings/osm.py:108
+#: selfdrive/ui/layouts/settings/osm.py:62
 #, python-format
 msgid "CONFIGURE"
 msgstr ""
@@ -255,9 +254,9 @@ msgstr ""
 msgid "CONFIRM"
 msgstr ""
 
-#: selfdrive/ui/layouts/sidebar.py:73 selfdrive/ui/layouts/sidebar.py:134
-#: selfdrive/ui/layouts/sidebar.py:136 selfdrive/ui/layouts/sidebar.py:138
-#: system/ui/widgets/network.py:155
+#: system/ui/widgets/network.py:155 selfdrive/ui/layouts/sidebar.py:73
+#: selfdrive/ui/layouts/sidebar.py:134 selfdrive/ui/layouts/sidebar.py:136
+#: selfdrive/ui/layouts/sidebar.py:138
 #, python-format
 msgid "CONNECT"
 msgstr "VERBINDUNG"
@@ -272,20 +271,20 @@ msgstr "VERBINDUNG"
 msgid "CUSTOMIZE"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:150
-#: selfdrive/ui/layouts/settings/osm.py:157
+#: selfdrive/ui/layouts/settings/osm_common.py:115
+#: selfdrive/ui/layouts/settings/osm_common.py:122
 #, python-format
 msgid "Calculating ETA..."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:58
-#: selfdrive/ui/layouts/settings/osm.py:141
+#: selfdrive/ui/layouts/settings/osm_common.py:46
+#: selfdrive/ui/layouts/settings/osm_common.py:92
 #, python-format
 msgid "Calculating..."
 msgstr ""
 
-#: system/ui/widgets/confirm_dialog.py:23 system/ui/widgets/keyboard.py:81
-#: system/ui/widgets/network.py:318 system/ui/widgets/option_dialog.py:35
+#: system/ui/widgets/confirm_dialog.py:23 system/ui/widgets/option_dialog.py:35
+#: system/ui/widgets/keyboard.py:81 system/ui/widgets/network.py:318
 #, python-format
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -295,7 +294,7 @@ msgstr "Abbrechen"
 msgid "Car First"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:146
+#: selfdrive/ui/layouts/settings/top.py:28
 #, python-format
 msgid "Car Model"
 msgstr ""
@@ -305,7 +304,7 @@ msgstr ""
 msgid "Car Only"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:233
+#: selfdrive/ui/layouts/settings/top.py:112
 #, python-format
 msgid "Car list is not available."
 msgstr ""
@@ -320,7 +319,7 @@ msgstr "Getaktete Mobilfunkverbindung"
 msgid "Change Language"
 msgstr "Sprache ändern"
 
-#: selfdrive/ui/layouts/settings/top.py:71
+#: selfdrive/ui/layouts/settings/top_common.py:64
 msgid ""
 "Change lanes without the need to nudge the steering wheel first.\n"
 "Disabled: Need to nudge the steering wheel to change lanes.\n"
@@ -329,7 +328,7 @@ msgid ""
 "above 35mph."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:109
+#: selfdrive/ui/layouts/settings/top_common.py:106
 msgid ""
 "Change the ACC +/- buttons behavior with cruise speed change in openpilot.\n"
 "Disabled (Stock): Short = 1, Long = 5.\n"
@@ -364,26 +363,26 @@ msgstr "Schließen"
 msgid "Combined"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:109
+#: selfdrive/ui/layouts/settings/osm.py:63
 #, python-format
 msgid ""
 "Configure speed limit settings including source policy, mode, and offset "
 "options."
 msgstr ""
 
-#: selfdrive/ui/widgets/footage_dialog.py:91
+#: selfdrive/ui/widgets/footage_dialog.py:100
 #, python-format
 msgid ""
 "Connect the device to Wi-Fi (or your phone's hotspot) to watch the "
 "recordings."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:220
+#: selfdrive/ui/layouts/settings/osm.py:91
 #, python-format
 msgid "Continue on Metered"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:99
+#: selfdrive/ui/layouts/settings/osm.py:53
 #, python-format
 msgid "Country"
 msgstr ""
@@ -393,7 +392,7 @@ msgstr ""
 msgid "Current Version"
 msgstr "Aktuelle Version"
 
-#: selfdrive/ui/layouts/settings/osm.py:89
+#: selfdrive/ui/layouts/settings/osm.py:43
 #, python-format
 msgid "DELETE"
 msgstr ""
@@ -408,7 +407,7 @@ msgstr "HERUNTERLADEN"
 msgid "DashCam footage"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:96
+#: selfdrive/ui/layouts/settings/osm.py:50
 #, python-format
 msgid "Database Update"
 msgstr ""
@@ -423,8 +422,8 @@ msgstr "Ablehnen"
 msgid "Decline, uninstall openpilot"
 msgstr "Ablehnen, openpilot deinstallieren"
 
-#: selfdrive/ui/layouts/settings/osm.py:91
-#: selfdrive/ui/layouts/settings/osm.py:240
+#: selfdrive/ui/layouts/settings/osm.py:45
+#: selfdrive/ui/layouts/settings/osm.py:111
 #, python-format
 msgid "Deleting..."
 msgstr ""
@@ -437,7 +436,7 @@ msgstr "Entwickler"
 msgid "Device"
 msgstr "Gerät"
 
-#: selfdrive/ui/layouts/settings/top.py:41
+#: selfdrive/ui/layouts/settings/top_common.py:34
 msgid "Disable Steering Delay Learning"
 msgstr ""
 
@@ -451,17 +450,17 @@ msgstr "Beim Gaspedal deaktivieren"
 msgid "Disengage to Flash Panda"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/device.py:240
+#: selfdrive/ui/layouts/settings/device.py:233
 #, python-format
 msgid "Disengage to Power Off"
 msgstr "Zum Ausschalten deaktivieren"
 
-#: selfdrive/ui/layouts/settings/device.py:228
+#: selfdrive/ui/layouts/settings/device.py:221
 #, python-format
 msgid "Disengage to Reboot"
 msgstr "Zum Neustart deaktivieren"
 
-#: selfdrive/ui/layouts/settings/device.py:159
+#: selfdrive/ui/layouts/settings/device.py:152
 #, python-format
 msgid "Disengage to Reset Calibration"
 msgstr "Zum Zurücksetzen der Kalibrierung deaktivieren"
@@ -480,23 +479,23 @@ msgstr "Dongle-ID"
 msgid "Download"
 msgstr "Herunterladen"
 
-#: selfdrive/ui/layouts/settings/osm.py:172
+#: selfdrive/ui/layouts/settings/osm_common.py:103
 #, python-format
 msgid "Download complete!"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:168
+#: selfdrive/ui/layouts/settings/osm_common.py:99
 #, python-format
 msgid "Download starting..."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:139
-#: selfdrive/ui/layouts/settings/osm.py:147
+#: selfdrive/ui/layouts/settings/osm_common.py:90
+#: selfdrive/ui/layouts/settings/osm_common.py:112
 #, python-format
 msgid "Downloaded"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:89
+#: selfdrive/ui/layouts/settings/osm.py:43
 #, python-format
 msgid "Downloaded Maps"
 msgstr ""
@@ -511,11 +510,11 @@ msgstr "Fahrerkamera"
 msgid "Driving Personality"
 msgstr "Fahrstil"
 
-#: selfdrive/ui/layouts/settings/top.py:30
+#: selfdrive/ui/layouts/settings/top_common.py:23
 msgid "Driving Screen Off"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:62
+#: selfdrive/ui/layouts/settings/top_common.py:55
 msgid "Dynamic Distance Adjustment"
 msgstr ""
 
@@ -537,7 +536,7 @@ msgstr "ETH"
 msgid "EXPERIMENTAL MODE ON"
 msgstr "EXPERIMENTALMODUS AKTIV"
 
-#: selfdrive/ui/layouts/settings/top.py:67
+#: selfdrive/ui/layouts/settings/top_common.py:60
 msgid ""
 "Eases off the brake in the final moments of a stop for a gentle landing. "
 "Planned braking is never softened. Requires openpilot longitudinal control."
@@ -548,7 +547,7 @@ msgstr ""
 msgid "Eco"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:75
+#: selfdrive/ui/layouts/settings/top_common.py:68
 msgid "Edge Detection During Lane Changes"
 msgstr ""
 
@@ -563,15 +562,15 @@ msgstr "Aktivieren"
 msgid "Enable ADB"
 msgstr "ADB aktivieren"
 
-#: selfdrive/ui/layouts/settings/top.py:96
+#: selfdrive/ui/layouts/settings/top_common.py:93
 msgid "Enable Door Auto Lock"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:99
+#: selfdrive/ui/layouts/settings/top_common.py:96
 msgid "Enable Door Auto Unlock"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:55
+#: selfdrive/ui/layouts/settings/top_common.py:48
 msgid "Enable Experiment Mode In SNG"
 msgstr ""
 
@@ -580,7 +579,7 @@ msgstr ""
 msgid "Enable Lane Departure Warnings"
 msgstr "Spurverlassenswarnungen aktivieren"
 
-#: selfdrive/ui/layouts/settings/top.py:85
+#: selfdrive/ui/layouts/settings/top_common.py:78
 msgid "Enable Local File Server"
 msgstr ""
 
@@ -599,7 +598,7 @@ msgstr "SSH aktivieren"
 msgid "Enable Tethering"
 msgstr "Spurverlassenswarnungen aktivieren"
 
-#: selfdrive/ui/layouts/settings/top.py:93
+#: selfdrive/ui/layouts/settings/top_common.py:90
 msgid "Enable Toyota Drive Mode Button"
 msgstr ""
 
@@ -612,6 +611,10 @@ msgstr "Fahrerüberwachung auch aktivieren, wenn openpilot nicht aktiv ist."
 msgid "Enable openpilot"
 msgstr "openpilot aktivieren"
 
+#: selfdrive/ui/layouts/settings/top_common.py:83
+msgid "Enable opview"
+msgstr ""
+
 #: selfdrive/ui/layouts/settings/toggles.py:215
 #, python-format
 msgid ""
@@ -621,27 +624,27 @@ msgstr ""
 "Den Schalter für die openpilot-Längsregelung (Alpha) aktivieren, um den "
 "Experimentalmodus zu erlauben."
 
-#: selfdrive/ui/layouts/settings/top.py:91
+#: selfdrive/ui/layouts/settings/top_common.py:88
 msgid "Enable to use Toyota's stock longitudinal control."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:53
+#: selfdrive/ui/layouts/settings/top_common.py:46
 msgid "Enabled the Stop And Go feature and get auto hold."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:97
+#: selfdrive/ui/layouts/settings/top_common.py:94
 msgid ""
 "Enabled this to lock doors when drive above 25 km/h. Only work on some "
 "Toyota vehicles."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:100
+#: selfdrive/ui/layouts/settings/top_common.py:97
 msgid ""
 "Enabled this to unlock doors when shift to gear P. Only work on some Toyota "
 "vehicles."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:106
+#: selfdrive/ui/layouts/settings/top_common.py:103
 msgid ""
 "Enhance BSM function for some Toyota vehicles that openpilot currently does "
 "not support."
@@ -667,12 +670,12 @@ msgstr "Neues Tethering‑Passwort eingeben"
 msgid "Enter password"
 msgstr "Passwort eingeben"
 
-#: selfdrive/ui/layouts/settings/osm.py:275
+#: selfdrive/ui/layouts/settings/osm.py:145
 #, python-format
 msgid "Enter search keywords, or leave blank to list all countries."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:276
+#: selfdrive/ui/layouts/settings/osm.py:146
 #, python-format
 msgid "Enter search keywords, or leave blank to list all states."
 msgstr ""
@@ -716,19 +719,19 @@ msgstr ""
 msgid "FORGETTING..."
 msgstr "WIRD VERGESSEN..."
 
-#: selfdrive/ui/layouts/settings/device.py:147
+#: selfdrive/ui/layouts/settings/device.py:140
 #, python-format
 msgid "Failed!"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:101
-#: selfdrive/ui/layouts/settings/osm.py:262
+#: selfdrive/ui/layouts/settings/osm.py:55
+#: selfdrive/ui/layouts/settings/osm.py:132
 #, python-format
 msgid "Fetching Country list..."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:105
-#: selfdrive/ui/layouts/settings/osm.py:262
+#: selfdrive/ui/layouts/settings/osm.py:59
+#: selfdrive/ui/layouts/settings/osm.py:132
 #, python-format
 msgid "Fetching State list..."
 msgstr ""
@@ -746,7 +749,7 @@ msgstr "Firehose"
 msgid "Firehose Mode"
 msgstr "Firehose‑Modus"
 
-#: selfdrive/ui/layouts/settings/top.py:105
+#: selfdrive/ui/layouts/settings/top_common.py:102
 msgid "Fix Toyota BSM Signal"
 msgstr ""
 
@@ -769,7 +772,7 @@ msgstr ""
 msgid "Flash Panda"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/device.py:141
+#: selfdrive/ui/layouts/settings/device.py:134
 #, python-format
 msgid "Flashed!"
 msgstr ""
@@ -824,7 +827,7 @@ msgstr ""
 "Upstream‑openpilot (und bestimmte Forks) können für das Training verwendet "
 "werden."
 
-#: selfdrive/ui/layouts/settings/top.py:147
+#: selfdrive/ui/layouts/settings/top.py:29
 #, python-format
 msgid ""
 "Force a car model instead of fingerprinting. Select [-Not selected-] to go "
@@ -906,7 +909,7 @@ msgid ""
 "update. Back to normal after a reboot. Not available while engaged."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:42
+#: selfdrive/ui/layouts/settings/top_common.py:35
 msgid ""
 "Keep the fixed default steering delay instead of learning the delay of the "
 "car while driving. Turn on for cars whose steering wheel sticks: the learned "
@@ -915,12 +918,12 @@ msgid ""
 "on the next drive."
 msgstr ""
 
-#: selfdrive/ui/onroad/top_hud.py:356
+#: selfdrive/ui/onroad/top_hud.py:268
 #, python-format
 msgid "LIMIT"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:194 selfdrive/ui/widgets/ssh_key.py:29
+#: selfdrive/ui/widgets/ssh_key.py:29 selfdrive/ui/layouts/settings/top.py:73
 #, python-format
 msgid "LOADING"
 msgstr "LADEN"
@@ -929,20 +932,20 @@ msgstr "LADEN"
 msgid "LTE"
 msgstr "LTE"
 
-#: selfdrive/ui/layouts/settings/top.py:46
+#: selfdrive/ui/layouts/settings/top_common.py:39
 msgid "Lane Centering Correction"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:34
+#: selfdrive/ui/layouts/settings/top_common.py:27
 msgid "Lateral Controls Always On"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:35
+#: selfdrive/ui/layouts/settings/top_common.py:28
 msgid ""
 "Lateral control will always be on and will not be interrupted by braking."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:88
+#: selfdrive/ui/layouts/settings/osm.py:42
 #, python-format
 msgid "Loading..."
 msgstr ""
@@ -952,12 +955,12 @@ msgstr ""
 msgid "Longitudinal Maneuver Mode"
 msgstr "Längsmanövermodus"
 
-#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:233
+#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:127
 #, python-format
 msgid "MAX"
 msgstr "MAX"
 
-#: selfdrive/ui/layouts/settings/top.py:82
+#: selfdrive/ui/layouts/settings/top_common.py:75
 msgid "Map Based Turn Control"
 msgstr ""
 
@@ -971,7 +974,7 @@ msgstr ""
 msgid "Map Only"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:88
+#: selfdrive/ui/layouts/settings/osm.py:42
 #, python-format
 msgid "Mapd Version"
 msgstr ""
@@ -990,7 +993,7 @@ msgstr ""
 msgid "N/A"
 msgstr "k. A."
 
-#: selfdrive/ui/layouts/settings/top.py:37
+#: selfdrive/ui/layouts/settings/top_common.py:30
 msgid "NNFF Torque Control"
 msgstr ""
 
@@ -998,7 +1001,7 @@ msgstr ""
 msgid "NO"
 msgstr "KEIN"
 
-#: selfdrive/ui/onroad/top_hud.py:376 selfdrive/ui/onroad/top_hud.py:383
+#: selfdrive/ui/onroad/top_state.py:168 selfdrive/ui/onroad/top_state.py:175
 #, python-format
 msgid "Near"
 msgstr ""
@@ -1017,7 +1020,7 @@ msgstr "Keine SSH‑Schlüssel gefunden"
 msgid "No SSH keys found for user '{}'"
 msgstr "Keine SSH‑Schlüssel für Benutzer '{username}' gefunden"
 
-#: selfdrive/ui/layouts/settings/software.py:210
+#: selfdrive/ui/layouts/settings/software.py:206
 #, python-format
 msgid "No error log found."
 msgstr ""
@@ -1027,7 +1030,7 @@ msgstr ""
 msgid "No release notes available."
 msgstr "Keine Versionshinweise verfügbar."
 
-#: selfdrive/ui/layouts/settings/osm.py:286
+#: selfdrive/ui/layouts/settings/osm.py:156
 #, python-format
 msgid "No results found for keywords: {}"
 msgstr ""
@@ -1059,8 +1062,8 @@ msgstr ""
 msgid "OFFLINE"
 msgstr "OFFLINE"
 
-#: selfdrive/ui/layouts/sidebar.py:127 system/ui/widgets/confirm_dialog.py:93
-#: system/ui/widgets/html_render.py:263
+#: system/ui/widgets/confirm_dialog.py:93 system/ui/widgets/html_render.py:263
+#: selfdrive/ui/layouts/sidebar.py:127
 #, python-format
 msgid "OK"
 msgstr "OK"
@@ -1083,7 +1086,7 @@ msgstr ""
 msgid "Off: Disables the Speed Limit functions."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:92
+#: selfdrive/ui/layouts/settings/osm.py:46
 #, python-format
 msgid "Offline Maps ETA"
 msgstr ""
@@ -1137,7 +1140,7 @@ msgstr "Gerät koppeln"
 msgid "Pair your device to your comma account"
 msgstr "Koppeln Sie Ihr Gerät mit Ihrem comma‑Konto"
 
-#: selfdrive/ui/layouts/settings/device.py:28 selfdrive/ui/widgets/setup.py:48
+#: selfdrive/ui/widgets/setup.py:48 selfdrive/ui/layouts/settings/device.py:28
 #, python-format
 msgid ""
 "Pair your device with comma connect (connect.comma.ai) and claim your comma "
@@ -1161,7 +1164,7 @@ msgid "Please connect to Wi-Fi to complete initial pairing"
 msgstr "Bitte mit WLAN verbinden, um das erste Koppeln abzuschließen"
 
 #: selfdrive/ui/layouts/settings/device.py:63
-#: selfdrive/ui/layouts/settings/device.py:243
+#: selfdrive/ui/layouts/settings/device.py:236
 #, python-format
 msgid "Power Off"
 msgstr "Ausschalten"
@@ -1194,11 +1197,11 @@ msgstr "QR‑Code‑Fehler"
 msgid "QR-Code"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:27
+#: selfdrive/ui/layouts/settings/top_common.py:20
 msgid "Quiet Drive"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:179
+#: selfdrive/ui/layouts/settings/osm.py:75
 #, python-format
 msgid "REFRESH"
 msgstr ""
@@ -1217,13 +1220,13 @@ msgstr "ZURÜCKSETZEN"
 msgid "REVIEW"
 msgstr "ANSEHEN"
 
-#: selfdrive/ui/layouts/settings/osm.py:147
+#: selfdrive/ui/layouts/settings/osm_common.py:112
 #, python-format
 msgid "Ready"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/device.py:63
-#: selfdrive/ui/layouts/settings/device.py:231
+#: selfdrive/ui/layouts/settings/device.py:224
 #, python-format
 msgid "Reboot"
 msgstr "Neustart"
@@ -1238,7 +1241,7 @@ msgstr "Gerät neu starten"
 msgid "Reboot and Update"
 msgstr "Neustarten und aktualisieren"
 
-#: selfdrive/ui/layouts/settings/device.py:143
+#: selfdrive/ui/layouts/settings/device.py:136
 #, python-format
 msgid "Rebooting..."
 msgstr ""
@@ -1281,7 +1284,7 @@ msgid "Reinstall the Panda firmware to fix connection or reliability issues."
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
-#: selfdrive/ui/onroad/top_hud.py:37
+#: selfdrive/ui/onroad/top_hud.py:28
 #, python-format
 msgid "Relaxed"
 msgstr "Entspannt"
@@ -1301,7 +1304,7 @@ msgstr "Remote‑Schnappschüsse"
 msgid "Request timed out"
 msgstr "Zeitüberschreitung bei der Anfrage"
 
-#: selfdrive/ui/layouts/settings/device.py:175
+#: selfdrive/ui/layouts/settings/device.py:168
 #, python-format
 msgid "Reset"
 msgstr "Zurücksetzen"
@@ -1321,15 +1324,15 @@ msgid "Review the rules, features, and limitations of openpilot"
 msgstr ""
 "Überprüfen Sie die Regeln, Funktionen und Einschränkungen von openpilot"
 
-#: selfdrive/ui/layouts/settings/osm.py:99
-#: selfdrive/ui/layouts/settings/osm.py:103
+#: selfdrive/ui/layouts/settings/top.py:74
+#: selfdrive/ui/layouts/settings/osm.py:53
+#: selfdrive/ui/layouts/settings/osm.py:57
 #: selfdrive/ui/layouts/settings/software.py:75
-#: selfdrive/ui/layouts/settings/top.py:195
 #, python-format
 msgid "SELECT"
 msgstr ""
 
-#: selfdrive/ui/onroad/top_hud.py:355
+#: selfdrive/ui/onroad/top_hud.py:267
 #, python-format
 msgid "SPEED"
 msgstr ""
@@ -1339,7 +1342,7 @@ msgstr ""
 msgid "SSH Keys"
 msgstr "SSH‑Schlüssel"
 
-#: selfdrive/ui/widgets/footage_dialog.py:89
+#: selfdrive/ui/widgets/footage_dialog.py:98
 #, python-format
 msgid ""
 "Scan the QR code with a phone on the same network as the device, or open:"
@@ -1350,12 +1353,12 @@ msgstr ""
 msgid "Scanning Wi-Fi networks..."
 msgstr "WLAN‑Netzwerke werden gesucht..."
 
-#: selfdrive/ui/layouts/settings/osm.py:274
+#: selfdrive/ui/layouts/settings/osm.py:144
 #, python-format
 msgid "Search Country"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:274
+#: selfdrive/ui/layouts/settings/osm.py:144
 #, python-format
 msgid "Search State"
 msgstr ""
@@ -1365,17 +1368,17 @@ msgstr ""
 msgid "Select"
 msgstr "Auswählen"
 
-#: selfdrive/ui/layouts/settings/osm.py:316
+#: selfdrive/ui/layouts/settings/osm.py:183
 #, python-format
 msgid "Select Country"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:316
+#: selfdrive/ui/layouts/settings/osm.py:183
 #, python-format
 msgid "Select State"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/software.py:243
+#: selfdrive/ui/layouts/settings/software.py:238
 #, python-format
 msgid "Select a branch"
 msgstr ""
@@ -1385,7 +1388,7 @@ msgstr ""
 msgid "Select a language"
 msgstr "Sprache auswählen"
 
-#: selfdrive/ui/layouts/settings/top.py:223
+#: selfdrive/ui/layouts/settings/top.py:102
 #, python-format
 msgid "Select your car"
 msgstr ""
@@ -1395,7 +1398,7 @@ msgstr ""
 msgid "Serial"
 msgstr "Seriennummer"
 
-#: selfdrive/ui/layouts/settings/top.py:66
+#: selfdrive/ui/layouts/settings/top_common.py:59
 msgid "Smooth Stops"
 msgstr ""
 
@@ -1408,7 +1411,7 @@ msgstr "Update verschieben"
 msgid "Software"
 msgstr "Software"
 
-#: selfdrive/ui/layouts/settings/osm.py:108
+#: selfdrive/ui/layouts/settings/osm.py:62
 #, python-format
 msgid "Speed Limit"
 msgstr ""
@@ -1435,7 +1438,7 @@ msgid "Sport"
 msgstr ""
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
-#: selfdrive/ui/onroad/top_hud.py:37
+#: selfdrive/ui/onroad/top_hud.py:28
 #, python-format
 msgid "Standard"
 msgstr "Standard"
@@ -1453,12 +1456,12 @@ msgstr ""
 "unterstützten Fahrzeugen können Sie mit der Abstandstaste am Lenkrad "
 "zwischen diesen Profilen wechseln."
 
-#: selfdrive/ui/layouts/settings/osm.py:220
+#: selfdrive/ui/layouts/settings/osm.py:91
 #, python-format
 msgid "Start Download"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:103
+#: selfdrive/ui/layouts/settings/osm.py:57
 #, python-format
 msgid "State"
 msgstr ""
@@ -1468,8 +1471,15 @@ msgstr ""
 msgid "Stock"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:52
+#: selfdrive/ui/layouts/settings/top_common.py:45
 msgid "Stop And Go"
+msgstr ""
+
+#: selfdrive/ui/layouts/settings/top_common.py:84
+msgid ""
+"Stream the road camera and driving display to the opview app (Android, "
+"github.com/eFiniLan/opview) on a phone on the same Wi-Fi network as the "
+"device, such as the phone's hotspot. Uses extra CPU while driving."
 msgstr ""
 
 #: selfdrive/ui/onroad/alert_renderer.py:59
@@ -1492,20 +1502,20 @@ msgstr "SOFORT DIE KONTROLLE ÜBERNEHMEN"
 msgid "TEMP"
 msgstr "TEMP"
 
-#: selfdrive/ui/layouts/settings/top.py:28
+#: selfdrive/ui/layouts/settings/top_common.py:21
 msgid ""
 "TOP will display alerts but only play the most important warning sounds. "
 "This feature can be toggled while the car is on."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:94
+#: selfdrive/ui/layouts/settings/top_common.py:91
 msgid ""
 "TOP will link the Acceleration Personality to the car's physical drive mode "
 "selector.\n"
 "Reboot Required."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:59
+#: selfdrive/ui/layouts/settings/top_common.py:52
 msgid "TSS-P Longitudinal Tuning"
 msgstr ""
 
@@ -1519,13 +1529,13 @@ msgstr ""
 msgid "Tethering Password"
 msgstr "Tethering‑Passwort"
 
-#: selfdrive/ui/layouts/settings/top.py:63
+#: selfdrive/ui/layouts/settings/top_common.py:56
 msgid ""
 "The distance to the lead car will no longer be a fixed reaction time, but "
 "will be dynamically adjusted based on the speed of the vehicle."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:86
+#: selfdrive/ui/layouts/settings/top_common.py:79
 msgid ""
 "This will allow you to play or download openpilot driving record files "
 "through your browser.\n"
@@ -1533,7 +1543,7 @@ msgid ""
 "Internet access from mobile phone (tethering) is required."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:246
+#: selfdrive/ui/layouts/settings/osm.py:116
 #, python-format
 msgid ""
 "This will delete ALL downloaded maps\n"
@@ -1541,18 +1551,18 @@ msgid ""
 "Are you sure you want to delete all the maps?"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:217
+#: selfdrive/ui/layouts/settings/osm.py:88
 #, python-format
 msgid ""
 "This will start the download process and it might take a while to complete."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:94
+#: selfdrive/ui/layouts/settings/osm.py:48
 #, python-format
 msgid "Time Elapsed"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:162
+#: selfdrive/ui/layouts/settings/osm_common.py:127
 #, python-format
 msgid "Time remaining: "
 msgstr ""
@@ -1561,7 +1571,7 @@ msgstr ""
 msgid "Toggles"
 msgstr "Schalter"
 
-#: selfdrive/ui/layouts/settings/top.py:31
+#: selfdrive/ui/layouts/settings/top_common.py:24
 msgid ""
 "Turn off the device screen to protect the OLED panel after driving starts. "
 "It automatically brightens or turns on when a touch or event occurs."
@@ -1577,12 +1587,12 @@ msgstr ""
 msgid "UNINSTALL"
 msgstr "DEINSTALLIEREN"
 
-#: selfdrive/ui/layouts/home.py:154 selfdrive/ui/layouts/settings/osm.py:179
+#: selfdrive/ui/layouts/home.py:154 selfdrive/ui/layouts/settings/osm.py:75
 #, python-format
 msgid "UPDATE"
 msgstr "UPDATE"
 
-#: selfdrive/ui/layouts/settings/osm.py:271
+#: selfdrive/ui/layouts/settings/osm.py:141
 #, python-format
 msgid "Unable to fetch the list. Check the internet connection."
 msgstr ""
@@ -1620,18 +1630,18 @@ msgstr ""
 msgid "Use Metric System"
 msgstr "Metersystem verwenden"
 
-#: selfdrive/ui/layouts/settings/top.py:90
+#: selfdrive/ui/layouts/settings/top_common.py:87
 msgid "Use Toyota Stock Longitudinal Control"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:38
+#: selfdrive/ui/layouts/settings/top_common.py:31
 msgid ""
 "Use Twilsonco's Neural Network Feedforward torque system for more precise "
 "lateral control.\n"
 "Changing this setting will restart openpilot."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:83
+#: selfdrive/ui/layouts/settings/top_common.py:76
 msgid ""
 "Use map data to estimate the appropriate speed to drive through turns ahead."
 msgstr ""
@@ -1645,13 +1655,13 @@ msgstr ""
 "Spurhalteassistenz. Ihre Aufmerksamkeit ist jederzeit erforderlich, um diese "
 "Funktion zu nutzen."
 
-#: selfdrive/ui/layouts/settings/top.py:80
+#: selfdrive/ui/layouts/settings/top_common.py:73
 msgid ""
 "Use vision path predictions to estimate the appropriate speed to drive "
 "through turns ahead."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:60
+#: selfdrive/ui/layouts/settings/top_common.py:53
 msgid ""
 "Using the longitudinal tuning can improve the smoothness on Toyota TSS-P "
 "models when equipped with SDSU for longitudinal control."
@@ -1661,8 +1671,8 @@ msgstr ""
 msgid "VEHICLE"
 msgstr "FAHRZEUG"
 
-#: selfdrive/ui/layouts/settings/device.py:84
 #: selfdrive/ui/layouts/settings/software.py:87
+#: selfdrive/ui/layouts/settings/device.py:84
 #, python-format
 msgid "VIEW"
 msgstr "ANSEHEN"
@@ -1672,7 +1682,7 @@ msgstr "ANSEHEN"
 msgid "View the error log for debugging purposes when openpilot crashes."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:79
+#: selfdrive/ui/layouts/settings/top_common.py:72
 msgid "Vision Based Turn Control"
 msgstr ""
 
@@ -1702,13 +1712,13 @@ msgstr ""
 "als Ihren eigenen ein. Ein comma‑Mitarbeiter wird Sie NIEMALS bitten, seinen "
 "GitHub‑Benutzernamen hinzuzufügen."
 
-#: selfdrive/ui/layouts/settings/osm.py:219
+#: selfdrive/ui/layouts/settings/osm.py:90
 #, python-format
 msgid "Warning: You are on a metered connection!"
 msgstr ""
 
+#: selfdrive/ui/widgets/footage_dialog.py:92
 #: selfdrive/ui/layouts/settings/device.py:32
-#: selfdrive/ui/widgets/footage_dialog.py:83
 #, python-format
 msgid "Watch and/or download recordings from comma device cameras"
 msgstr ""
@@ -1722,7 +1732,7 @@ msgstr "Willkommen bei openpilot"
 msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
 msgstr "Wenn aktiviert, deaktiviert das Drücken des Gaspedals openpilot."
 
-#: selfdrive/ui/layouts/settings/top.py:47
+#: selfdrive/ui/layouts/settings/top_common.py:40
 msgid ""
 "When the driving model keeps the car off the middle of a marked lane, "
 "cutting curves or hugging a line, steer it back toward the lane centre. Only "
@@ -1731,14 +1741,14 @@ msgid ""
 "are faint. Takes effect on the next drive."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:76
+#: selfdrive/ui/layouts/settings/top_common.py:69
 msgid ""
 "When the system detects obstacles at the vehicle's edge, lane change assist "
 "functionality will be temporarily suspended.\n"
 "NOTE: This will show 'Car Detected in Blindspot' warning."
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/top.py:56
+#: selfdrive/ui/layouts/settings/top_common.py:49
 msgid ""
 "When vehicle is stopped, enable experiment mode to prevent radar misjudgment "
 "of other moving vehicles that could cause continuous forward sliding."
@@ -1758,7 +1768,7 @@ msgstr "Getaktetes WLAN‑Netzwerk"
 msgid "Wrong password"
 msgstr "Falsches Passwort"
 
-#: selfdrive/ui/layouts/settings/osm.py:247
+#: selfdrive/ui/layouts/settings/osm.py:117
 #, python-format
 msgid "Yes, delete all the maps."
 msgstr ""
@@ -1799,7 +1809,7 @@ msgstr "comma prime"
 msgid "default"
 msgstr "Standard"
 
-#: selfdrive/ui/layouts/settings/device.py:189
+#: selfdrive/ui/layouts/settings/device.py:182
 #, python-format
 msgid "down"
 msgstr "unten"
@@ -1824,17 +1834,17 @@ msgstr ""
 msgid "for \"{}\""
 msgstr "für „{}“"
 
-#: selfdrive/ui/onroad/top_hud.py:387
+#: selfdrive/ui/onroad/top_state.py:179
 #, python-format
 msgid "ft"
 msgstr ""
 
-#: selfdrive/ui/onroad/top_hud.py:378
+#: selfdrive/ui/onroad/top_state.py:170
 #, python-format
 msgid "km"
 msgstr ""
 
-#: selfdrive/ui/onroad/hud_renderer.py:177
+#: selfdrive/ui/onroad/hud_renderer.py:177 selfdrive/ui/onroad/top_hud.py:134
 #, python-format
 msgid "km/h"
 msgstr "km/h"
@@ -1844,17 +1854,17 @@ msgstr "km/h"
 msgid "leave blank for automatic configuration"
 msgstr "für automatische Konfiguration leer lassen"
 
-#: selfdrive/ui/layouts/settings/device.py:190
+#: selfdrive/ui/layouts/settings/device.py:183
 #, python-format
 msgid "left"
 msgstr "links"
 
-#: selfdrive/ui/onroad/top_hud.py:380
+#: selfdrive/ui/onroad/top_state.py:172
 #, python-format
 msgid "m"
 msgstr ""
 
-#: selfdrive/ui/layouts/settings/osm.py:65
+#: selfdrive/ui/layouts/settings/osm_common.py:53
 #, python-format
 msgid "m "
 msgstr ""
@@ -1864,12 +1874,12 @@ msgstr ""
 msgid "metered"
 msgstr "getaktet"
 
-#: selfdrive/ui/onroad/top_hud.py:385
+#: selfdrive/ui/onroad/top_state.py:177
 #, python-format
 msgid "mi"
 msgstr ""
 
-#: selfdrive/ui/onroad/hud_renderer.py:177
+#: selfdrive/ui/onroad/hud_renderer.py:177 selfdrive/ui/onroad/top_hud.py:134
 #, python-format
 msgid "mph"
 msgstr "mph"
@@ -1922,7 +1932,7 @@ msgstr ""
 "manche Kurven besser zu zeigen. Das Experimentalmodus‑Logo wird außerdem "
 "oben rechts angezeigt."
 
-#: selfdrive/ui/layouts/settings/device.py:221
+#: selfdrive/ui/layouts/settings/device.py:214
 #, python-format
 msgid ""
 "openpilot is continuously calibrating, resetting is rarely required. "
@@ -1958,12 +1968,12 @@ msgstr ""
 "openpilot erfordert, dass das Gerät innerhalb von 4° nach links oder rechts "
 "und innerhalb von 5° nach oben oder 9° nach unten montiert ist."
 
-#: selfdrive/ui/layouts/settings/device.py:190
+#: selfdrive/ui/layouts/settings/device.py:183
 #, python-format
 msgid "right"
 msgstr "rechts"
 
-#: selfdrive/ui/layouts/settings/osm.py:65
+#: selfdrive/ui/layouts/settings/osm_common.py:53
 #, python-format
 msgid "s"
 msgstr ""
@@ -1973,7 +1983,7 @@ msgstr ""
 msgid "unmetered"
 msgstr "unbegrenzt"
 
-#: selfdrive/ui/layouts/settings/device.py:189
+#: selfdrive/ui/layouts/settings/device.py:182
 #, python-format
 msgid "up"
 msgstr "oben"

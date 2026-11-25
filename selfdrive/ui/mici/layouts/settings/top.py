@@ -36,6 +36,7 @@ MICI_TITLES = {
   "SmartCruiseControlVision": "vision turn control",
   "SmartCruiseControlMap": "map turn control",
   "fleetmanager": "local file server",
+  "dp_dev_opview": "opview phone display",
   "toyota_stock_long": "toyota stock longitudinal",
   "ToyotaDriveMode": "toyota drive mode button",
   "toyotaautolock": "door auto lock",

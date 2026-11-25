@@ -141,6 +141,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"CarModel", {PERSISTENT, STRING, "[-Not selected-]"}},
     {"ToyotaTune", {PERSISTENT, BOOL}},
     {"dp_device_offroad", {CLEAR_ON_MANAGER_START, BOOL}},
+    {"dp_dev_opview", {PERSISTENT, BOOL, "0"}},
     {"dp_atl", {PERSISTENT, BOOL}},
     {"DrivingPersonalitiesUIWheel", {PERSISTENT, BOOL, "1"}},
     {"e2e_link", {PERSISTENT, BOOL, "1"}},

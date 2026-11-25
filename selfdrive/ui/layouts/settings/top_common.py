@@ -80,6 +80,10 @@ TOP_TOGGLES: list[tuple[str, str, str, str]] = [
            "Use web interface to control it: http://[device_ip]:8082\n" +
            "Internet access from mobile phone (tethering) is required."),
    "road.png"),
+  ("dp_dev_opview", tr_noop("Enable opview"),
+   tr_noop("Stream the road camera and driving display to the opview app (Android, github.com/eFiniLan/opview) " +
+           "on a phone on the same Wi-Fi network as the device, such as the phone's hotspot. Uses extra CPU while driving."),
+   "road.png"),
   ("toyota_stock_long", tr_noop("Use Toyota Stock Longitudinal Control"),
    tr_noop("Enable to use Toyota's stock longitudinal control."),
    "road.png"),
