@@ -11,6 +11,8 @@ from openpilot.selfdrive.ui.mici.layouts.settings.network import NetworkLayoutMi
 from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici, PairBigButton
 from openpilot.selfdrive.ui.mici.layouts.settings.developer import DeveloperLayoutMici
 from openpilot.selfdrive.ui.mici.layouts.settings.firehose import FirehoseLayout
+from openpilot.selfdrive.ui.mici.layouts.settings.top import TopLayoutMici
+from openpilot.selfdrive.ui.mici.layouts.settings.osm import OsmLayoutMici
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.widgets import Widget, NavWidget
 
@@ -22,6 +24,8 @@ class PanelType(IntEnum):
   DEVELOPER = 3
   USER_MANUAL = 4
   FIREHOSE = 5
+  TOP = 6
+  MAPS = 7
 
 
 @dataclass
@@ -45,11 +49,18 @@ class SettingsLayout(NavWidget):
     developer_btn = BigButton("developer", "", "icons_mici/settings/developer_icon.png")
     developer_btn.set_click_callback(lambda: self._set_current_panel(PanelType.DEVELOPER))
 
+    top_btn = BigButton("top", "", "images/button_home.png")
+    top_btn.set_click_callback(lambda: self._set_current_panel(PanelType.TOP))
+    maps_btn = BigButton("maps", "", "icons/speed_limit.png")
+    maps_btn.set_click_callback(lambda: self._set_current_panel(PanelType.MAPS))
+
     firehose_btn = BigButton("firehose", "", "icons_mici/settings/comma_icon.png")
     firehose_btn.set_click_callback(lambda: self._set_current_panel(PanelType.FIREHOSE))
 
     self._scroller = Scroller([
       toggles_btn,
+      top_btn,
+      maps_btn,
       network_btn,
       device_btn,
       PairBigButton(),
@@ -68,6 +79,8 @@ class SettingsLayout(NavWidget):
       PanelType.DEVICE: PanelInfo("Device", DeviceLayoutMici(back_callback=lambda: self._set_current_panel(None))),
       PanelType.DEVELOPER: PanelInfo("Developer", DeveloperLayoutMici(back_callback=lambda: self._set_current_panel(None))),
       PanelType.FIREHOSE: PanelInfo("Firehose", FirehoseLayout(back_callback=lambda: self._set_current_panel(None))),
+      PanelType.TOP: PanelInfo("TOP", TopLayoutMici(back_callback=lambda: self._set_current_panel(None))),
+      PanelType.MAPS: PanelInfo("Maps", OsmLayoutMici(back_callback=lambda: self._set_current_panel(None))),
     }
 
     self._font_medium = gui_app.font(FontWeight.MEDIUM)

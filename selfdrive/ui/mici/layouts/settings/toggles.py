@@ -12,12 +12,25 @@ from openpilot.selfdrive.ui.ui_state import ui_state
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
 
+class AccelPersonalityToggle(BigMultiParamToggle):
+  """TOP acceleration personality. Unset means stock, same as the accel controller."""
+  OPTIONS = ["sport", "normal", "eco", "stock"]  # LongitudinalPlanTOP.AccelerationPersonality order
+
+  def __init__(self):
+    super().__init__("acceleration personality", "AccelPersonality", self.OPTIONS)
+
+  def _load_value(self):
+    value = self._params.get(self._param)
+    self.set_value(self._options[value if value in range(len(self._options)) else 3])
+
+
 class TogglesLayoutMici(NavWidget):
   def __init__(self, back_callback: Callable):
     super().__init__()
     self.set_back_callback(back_callback)
 
     self._personality_toggle = BigMultiParamToggle("driving personality", "LongitudinalPersonality", ["aggressive", "standard", "relaxed"])
+    self._accel_personality_toggle = AccelPersonalityToggle()
     self._experimental_btn = BigParamControl("experimental mode", "ExperimentalMode")
     is_metric_toggle = BigParamControl("use metric units", "IsMetric")
     ldw_toggle = BigParamControl("lane departure warnings", "IsLdwEnabled")
@@ -28,6 +41,7 @@ class TogglesLayoutMici(NavWidget):
 
     self._scroller = Scroller([
       self._personality_toggle,
+      self._accel_personality_toggle,
       self._experimental_btn,
       is_metric_toggle,
       ldw_toggle,
@@ -80,12 +94,17 @@ class TogglesLayoutMici(NavWidget):
       if ui_state.has_longitudinal_control:
         self._experimental_btn.set_visible(True)
         self._personality_toggle.set_visible(True)
+        self._accel_personality_toggle.set_visible(True)
       else:
         # no long for now
         self._experimental_btn.set_visible(False)
         self._experimental_btn.set_checked(False)
         self._personality_toggle.set_visible(False)
+        self._accel_personality_toggle.set_visible(False)
         ui_state.params.remove("ExperimentalMode")
+
+    # the car's drive mode button can change it (ToyotaDriveMode)
+    self._accel_personality_toggle._load_value()
 
     # Refresh toggles from params to mirror external changes
     for key, item in self._refresh_toggles:
