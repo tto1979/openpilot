@@ -376,6 +376,9 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
   static uint32_t prev_frame_id = UINT32_MAX;
   static bool driver_view = false;
 
+  // TOP: LITE (comma three without driver camera): no IR control
+  static const bool lite = getenv("LITE");
+
   // TODO: can we merge these?
   static FirstOrderFilter integ_lines_filter(0, 30.0, 0.05);
   static FirstOrderFilter integ_lines_filter_driver_view(0, 5.0, 0.05);
@@ -391,7 +394,7 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
       }
     }
 
-    if (sm.updated("driverCameraState")) {
+    if (!lite && sm.updated("driverCameraState")) {
       auto event = sm["driverCameraState"];
       int cur_integ_lines = event.getDriverCameraState().getIntegLines();
 
@@ -416,7 +419,7 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
     }
 
     // Disable IR on input timeout
-    if (nanos_since_boot() - last_driver_camera_t > 1e9) {
+    if (!lite && nanos_since_boot() - last_driver_camera_t > 1e9) {
       ir_pwr = 0;
     }
 

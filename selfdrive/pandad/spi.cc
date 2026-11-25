@@ -12,7 +12,11 @@
 #include "common/util.h"
 #include "common/timing.h"
 #include "common/swaglog.h"
+#ifdef PANDA_TICI
+#include "panda_tici/board/comms_definitions.h"
+#else
 #include "panda/board/comms_definitions.h"
+#endif
 #include "selfdrive/pandad/panda_comms.h"
 
 

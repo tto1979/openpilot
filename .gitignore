@@ -45,7 +45,7 @@ compile_commands.json
 compare_runtime*.html
 
 selfdrive/pandad/pandad
-selfdrive/pandad_tici/pandad
+selfdrive/pandad/pandad_tici
 cereal/services.h
 cereal/gen
 cereal/messaging/bridge

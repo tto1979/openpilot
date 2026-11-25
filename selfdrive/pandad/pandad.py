@@ -6,11 +6,20 @@ import time
 import signal
 import subprocess
 
-from panda import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.system.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
+
+# TOP: comma three with the internal "dos" (STM32F4) panda, detected in launch_chffrplus.sh.
+# Upstream panda dropped F4, so flash it from the frozen panda_tici and run pandad_tici
+# (the same pandad source built against panda_tici, see SConscript).
+TICI_DOS = "TICI_DOS" in os.environ
+if TICI_DOS:
+  from panda_tici import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH
+else:
+  from panda import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH  # type: ignore[assignment]
+PANDAD_BIN = "./pandad_tici" if TICI_DOS else "./pandad"
 
 
 def get_expected_signature(panda: Panda) -> bytes:
@@ -84,6 +93,10 @@ def main() -> None:
       count += 1
       cloudlog.event("pandad.flash_and_connect", count=count)
       params.remove("PandaSignatures")
+
+      # TOP: the comma three's USB comes up late on older AGNOS, wait before counting
+      if TICI_DOS and time.monotonic() < 60.:
+        no_internal_panda_count = 0
 
       # Handle missing internal panda
       if no_internal_panda_count > 0:
@@ -166,7 +179,7 @@ def main() -> None:
 
     # run pandad with all connected serials as arguments
     os.environ['MANAGER_DAEMON'] = 'pandad'
-    process = subprocess.Popen(["./pandad", *panda_serials], cwd=os.path.join(BASEDIR, "selfdrive/pandad"))
+    process = subprocess.Popen([PANDAD_BIN, *panda_serials], cwd=os.path.join(BASEDIR, "selfdrive/pandad"))
     process.wait()
 
 

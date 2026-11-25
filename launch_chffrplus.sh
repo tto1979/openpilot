@@ -28,7 +28,7 @@ function agnos_init {
 }
 
 # comma three (tici) family only: pick the panda stack by the internal panda's MCU.
-#   F4 (dos, the stock C3 panda) -> TICI_DOS=1: panda_tici + selfdrive/pandad_tici
+#   F4 (dos, the stock C3 panda) -> TICI_DOS=1: panda_tici + selfdrive/pandad/pandad_tici
 #   H7 (tres)                    -> TICI_TRES=1: upstream panda + selfdrive/pandad
 # comma 3X is never touched. The MCU type is a hardware fact, so it's cached in /data
 # (survives branch/fork switches, re-detected after a reset). If detection fails,

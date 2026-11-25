@@ -4,6 +4,17 @@ libs = ['usb-1.0', common, messaging, 'pthread']
 panda = env.Library('panda', ['panda.cc', 'panda_comms.cc', 'spi.cc'])
 
 env.Program('pandad', ['main.cc', 'pandad.cc', 'panda_safety.cc'], LIBS=[panda] + libs)
+
+# TOP: pandad_tici, the same source built against the frozen F4-capable panda_tici for the
+# comma three internal "dos" panda (STM32F4, USB). Upstream panda dropped F4 support.
+env_tici = env.Clone()
+env_tici.Append(CPPDEFINES=['PANDA_TICI'])
+def tici_objs(srcs):
+  return [env_tici.Object(src.replace('.cc', '_tici.o'), src) for src in srcs]
+
+panda_tici = env_tici.Library('panda_tici', tici_objs(['panda.cc', 'panda_comms.cc', 'spi.cc']))
+env_tici.Program('pandad_tici', tici_objs(['main.cc', 'pandad.cc', 'panda_safety.cc']), LIBS=[panda_tici] + libs)
+
 env.Library('libcan_list_to_can_capnp', ['can_list_to_can_capnp.cc'])
 
 pandad_python = envCython.Program('pandad_api_impl.so', 'pandad_api_impl.pyx', LIBS=["can_list_to_can_capnp", 'capnp', 'kj'] + envCython["LIBS"])

@@ -11,8 +11,15 @@
 
 #include "cereal/gen/cpp/car.capnp.h"
 #include "cereal/gen/cpp/log.capnp.h"
+// PANDA_TICI: pandad_tici, built against the frozen F4-capable panda_tici for the
+// comma three internal "dos" panda (see SConscript). Same source, different panda headers.
+#ifdef PANDA_TICI
+#include "panda_tici/board/health.h"
+#include "panda_tici/board/can.h"
+#else
 #include "panda/board/health.h"
 #include "panda/board/can.h"
+#endif
 #include "selfdrive/pandad/panda_comms.h"
 
 #define USB_TX_SOFT_LIMIT   (0x100U)
