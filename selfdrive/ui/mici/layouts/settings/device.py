@@ -334,7 +334,7 @@ class DeviceLayoutMici(NavWidget):
     footage_btn.set_click_callback(lambda: gui_app.set_modal_overlay(FootageDialogMici()))
 
     self._flash_status = ""
-    self._flash_panda_btn = BigButton("flash panda", "", "icons_mici/settings/device/update.png")
+    self._flash_panda_btn = BigButton("flash panda", "reinstall firmware", "icons_mici/settings/device/update.png")
     self._flash_panda_btn.set_click_callback(lambda: _engaged_confirmation_callback(self._start_flash_panda, "flash panda"))
     self._flash_panda_btn.set_enabled(lambda: not self._flash_status)
 
@@ -406,7 +406,7 @@ class DeviceLayoutMici(NavWidget):
 
   def _update_state(self):
     super()._update_state()
-    self._flash_panda_btn.set_value(self._flash_status)
+    self._flash_panda_btn.set_value(self._flash_status or "reinstall firmware")
 
   def _show_driver_camera(self):
     if not self._driver_camera:

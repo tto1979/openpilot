@@ -150,13 +150,14 @@ class TopHudRendererMici(TopOnroadState, HudRenderer):
       rl.draw_rectangle_rounded(sign_rect, 0.3, 8, rl.WHITE)
       inner = rl.Rectangle(sign_rect.x + 3, sign_rect.y + 3, sign_rect.width - 6, sign_rect.height - 6)
       rl.draw_rectangle_rounded_lines_ex(inner, 0.3, 8, 2, BLACK)
-      self._text_in_rect(self._font_semi_bold, "LIMIT", 12, rl.Rectangle(inner.x, inner.y + 4, inner.width, 12), BLACK)
+      label_w = measure_text_cached(self._font_semi_bold, "LIMIT", 12).x
+      rl.draw_text_ex(self._font_semi_bold, "LIMIT", rl.Vector2(inner.x + inner.width - label_w - 3, inner.y + 3), 12, 0, BLACK)
       self._text_in_rect(self._font_bold, text, 22 if len(text) >= 3 else 26, rl.Rectangle(inner.x, inner.y + 14, inner.width, inner.height - 14),
                          text_color)
 
     offset = self.speed_limit_offset_text()
     if offset:
-      bubble = rl.Vector2(sign_rect.x + 4, sign_rect.y + 6)
+      bubble = rl.Vector2(sign_rect.x + 2, sign_rect.y + 4)
       rl.draw_circle_v(bubble, OFFSET_SIZE / 2 + 2, rl.Color(77, 77, 77, 255))
       rl.draw_circle_v(bubble, OFFSET_SIZE / 2, BLACK)
       self._text_in_rect(self._font_bold, offset, 13 if len(offset) >= 3 else 15,

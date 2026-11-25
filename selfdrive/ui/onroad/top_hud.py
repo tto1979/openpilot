@@ -135,9 +135,9 @@ class TopHudRenderer(TopOnroadState, HudRenderer):
     max_width = rect.width - 40
     text_w = measure_text_cached(self._font_semi_bold, text, size).x
     if text_w + 40 > max_width:
-      while text and measure_text_cached(self._font_semi_bold, text + "…", size).x + 40 > max_width:
+      while text and measure_text_cached(self._font_semi_bold, text + "...", size).x + 40 > max_width:
         text = text[:-1]
-      text += "…"
+      text += "..."
       text_w = measure_text_cached(self._font_semi_bold, text, size).x
     w = max(200.0, min(text_w + 40, max_width))
     r = rl.Rectangle(rect.x + rect.width / 2 - w / 2, rect.y - 4, w, 60)

@@ -12,6 +12,7 @@ from openpilot.selfdrive.ui.layouts.settings.top_common import TOP_TOGGLES, DISE
   apply_toggle, lag_learning_locked
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigParamControl
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigMultiOptionDialog
+from openpilot.selfdrive.ui.mici.widgets.top_dialogs import elide_value
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
@@ -98,7 +99,8 @@ class TopLayoutMici(NavWidget):
   def _car_value(self) -> str:
     if self._car_list_loading:
       return "loading..."
-    return self._params.get("CarModel") or AUTO_DETECT
+    car = self._params.get("CarModel")
+    return elide_value(car.replace("_", " ")) if car else AUTO_DETECT
 
   def _open_car_dialog(self):
     if self._car_list:

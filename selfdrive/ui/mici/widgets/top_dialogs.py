@@ -8,9 +8,24 @@ import pyray as rl
 from openpilot.selfdrive.ui.widgets.footage_dialog import footage_url, make_qr_texture
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.scroll_panel2 import GuiScrollPanel2
+from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.system.ui.widgets.html_render import HtmlRenderer, ElementType
 from openpilot.system.ui.widgets.label import MiciLabel
+
+
+CARD_VALUE_WIDTH = 402 - 2 * 40  # BigButton width minus label padding
+CARD_VALUE_SIZE = 36               # BigButton COMPLICATION_SIZE
+
+
+def elide_value(text: str, width: int = CARD_VALUE_WIDTH) -> str:
+  """One line card value: BigButton wraps long values into the title otherwise."""
+  font = gui_app.font(FontWeight.ROMAN)
+  if measure_text_cached(font, text, CARD_VALUE_SIZE).x <= width:
+    return text
+  while text and measure_text_cached(font, text + "...", CARD_VALUE_SIZE).x > width:
+    text = text[:-1]
+  return text.rstrip() + "..."
 
 
 class FootageDialogMici(NavWidget):

@@ -14,6 +14,7 @@ from openpilot.selfdrive.ui.layouts.settings.osm_common import NATIONS_URL, US_S
 from openpilot.selfdrive.ui.layouts.settings.speed_limit import SpeedLimitOffsetType
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigMultiParamToggle
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigMultiOptionDialog, BigConfirmationDialogV2
+from openpilot.selfdrive.ui.mici.widgets.top_dialogs import elide_value
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
@@ -45,27 +46,28 @@ class OsmLayoutMici(NavWidget):
     # another one closes doesn't get its show_event
     self._pending_download = False
 
-    self._update_btn = BigButton("update maps", "", "icons_mici/settings/device/update.png")
+    # BigButton sizes the title once in __init__: give every card a value now so titles leave room for it
+    self._update_btn = BigButton("update maps", "-", "icons_mici/settings/device/update.png")
     self._update_btn.set_click_callback(self._update_prompt)
-    self._country_btn = BigButton("map country", "")
+    self._country_btn = BigButton("map country", "-")
     self._country_btn.set_click_callback(lambda: self._select_location("country"))
     self._country_btn.set_enabled(lambda: not self._busy and not self._osm.downloading())
-    self._state_btn = BigButton("map state", "")
+    self._state_btn = BigButton("map state", "-")
     self._state_btn.set_click_callback(lambda: self._select_location("state"))
     self._state_btn.set_enabled(lambda: not self._busy and not self._osm.downloading())
     self._state_btn.set_visible(lambda: self._params.get("OsmLocationName") == "US")
-    self._delete_btn = BigButton("downloaded maps", "", "icons_mici/settings/device/uninstall.png")
+    self._delete_btn = BigButton("downloaded maps", "-", "icons_mici/settings/device/uninstall.png")
     self._delete_btn.set_click_callback(self._delete_prompt)
     self._delete_btn.set_enabled(lambda: not self._busy and not self._osm.downloading())
 
-    self._mode_toggle = DefaultParamToggle("speed limit", "SpeedLimitMode", ["off", "info", "warning", "assist"])
-    self._source_btn = BigButton("speed limit source", "")
+    self._mode_toggle = DefaultParamToggle("speed limit mode", "SpeedLimitMode", ["off", "info", "warning", "assist"])
+    self._source_btn = BigButton("speed limit source", "-")
     self._source_btn.set_click_callback(self._select_source)
-    self._offset_type_toggle = DefaultParamToggle("speed limit offset", "SpeedLimitOffsetType", ["none", "fixed", "percent"])
-    self._offset_btn = BigButton("offset value", "")
+    self._offset_type_toggle = DefaultParamToggle("speed limit offset type", "SpeedLimitOffsetType", ["none", "fixed", "percent"])
+    self._offset_btn = BigButton("speed limit offset", "-")
     self._offset_btn.set_click_callback(self._select_offset)
     self._offset_btn.set_visible(lambda: self._offset_type() != SpeedLimitOffsetType.NONE)
-    self._version_btn = BigButton("mapd version", "")
+    self._version_btn = BigButton("mapd version", "-")
     self._version_btn.set_enabled(False)
 
     self._scroller = Scroller([self._update_btn, self._country_btn, self._state_btn, self._delete_btn, self._mode_toggle,
@@ -93,8 +95,8 @@ class OsmLayoutMici(NavWidget):
       self._update_btn.set_value(self._busy)
     else:
       self._update_btn.set_value(self._osm.status_text() or ("not downloaded" if self._params.get("OsmLocationName") else "select a country"))
-    self._country_btn.set_value(self._params.get("OsmLocationTitle") or "none")
-    self._state_btn.set_value(self._params.get("OsmStateTitle") or "all")
+    self._country_btn.set_value(elide_value(self._params.get("OsmLocationTitle") or "none"))
+    self._state_btn.set_value(elide_value(self._params.get("OsmStateTitle") or "all"))
     self._delete_btn.set_value(format_size(self._osm.maps_size))
     source = self._params.get("SpeedLimitPolicy", return_default=True) or 0
     self._source_btn.set_value(SPEED_LIMIT_SOURCES[source] if source in range(len(SPEED_LIMIT_SOURCES)) else "")
