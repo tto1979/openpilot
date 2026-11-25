@@ -2,8 +2,9 @@
 
 - lead chevron with a base, distance (m) and lead speed (km/h, green when the lead
   is pulling away, red when it is closing in) next to the first lead
-- second lead only drawn when it is more than 3 m away from the first one
-- "lock-on" boxes around the model's leads (from Ichiro's UI)
+- second lead chevron only drawn when it is more than 3 m away from the first one
+- "lock-on" boxes around the model's leads (from Ichiro's UI): placed on the matching radarState
+  lead, or on the model's own lead position while radard has no lead for it
 """
 from dataclasses import dataclass
 
@@ -15,6 +16,8 @@ from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 
 LOCKON_MAX = 2
+LOCKON_SNAP_TIME = 0.5  # s without a box: the next one starts at its target instead of gliding from the old spot
+RADAR_TO_CAMERA = 1.52  # same as selfdrive/controls/radard.py
 LOCKON_GREEN = (23, 241, 66)
 LOCKON_RED = (245, 0, 0)
 HOMEBASE_H = 12
@@ -29,6 +32,7 @@ class Lockon:
   lxt: float = 0.0
   lxf: float = 0.0
   lock_ok: float = 0.0
+  last_drawn: float = -1.0
 
 
 @dataclass
@@ -48,8 +52,8 @@ class TopModelRenderer(ModelRenderer):
     super().__init__()
     self._font_semi_bold = gui_app.font(FontWeight.SEMI_BOLD)
     self._lockon = [Lockon() for _ in range(LOCKON_MAX)]
-    # last projected radar lead positions (kept like the Qt lead_vertices)
-    self._lead_points = [(0.0, 0.0) for _ in range(LOCKON_MAX)]
+    # screen position of each lock-on box this frame, None while there is nothing to place it on
+    self._lead_points: list[tuple[float, float] | None] = [None] * LOCKON_MAX
     self._top_leads: list[TopLead | None] = [None, None]
     self._v_ego = 0.0
     self._a_rel = 0.0
@@ -60,21 +64,35 @@ class TopModelRenderer(ModelRenderer):
   def _update_leads(self, radar_state, path_x_array):
     self._lead_vehicles = [LeadVehicle(), LeadVehicle()]
     self._top_leads = [None, None]
+    self._lead_points = [None] * LOCKON_MAX
     leads = [radar_state.leadOne, radar_state.leadTwo]
     for i, lead_data in enumerate(leads):
       if not (lead_data and lead_data.status):
         continue
-      if i == 1 and abs(leads[0].dRel - lead_data.dRel) <= 3.0:
-        continue
       d_rel, y_rel, v_rel = lead_data.dRel, lead_data.yRel, lead_data.vRel
-      idx = self._get_path_length_idx(path_x_array, d_rel)
-      z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
-      point = self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
-      if point:
-        self._lead_points[i] = point
-        self._lead_vehicles[i] = self._top_lead_vehicle(d_rel, v_rel, point, self._rect)
-        lv = self._lead_vehicles[i]
-        self._top_leads[i] = TopLead(d_rel, v_rel, lv.chevron[0][0], lv.chevron[0][1])
+      point = self._project(path_x_array, d_rel, y_rel)
+      if not point:
+        continue
+      # the lock-on box follows its radar lead every update, also when both leads are the same car
+      self._lead_points[i] = point
+      if i == 1 and abs(leads[0].dRel - d_rel) <= 3.0:
+        continue
+      self._lead_vehicles[i] = self._top_lead_vehicle(d_rel, v_rel, point, self._rect)
+      lv = self._lead_vehicles[i]
+      self._top_leads[i] = TopLead(d_rel, v_rel, lv.chevron[0][0], lv.chevron[0][1])
+
+    # radard only reports a lead from model prob 0.5, the boxes show from 0.2: below that, or without
+    # a radar lead, place the box on the model's lead (same conversion as radard's vision lead)
+    model_leads = ui_state.sm['modelV2'].leadsV3
+    for i in range(min(len(model_leads), LOCKON_MAX)):
+      lead = model_leads[i]
+      if self._lead_points[i] is None and len(lead.x) and len(lead.y):
+        self._lead_points[i] = self._project(path_x_array, lead.x[0] - RADAR_TO_CAMERA, -lead.y[0])
+
+  def _project(self, path_x_array, d_rel: float, y_rel: float):
+    idx = self._get_path_length_idx(path_x_array, d_rel)
+    z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
+    return self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
 
   def _top_lead_vehicle(self, d_rel, v_rel, point, rect) -> LeadVehicle:
     speed_buff, lead_buff = 10.0, 40.0
@@ -113,8 +131,9 @@ class TopModelRenderer(ModelRenderer):
       leads = sm['modelV2'].leadsV3
       rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
       for i in range(min(len(leads), LOCKON_MAX)):
-        if leads[i].prob > 0.2:
-          self._draw_lockon(leads[i], self._lead_points[i], i)
+        point = self._lead_points[i]
+        if leads[i].prob > 0.2 and point is not None:
+          self._draw_lockon(leads[i], point, i)
       rl.end_blend_mode()
 
     for i, lead in enumerate(self._lead_vehicles):
@@ -169,6 +188,10 @@ class TopModelRenderer(ModelRenderer):
     d = max(d_rel, 1.0)
 
     lk = self._lockon[num]
+    now = rl.get_time()
+    if lk.last_drawn < 0 or now - lk.last_drawn > LOCKON_SNAP_TIME:
+      lk.x, lk.y, lk.d = x, y, d
+    lk.last_drawn = now
     lk.x += (x - lk.x) / 6
     lk.y += (y - lk.y) / 6
     lk.d += (d - lk.d) / 6
