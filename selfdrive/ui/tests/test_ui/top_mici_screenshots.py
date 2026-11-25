@@ -94,6 +94,7 @@ def main():
     frame += 1
     if frame % FRAMES_PER_STEP == 0:
       rl.rl_draw_render_batch_active()
+      assert gui_app._render_texture is not None
       image = rl.load_image_from_texture(gui_app._render_texture.texture)
       rl.image_flip_vertical(image)
       rl.export_image(image, os.path.join(OUT_DIR, f"{step:02d}_{steps[step][0]}.png"))
@@ -102,8 +103,9 @@ def main():
       if step >= len(steps):
         break
       steps[step][1]()
-  gui_app.close()
-  print(f"saved {step} screenshots to {OUT_DIR}")
+  print(f"saved {step} screenshots to {OUT_DIR}", flush=True)
+  # skip gui_app.close() and the destructors: widgets unloading textures after the window is gone segfault on exit
+  os._exit(0)
 
 
 if __name__ == "__main__":

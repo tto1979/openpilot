@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Screenshots of TOP's comma four (mici) onroad HUD with fake messages, saved next to the mici UI report
-(selfdrive/ui/tests/diff/report/top). No camera or model: only the HUD on a black background.
+(selfdrive/ui/tests/diff/report/top). No camera or model: only the HUD on the camera placeholder.
 """
 import os
 import sys
@@ -84,7 +84,7 @@ def render_scene(name: str, metric: bool, scenario: str):
   params.put("SpeedLimitMode", 2)
 
   view = AugmentedRoadView()
-  view._model_renderer.render = lambda *a, **k: None  # no model data, HUD only
+  view._model_renderer.set_visible(False)  # no camera or model data, HUD only
 
   msgs = build_messages(scenario)
   sm = ui_state.sm
@@ -110,6 +110,7 @@ def render_scene(name: str, metric: bool, scenario: str):
     view.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
     if frame == FRAMES:
       rl.rl_draw_render_batch_active()
+      assert gui_app._render_texture is not None
       image = rl.load_image_from_texture(gui_app._render_texture.texture)
       rl.image_flip_vertical(image)
       rl.export_image(image, os.path.join(OUT_DIR, f"{name}.png"))
@@ -118,18 +119,6 @@ def render_scene(name: str, metric: bool, scenario: str):
 
 
 def main():
-  from openpilot.selfdrive.ui.mici.onroad.cameraview import CameraView
-
-  class FakeFrame:
-    width, height = 1928, 1208
-
-  def fake_camera_render(self, rect):
-    # no camerad: skip the frame, keep the projection the HUD and model use
-    self.frame = FakeFrame()
-    self._calc_frame_matrix(rect)
-
-  CameraView._render = fake_camera_render
-
   os.makedirs(OUT_DIR, exist_ok=True)
   rl.set_config_flags(rl.FLAG_WINDOW_HIDDEN)
   gui_app.init_window("top mici onroad screenshots")
@@ -140,8 +129,9 @@ def main():
   scenes = [s for s in SCENES if len(sys.argv) < 2 or s[0] in sys.argv[1:]]
   for name, metric, scenario in scenes:
     render_scene(name, metric, scenario)
-  gui_app.close()
-  print(f"saved {len(scenes)} onroad screenshots to {OUT_DIR}")
+  print(f"saved {len(scenes)} onroad screenshots to {OUT_DIR}", flush=True)
+  # skip gui_app.close() and the destructors: widgets unloading textures after the window is gone segfault on exit
+  os._exit(0)
 
 
 if __name__ == "__main__":
