@@ -292,11 +292,12 @@ jobs:
           ${{ env.RUN }} "PYTHONWARNINGS=ignore &&
                           source selfdrive/test/setup_xvfb.sh &&
                           WINDOWED=1 python3 selfdrive/ui/tests/diff/replay.py"
-      - name: TOP mici settings screenshots
+      - name: TOP mici screenshots
         run: >
           ${{ env.RUN }} "PYTHONWARNINGS=ignore &&
                           source selfdrive/test/setup_xvfb.sh &&
-                          python3 selfdrive/ui/tests/test_ui/top_mici_screenshots.py"
+                          python3 selfdrive/ui/tests/test_ui/top_mici_screenshots.py &&
+                          python3 selfdrive/ui/tests/test_ui/top_mici_onroad_screenshots.py"
       - name: Upload Raylib UI Report
         uses: actions/upload-artifact@v4
         with:
