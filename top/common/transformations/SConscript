@@ -1,0 +1,6 @@
+# C++ coordinate transforms for TOP's locationd (liveLocationKalman for mapd).
+# Upstream moved common/transformations to pure Python in v0.11.0 and dropped these sources.
+Import('env')
+
+transformations = env.Library('transformations', ['orientation.cc', 'coordinates.cc'])
+Export('transformations')

@@ -1,0 +1,25 @@
+Import('env', 'arch', 'common', 'messaging')
+
+libs = ['usb-1.0', common, messaging, 'pthread']
+if arch == "Darwin":
+  # the vendored libusb is a static library
+  env = env.Clone()
+  env.Append(FRAMEWORKS=['IOKit', 'CoreFoundation', 'Security'])
+panda = env.Library('panda', ['panda.cc', 'panda_comms.cc', 'spi.cc'])
+
+env.Program('pandad', ['main.cc', 'pandad.cc', 'panda_safety.cc'], LIBS=[panda] + libs)
+
+# TOP: pandad_tici, the same source built against the frozen F4-capable panda_tici for the
+# comma three internal "dos" panda (STM32F4, USB). Upstream panda dropped F4 support.
+env_tici = env.Clone()
+env_tici.Append(CPPDEFINES=['PANDA_TICI'])
+def tici_objs(srcs):
+  return [env_tici.Object(src.replace('.cc', '_tici.o'), src) for src in srcs]
+
+panda_tici = env_tici.Library('panda_tici', tici_objs(['panda.cc', 'panda_comms.cc', 'spi.cc']))
+env_tici.Program('pandad_tici', tici_objs(['main.cc', 'pandad.cc', 'panda_safety.cc']), LIBS=[panda_tici] + libs)
+
+# can_list_to_can_capnp / can_capnp_to_list are pure Python now (pandad_api_impl.py, upstream)
+
+if GetOption('extras'):
+  env.Program('tests/test_pandad_usbprotocol', ['tests/test_pandad_usbprotocol.cc'], LIBS=[panda] + libs)
