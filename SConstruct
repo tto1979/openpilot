@@ -39,6 +39,15 @@ assert arch in [
   "Darwin",   # macOS arm64 (x86 not supported)
 ]
 
+# TOP: these Cython modules are pure Python since v0.11.0. A checkout updated in place from 0.10.x (not
+# through the updater, which cleans untracked files) keeps their compiled .so, which Python imports ahead
+# of the new .py and which links libcapnp-1.0.2.so, gone in AGNOS 17
+for stale_ext in ("selfdrive/pandad/pandad_api_impl.so", "common/transformations/transformations.so"):
+  stale_path = os.path.join(Dir("#").abspath, stale_ext)
+  if os.path.isfile(stale_path):
+    print(f"removing stale Cython module {stale_ext}")
+    os.remove(stale_path)
+
 pkg_names = ['bzip2', 'capnproto', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
 pkgs = [importlib.import_module(name) for name in pkg_names]
 # TOP: vendored libusb for the comma 3 USB pandad on PC/CI, the device builds against AGNOS's libusb
