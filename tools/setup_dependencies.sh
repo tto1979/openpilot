@@ -62,6 +62,9 @@ function install_ubuntu_deps() {
     git \
     xvfb
 
+  # TOP: libva for the prebuilt ffmpeg (encoderd/loggerd link it on PC)
+  $SUDO apt-get install -y --no-install-recommends libva-dev libdrm-dev
+
   if [[ -d "/etc/udev/rules.d/" ]]; then
     # Setup jungle udev rules
     $SUDO tee /etc/udev/rules.d/12-panda_jungle.rules > /dev/null <<EOF
