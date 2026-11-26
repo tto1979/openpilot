@@ -369,17 +369,12 @@ class DeviceLayoutMici(NavWidget):
 
     # Set up back navigation
     self.set_back_callback(back_callback)
-
-    # Hide power off button when onroad
-    ui_state.add_offroad_transition_callback(self._offroad_transition)
+    # TOP: power off also onroad like TOP's Qt UI (upstream hides it), refused while engaged
 
   def _on_regulatory(self):
     if not self._fcc_dialog:
       self._fcc_dialog = MiciFccModal(os.path.join(BASEDIR, "selfdrive/assets/offroad/mici_fcc.html"))
     gui_app.set_modal_overlay(self._fcc_dialog, callback=setattr(self, '_fcc_dialog', None))
-
-  def _offroad_transition(self):
-    self._power_off_btn.set_visible(ui_state.is_offroad())
 
   # *** TOP ***
 

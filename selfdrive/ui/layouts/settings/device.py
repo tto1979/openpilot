@@ -50,8 +50,6 @@ class DeviceLayout(Widget):
     items = self._initialize_items()
     self._scroller = Scroller(items, line_separator=True, spacing=0)
 
-    ui_state.add_offroad_transition_callback(self._offroad_transition)
-
   def _initialize_items(self):
     self._pair_device_btn = button_item(lambda: tr("Pair Device"), lambda: tr("PAIR"), lambda: tr(DESCRIPTIONS['pair_device']), callback=self._pair_device)
     self._pair_device_btn.set_visible(lambda: not ui_state.prime_state.is_paired())
@@ -60,6 +58,7 @@ class DeviceLayout(Widget):
                                         callback=self._reset_calibration_prompt)
     self._reset_calib_btn.set_description_opened_callback(self._update_calib_description)
 
+    # TOP: Power Off also onroad like TOP's Qt UI (upstream hides it), refused while engaged
     self._power_off_btn = dual_button_item(lambda: tr("Reboot"), lambda: tr("Power Off"),
                                            left_callback=self._reboot_prompt, right_callback=self._power_off_prompt)
 
@@ -87,9 +86,6 @@ class DeviceLayout(Widget):
     ]
     regulatory_btn.set_visible(TICI)
     return items
-
-  def _offroad_transition(self):
-    self._power_off_btn.action_item.right_button.set_visible(ui_state.is_offroad())
 
   def show_event(self):
     self._scroller.show_event()
