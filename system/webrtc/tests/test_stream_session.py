@@ -25,26 +25,74 @@ class TestStreamSession:
     self.loop.stop()
     self.loop.close()
 
+  @staticmethod
+  def _outgoing_proxy(mocker, msgs):
+    proxy = CerealOutgoingMessageProxy()
+    assert proxy.add_services(["customReservedRawData0"]) == ["customReservedRawData0"]
+    mocker.patch.object(messaging, "recv_one_or_none", side_effect=lambda sock: msgs.pop(0) if msgs else None)
+    return proxy
+
+  @staticmethod
+  def _channel(mocker, buffered=0, state="open"):
+    channel = mocker.Mock(spec=RTCDataChannel)
+    channel.readyState = state
+    channel.bufferedAmount = buffered
+    return channel
+
+  @staticmethod
+  def _msg(mono_time=123):
+    msg = log.Event.new_message()
+    msg.logMonoTime = mono_time
+    msg.valid = True
+    msg.customReservedRawData0 = b"test"
+    return msg.as_reader()
+
   def test_outgoing_proxy(self, mocker):
-    test_msg = log.Event.new_message()
-    test_msg.logMonoTime = 123
-    test_msg.valid = True
-    test_msg.customReservedRawData0 = b"test"
     expected_dict = {"type": "customReservedRawData0", "logMonoTime": 123, "valid": True, "data": "test"}
     expected_json = json.dumps(expected_dict).encode()
 
-    channel = mocker.Mock(spec=RTCDataChannel)
-    mocked_submaster = messaging.SubMaster(["customReservedRawData0"])
-    def mocked_update(t):
-      mocked_submaster.update_msgs(0, [test_msg])
-
-    mocker.patch.object(messaging.SubMaster, "update", side_effect=mocked_update)
-    proxy = CerealOutgoingMessageProxy(mocked_submaster)
-    proxy.add_channel(channel)
+    proxy = self._outgoing_proxy(mocker, [self._msg()])
+    channel = self._channel(mocker)
+    proxy.add_channel(channel, ["customReservedRawData0"])
 
     proxy.update()
 
     channel.send.assert_called_once_with(expected_json)
+
+  def test_outgoing_proxy_rate_limit(self, mocker):
+    msgs = [self._msg(i) for i in range(10)]
+    proxy = self._outgoing_proxy(mocker, msgs)
+    channel = self._channel(mocker)
+    proxy.add_channel(channel, ["customReservedRawData0"])
+
+    for _ in range(10):
+      proxy.update()
+
+    # one message per 1 / MAX_RATE_HZ, the rest stays in the (conflated) socket
+    assert channel.send.call_count == 1
+    assert len(msgs) == 9
+
+  def test_outgoing_proxy_backed_up_channel(self, mocker):
+    proxy = self._outgoing_proxy(mocker, [self._msg()])
+    backed_up = self._channel(mocker, buffered=CerealOutgoingMessageProxy.MAX_BUFFERED_BYTES + 1)
+    ok = self._channel(mocker)
+    proxy.add_channel(backed_up, ["customReservedRawData0"])
+    proxy.add_channel(ok, ["customReservedRawData0"])
+
+    proxy.update()
+
+    backed_up.send.assert_not_called()
+    ok.send.assert_called_once()
+
+  def test_outgoing_proxy_closed_channel(self, mocker):
+    proxy = self._outgoing_proxy(mocker, [self._msg()])
+    closed = self._channel(mocker, state="closed")
+    proxy.add_channel(closed, ["customReservedRawData0"])
+
+    proxy.update()
+
+    closed.send.assert_not_called()
+    assert closed not in proxy.channels
 
   def test_incoming_proxy(self, mocker):
     tested_msgs = [
