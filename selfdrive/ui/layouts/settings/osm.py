@@ -37,6 +37,7 @@ class OsmLayout(Widget):
 
     self._dialog: MultiOptionDialog | None = None
     self._keyboard = Keyboard(min_text_size=0)
+    self._shown_dialog: Widget | None = None  # last dialog pushed on the nav stack
     self._pending: tuple[str, list[tuple[str, str]]] | None = None  # (kind, locations) after a background fetch
 
     self._version = text_item(lambda: tr("Mapd Version"), lambda: self._params.get("MapdVersion") or tr("Loading..."))
@@ -94,7 +95,14 @@ class OsmLayout(Widget):
       if result == DialogResult.CONFIRM and on_confirm is not None:
         on_confirm()
 
-    gui_app.set_modal_overlay(ConfirmDialog(text, button), callback=callback)
+    self._push(ConfirmDialog(text, button, callback=callback))
+
+  def _push(self, dialog: Widget):
+    self._shown_dialog = dialog
+    gui_app.push_widget(dialog)
+
+  def _dialog_open(self) -> bool:
+    return self._shown_dialog is not None and gui_app.widget_in_stack(self._shown_dialog)
 
   def _start_download(self):
     self._osm.start_download()
@@ -133,12 +141,12 @@ class OsmLayout(Widget):
     threading.Thread(target=fetch, daemon=True).start()
 
   def _handle_pending(self):
-    if self._pending is None or gui_app._modal_overlay.overlay is not None:
+    if self._pending is None or self._dialog_open():
       return
     kind, locations = self._pending
     self._pending = None
     if not locations:
-      gui_app.set_modal_overlay(alert_dialog(tr("Unable to fetch the list. Check the internet connection.")))
+      self._push(alert_dialog(tr("Unable to fetch the list. Check the internet connection.")))
       return
 
     title = tr("Search Country") if kind == "country" else tr("Search State")
@@ -148,16 +156,17 @@ class OsmLayout(Widget):
     self._keyboard.set_title(title, hint)
 
     def on_search(result: int):
-      if result != 1:
+      if result != DialogResult.CONFIRM:
         return
       query = self._keyboard.text.strip().lower()
       matches = [loc for loc in locations if query in loc[0].lower() or query == loc[1].lower()] if query else locations
       if not matches:
-        gui_app.set_modal_overlay(alert_dialog(tr("No results found for keywords: {}").format(query)))
+        self._push(alert_dialog(tr("No results found for keywords: {}").format(query)))
         return
       self._show_location_dialog(kind, matches)
 
-    gui_app.set_modal_overlay(self._keyboard, callback=on_search)
+    self._keyboard.set_callback(on_search)
+    self._push(self._keyboard)
 
   def _show_location_dialog(self, kind: str, locations: list[tuple[str, str]]):
     titles = [loc[0] for loc in locations]
@@ -181,8 +190,8 @@ class OsmLayout(Widget):
       self._confirm_download(on_confirm=self._start_download)
 
     title = tr("Select Country") if kind == "country" else tr("Select State")
-    self._dialog = MultiOptionDialog(title, titles, current if current in titles else "")
-    gui_app.set_modal_overlay(self._dialog, callback=on_select)
+    self._dialog = MultiOptionDialog(title, titles, current if current in titles else "", callback=on_select)
+    self._push(self._dialog)
 
   # *** layout ***
 

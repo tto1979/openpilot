@@ -11,7 +11,7 @@ LANGUAGES_FILE = TRANSLATIONS_DIR / "languages.json"
 
 GLYPH_PADDING = 6
 EXTRA_CHARS = "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"
-UNIFONT_LANGUAGES = {"ar", "th", "zh-CHT", "zh-CHS", "ko", "ja"}
+UNIFONT_LANGUAGES = {"th", "zh-CHT", "zh-CHS", "ko", "ja"}
 # TOP: OpFont (from dragonpilot) for these instead of the 16 px unifont, one atlas per weight and language
 OPFONT_LANGUAGES = ("zh-CHT", "zh-CHS", "ja", "ko", "th")  # keep in sync with selfdrive/ui/SConscript
 OPFONT_WEIGHTS = ("Regular", "Medium", "SemiBold", "Bold")

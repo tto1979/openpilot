@@ -149,6 +149,9 @@ void fill_panda_state(cereal::PandaState::Builder &ps, cereal::PandaState::Panda
   ps.setFaultStatus(cereal::PandaState::FaultStatus(health.fault_status_pkt));
   ps.setPowerSaveEnabled((bool)(health.power_save_enabled_pkt));
   ps.setHeartbeatLost((bool)(health.heartbeat_lost_pkt));
+#ifndef PANDA_TICI
+  ps.setSoundOutputLevel(health.sound_output_level_pkt);  // health v18, not in panda_tici's v16
+#endif
   ps.setAlternativeExperience(health.alternative_experience_pkt);
   ps.setHarnessStatus(cereal::PandaState::HarnessStatus(health.car_harness_status_pkt));
   ps.setInterruptLoad(health.interrupt_load_pkt);

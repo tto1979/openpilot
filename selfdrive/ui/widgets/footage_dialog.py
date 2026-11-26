@@ -53,7 +53,7 @@ class FootageDialog(Widget):
     self._url = ""
     self._last_refresh = float('-inf')
     self._close_btn = IconButton(gui_app.texture("icons/close.png", 80, 80))
-    self._close_btn.set_click_callback(lambda: gui_app.set_modal_overlay(None))
+    self._close_btn.set_click_callback(gui_app.pop_widget)
 
   def _refresh(self):
     url = footage_url()

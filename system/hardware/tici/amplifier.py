@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import time
-from smbus2 import SMBus
+from openpilot.common.i2c import SMBus
 from collections import namedtuple
 
 # https://datasheets.maximintegrated.com/en/ds/MAX98089.pdf

@@ -212,10 +212,8 @@ class StreamSession:
   shared_outgoing_runner: CerealProxyRunner | None = None
 
   def __init__(self, sdp: str, cameras: list[str], incoming_services: list[str], outgoing_services: list[str], debug_mode: bool = False):
-    from aiortc.mediastreams import VideoStreamTrack, AudioStreamTrack
-    from aiortc.contrib.media import MediaBlackhole
+    from aiortc.mediastreams import VideoStreamTrack
     from openpilot.system.webrtc.device.video import LiveStreamVideoStreamTrack
-    from openpilot.system.webrtc.device.audio import AudioInputStreamTrack, AudioOutputSpeaker
     from teleoprtc import WebRTCAnswerBuilder
     from teleoprtc.info import parse_info_from_offer
 
@@ -225,15 +223,6 @@ class StreamSession:
     assert len(cameras) == config.n_expected_camera_tracks, "Incoming stream has misconfigured number of video tracks"
     for cam in cameras:
       builder.add_video_stream(cam, LiveStreamVideoStreamTrack(cam) if not debug_mode else VideoStreamTrack())
-    if config.expected_audio_track:
-      try:
-        builder.add_audio_stream(AudioInputStreamTrack() if not debug_mode else AudioStreamTrack())
-      except OSError:
-        # no free microphone (ALSA "Device unavailable"): stream video and data without audio
-        logging.getLogger("webrtcd").exception("Audio input unavailable")
-    if config.incoming_audio_track:
-      self.audio_output_cls = AudioOutputSpeaker if not debug_mode else MediaBlackhole
-      builder.offer_to_receive_audio_stream()
 
     self.stream = builder.stream()
     self.identifier = str(uuid.uuid4())
@@ -249,11 +238,10 @@ class StreamSession:
       outgoing_services = StreamSession.shared_outgoing_proxy.add_services(outgoing_services)
     self.outgoing_services = outgoing_services
 
-    self.audio_output: AudioOutputSpeaker | MediaBlackhole | None = None
     self.run_task: asyncio.Task | None = None
     self.logger = logging.getLogger("webrtcd")
-    self.logger.info("New stream session (%s), cameras %s, audio in %s out %s, incoming services %s, outgoing services %s",
-                      self.identifier, cameras, config.incoming_audio_track, config.expected_audio_track, incoming_services, outgoing_services)
+    self.logger.info("New stream session (%s), cameras %s, incoming services %s, outgoing services %s",
+                      self.identifier, cameras, incoming_services, outgoing_services)
 
   def start(self):
     self.run_task = asyncio.create_task(self.run())
@@ -289,11 +277,6 @@ class StreamSession:
           if StreamSession.shared_outgoing_runner is None:
             StreamSession.shared_outgoing_runner = CerealProxyRunner(proxy)
             StreamSession.shared_outgoing_runner.start()
-      if self.stream.has_incoming_audio_track():
-        track = self.stream.get_incoming_audio_track(buffered=False)
-        self.audio_output = self.audio_output_cls()
-        self.audio_output.addTrack(track)
-        self.audio_output.start()
       self.logger.info("Stream session (%s) connected", self.identifier)
 
       await self.stream.wait_for_disconnection()
@@ -307,8 +290,6 @@ class StreamSession:
     await self.stream.stop()
     if self.outgoing_channel is not None and StreamSession.shared_outgoing_proxy is not None:
       StreamSession.shared_outgoing_proxy.remove_channel(self.outgoing_channel)
-    if self.audio_output:
-      self.audio_output.stop()
 
 
 @dataclass

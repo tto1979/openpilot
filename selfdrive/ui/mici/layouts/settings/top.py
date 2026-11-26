@@ -3,9 +3,6 @@ TOP settings for the comma four (mici) UI. Same params and side effects as the c
 (selfdrive/ui/layouts/settings/top.py), laid out as mici cards.
 """
 import threading
-from collections.abc import Callable
-
-import pyray as rl
 
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.layouts.settings.top_common import TOP_TOGGLES, DISENGAGED_ONLY, load_car_list, apply_toggle, \
@@ -15,8 +12,7 @@ from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog
 from openpilot.selfdrive.ui.mici.widgets.top_dialogs import CompactOptionDialog, elide_value
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.system.ui.widgets import NavWidget
-from openpilot.system.ui.widgets.scroller import Scroller
+from openpilot.system.ui.widgets.scroller import NavScroller
 
 # short card titles in the mici style, same order as TOP_TOGGLES
 MICI_TITLES = {
@@ -59,19 +55,15 @@ def car_model_name(car: str) -> str:
   return parts[1].replace("_", " ") if len(parts) > 1 else car
 
 
-class TopLayoutMici(NavWidget):
-  def __init__(self, back_callback: Callable):
+class TopLayoutMici(NavScroller):
+  def __init__(self):
     super().__init__()
-    self.set_back_callback(back_callback)
     self._params = Params()
 
     self._car_list: list[str] = []
     self._car_list_loading = False
     self._pending_open = False
-    # brand picked, model picker opens on the next frame: a modal opened in the frame another one
-    # closes doesn't get its show_event
-    self._pending_brand: str | None = None
-    self._car_btn = BigButton("car model", self._car_value(), "icons/road.png")
+    self._car_btn = BigButton("car model", self._car_value(), gui_app.texture("icons/road.png", 64, 64))
     self._car_btn.set_click_callback(self._open_car_dialog)
     self._car_btn.set_enabled(lambda: not self._car_list_loading)
 
@@ -83,11 +75,10 @@ class TopLayoutMici(NavWidget):
         toggle.set_enabled(lambda: not ui_state.engaged)
       self._toggles[param] = toggle
 
-    self._scroller = Scroller([self._car_btn, *self._toggles.values()], snap_items=False)
+    self._scroller.add_widgets([self._car_btn, *self._toggles.values()])
 
   def show_event(self):
     super().show_event()
-    self._scroller.show_event()
     self._refresh()
 
   def _refresh(self):
@@ -144,11 +135,12 @@ class TopLayoutMici(NavWidget):
         self._params.remove("CarModel")
         self._car_btn.set_value(self._car_value())
       else:
-        self._pending_brand = brand
+        # runs after the brand picker is popped, the model picker gets its own show_event
+        self._show_model_dialog(brand)
 
     current_brand = car_brand(current) if current else AUTO_DETECT
     dlg = CompactOptionDialog(options, current_brand if current_brand in options else AUTO_DETECT, right_btn_callback=on_confirm)
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 
   def _show_model_dialog(self, brand: str):
     cars = [c for c in self._car_list if car_brand(c) == brand]
@@ -161,7 +153,7 @@ class TopLayoutMici(NavWidget):
 
     dlg = CompactOptionDialog(cars, current if current in cars else cars[0], right_btn_callback=on_confirm,
                               display={c: car_model_name(c) for c in cars})
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 
   def _update_state(self):
     super()._update_state()
@@ -172,11 +164,4 @@ class TopLayoutMici(NavWidget):
       if self._car_list:
         self._show_car_dialog()
       else:
-        gui_app.set_modal_overlay(BigDialog("car list not available", ""))
-
-  def _render(self, rect: rl.Rectangle):
-    # only rendered while no modal is shown
-    if self._pending_brand is not None:
-      brand, self._pending_brand = self._pending_brand, None
-      self._show_model_dialog(brand)
-    self._scroller.render(rect)
+        gui_app.push_widget(BigDialog("car list not available", ""))

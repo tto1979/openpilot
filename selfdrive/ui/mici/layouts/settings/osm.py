@@ -13,12 +13,11 @@ from openpilot.selfdrive.ui.layouts.settings.osm_common import NATIONS_URL, US_S
   fetch_locations, format_size
 from openpilot.selfdrive.ui.layouts.settings.speed_limit import SpeedLimitOffsetType
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigMultiParamToggle
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigMultiOptionDialog, BigConfirmationDialogV2
-from openpilot.selfdrive.ui.mici.widgets.top_dialogs import CompactOptionDialog, elide_value
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog
+from openpilot.selfdrive.ui.mici.widgets.top_dialogs import BigMultiOptionDialog, CompactOptionDialog, elide_value
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.system.ui.widgets import NavWidget
-from openpilot.system.ui.widgets.scroller import Scroller
+from openpilot.system.ui.widgets.scroller import NavScroller
 
 REFRESH_FAST = 1.0  # s, while downloading
 REFRESH_SLOW = 5.0  # s
@@ -33,21 +32,19 @@ class DefaultParamToggle(BigMultiParamToggle):
     self.set_value(self._options[value if value in range(len(self._options)) else 0])
 
 
-class OsmLayoutMici(NavWidget):
-  def __init__(self, back_callback: Callable):
+class OsmLayoutMici(NavScroller):
+  def __init__(self):
     super().__init__()
-    self.set_back_callback(back_callback)
     self._osm = OsmState()
     self._params = self._osm.params
     self._last_refresh = 0.0
     self._busy = ""
     self._pending: tuple[str, list[tuple[str, str]]] | None = None  # (kind, locations) after a background fetch
-    # open the download slider once the location picker is gone: a modal opened in the same frame
-    # another one closes doesn't get its show_event
-    self._pending_download = False
 
     # BigButton sizes the title once in __init__: give every card a value now so titles leave room for it
-    self._update_btn = BigButton("update maps", "-", "icons_mici/settings/device/update.png")
+    self._update_icon = gui_app.texture("icons_mici/settings/device/update.png", 64, 75)
+    self._delete_icon = gui_app.texture("icons_mici/settings/device/uninstall.png", 64, 64)
+    self._update_btn = BigButton("update maps", "-", self._update_icon)
     self._update_btn.set_click_callback(self._update_prompt)
     self._country_btn = BigButton("map country", "-")
     self._country_btn.set_click_callback(lambda: self._select_location("country"))
@@ -56,7 +53,7 @@ class OsmLayoutMici(NavWidget):
     self._state_btn.set_click_callback(lambda: self._select_location("state"))
     self._state_btn.set_enabled(lambda: not self._busy and not self._osm.downloading())
     self._state_btn.set_visible(lambda: self._params.get("OsmLocationName") == "US")
-    self._delete_btn = BigButton("downloaded maps", "-", "icons_mici/settings/device/uninstall.png")
+    self._delete_btn = BigButton("downloaded maps", "-", self._delete_icon)
     self._delete_btn.set_click_callback(self._delete_prompt)
     self._delete_btn.set_enabled(lambda: not self._busy and not self._osm.downloading())
 
@@ -70,12 +67,11 @@ class OsmLayoutMici(NavWidget):
     self._version_btn = BigButton("mapd version", "-")
     self._version_btn.set_enabled(False)
 
-    self._scroller = Scroller([self._update_btn, self._country_btn, self._state_btn, self._delete_btn, self._mode_toggle,
-                               self._source_btn, self._offset_type_toggle, self._offset_btn, self._version_btn], snap_items=False)
+    self._scroller.add_widgets([self._update_btn, self._country_btn, self._state_btn, self._delete_btn, self._mode_toggle,
+                                self._source_btn, self._offset_type_toggle, self._offset_btn, self._version_btn])
 
   def show_event(self):
     super().show_event()
-    self._scroller.show_event()
     self._last_refresh = 0.0
     self._mode_toggle._load_value()
     self._offset_type_toggle._load_value()
@@ -114,13 +110,13 @@ class OsmLayoutMici(NavWidget):
 
   # *** maps ***
 
-  def _confirm(self, title: str, icon: str, on_confirm: Callable, red: bool = False):
-    gui_app.set_modal_overlay(BigConfirmationDialogV2(title, icon, red=red, confirm_callback=on_confirm))
+  def _confirm(self, title: str, icon: rl.Texture, on_confirm: Callable, red: bool = False):
+    gui_app.push_widget(BigConfirmationDialog(title, icon, on_confirm, red=red))
 
   def _download_prompt(self):
     metered = ui_state.sm["deviceState"].networkMetered
     self._confirm("slide to download\non metered network" if metered else "slide to download",
-                  "icons_mici/settings/device/update.png", self._start_download, red=metered)
+                  self._update_icon, self._start_download, red=metered)
 
   def _start_download(self):
     self._osm.start_download()
@@ -131,7 +127,7 @@ class OsmLayoutMici(NavWidget):
       self._last_refresh = 0.0
       return
     if not self._params.get("OsmLocationName"):
-      gui_app.set_modal_overlay(BigDialog("select a map country first", ""))
+      gui_app.push_widget(BigDialog("select a map country first", ""))
       return
     self._download_prompt()
 
@@ -142,7 +138,7 @@ class OsmLayoutMici(NavWidget):
       self._busy = ""
       self._last_refresh = 0.0
 
-    self._confirm("slide to delete\nall maps", "icons_mici/settings/device/uninstall.png",
+    self._confirm("slide to delete\nall maps", self._delete_icon,
                   lambda: threading.Thread(target=delete, daemon=True).start(), red=True)
 
   def _select_location(self, kind: str):
@@ -159,12 +155,13 @@ class OsmLayoutMici(NavWidget):
     threading.Thread(target=fetch, daemon=True).start()
 
   def _handle_pending(self):
-    if self._pending is None or gui_app._modal_overlay.overlay is not None:
+    # wait until the dialog that started the fetch is gone
+    if self._pending is None or gui_app.get_active_widget() is not self:
       return
     kind, locations = self._pending
     self._pending = None
     if not locations:
-      gui_app.set_modal_overlay(BigDialog("unable to fetch the list", "check the internet connection"))
+      gui_app.push_widget(BigDialog("unable to fetch the list", "check the internet connection"))
       return
 
     titles = [loc[0] for loc in locations]
@@ -183,10 +180,11 @@ class OsmLayoutMici(NavWidget):
           return
       else:
         self._osm.set_state(title, code)
-      self._pending_download = True
+      # runs after the picker is popped, the slider gets its own show_event
+      self._download_prompt()
 
     dlg = CompactOptionDialog(titles, current if current in titles else titles[0], right_btn_callback=on_confirm)
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 
   # *** speed limit ***
 
@@ -199,7 +197,7 @@ class OsmLayoutMici(NavWidget):
 
     dlg = BigMultiOptionDialog(SPEED_LIMIT_SOURCES, SPEED_LIMIT_SOURCES[current] if current in range(len(SPEED_LIMIT_SOURCES)) else None,
                                right_btn_callback=on_confirm)
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 
   def _select_offset(self):
     unit = "%" if self._offset_type() == SpeedLimitOffsetType.PERCENT else ""
@@ -211,11 +209,4 @@ class OsmLayoutMici(NavWidget):
       self._params.put("SpeedLimitValueOffset", OFFSET_RANGE[options.index(dlg.get_selected_option())])
 
     dlg = BigMultiOptionDialog(options, f"{current:+d}{unit}" if current in OFFSET_RANGE else options[30], right_btn_callback=on_confirm)
-    gui_app.set_modal_overlay(dlg)
-
-  def _render(self, rect: rl.Rectangle):
-    # only rendered while no modal is shown
-    if self._pending_download:
-      self._pending_download = False
-      self._download_prompt()
-    self._scroller.render(rect)
+    gui_app.push_widget(dlg)

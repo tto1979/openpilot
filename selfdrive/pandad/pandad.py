@@ -10,6 +10,7 @@ from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.system.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
+from panda import McuType
 
 # TOP: comma three with the internal "dos" (STM32F4) panda, detected in launch_chffrplus.sh.
 # Upstream panda dropped F4, so flash it from the frozen panda_tici and run pandad_tici
@@ -18,13 +19,15 @@ TICI_DOS = "TICI_DOS" in os.environ
 if TICI_DOS:
   from panda_tici import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH
 else:
-  from panda import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH  # type: ignore[assignment]
+  from panda import Panda, PandaDFU, PandaProtocolMismatch, FW_PATH
 PANDAD_BIN = "./pandad_tici" if TICI_DOS else "./pandad"
 
 
 def get_expected_signature(panda: Panda) -> bytes:
   try:
-    fn = os.path.join(FW_PATH, panda.get_mcu_type().config.app_fn)
+    # panda_tici flashes F4 (dos) or H7; upstream panda only supports H7 and has no get_mcu_type()
+    mcu_type = panda.get_mcu_type() if TICI_DOS else McuType.H7
+    fn = os.path.join(FW_PATH, mcu_type.config.app_fn)
     return Panda.get_signature_from_firmware(fn)
   except Exception:
     cloudlog.exception("Error computing expected signature")

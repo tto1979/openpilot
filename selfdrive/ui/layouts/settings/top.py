@@ -99,8 +99,8 @@ class TopLayout(Widget):
           self._params.put("CarModel", selection)
       self._car_dialog = None
 
-    self._car_dialog = MultiOptionDialog(tr("Select your car"), options, current if current in options else NOT_SELECTED)
-    gui_app.set_modal_overlay(self._car_dialog, callback=on_close)
+    self._car_dialog = MultiOptionDialog(tr("Select your car"), options, current if current in options else NOT_SELECTED, callback=on_close)
+    gui_app.push_widget(self._car_dialog)
 
   def _update_state(self):
     # open the dialog once the background car list load finishes
@@ -109,4 +109,4 @@ class TopLayout(Widget):
       if self._car_list:
         self._show_car_dialog()
       else:
-        gui_app.set_modal_overlay(alert_dialog(tr("Car list is not available.")))
+        gui_app.push_widget(alert_dialog(tr("Car list is not available.")))

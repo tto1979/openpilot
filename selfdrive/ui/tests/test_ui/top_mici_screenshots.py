@@ -17,7 +17,7 @@ CARS = ["HONDA_CIVIC", "LEXUS_ES_TSS2", "LEXUS_RX_TSS2", "TOYOTA_ALPHARD_TSS2", 
         "TOYOTA_COROLLA_TSS2", "TOYOTA_HIGHLANDER_TSS2", "TOYOTA_PRIUS_TSS2", "TOYOTA_RAV4_TSS2", "TOYOTA_RAV4_TSS2_2023"]
 COUNTRIES = [("== None ==", ""), ("Taiwan", "TW"), ("Thailand", "TH"), ("United Kingdom of Great Britain and Northern Ireland", "GB"),
              ("United States of America", "US")]
-FRAMES_PER_STEP = 30
+FRAMES_PER_STEP = 60  # nav stack slide in animation
 
 
 def setup_params():
@@ -41,7 +41,11 @@ def setup_params():
 
 
 def main():
-  from openpilot.selfdrive.ui.mici.layouts.settings.settings import SettingsLayout, PanelType
+  from openpilot.selfdrive.ui.mici.layouts.settings.settings import SettingsLayout
+  from openpilot.selfdrive.ui.mici.layouts.settings.top import TopLayoutMici
+  from openpilot.selfdrive.ui.mici.layouts.settings.osm import OsmLayoutMici
+  from openpilot.selfdrive.ui.mici.layouts.settings.toggles import TogglesLayoutMici
+  from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
   from openpilot.selfdrive.ui.mici.widgets.top_dialogs import FootageDialogMici
 
   setup_params()
@@ -52,41 +56,38 @@ def main():
   if gui_app._render_texture is None:
     gui_app._render_texture = rl.load_render_texture(gui_app.width, gui_app.height)
   settings = SettingsLayout()
-  settings.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
-  settings.show_event()
+  gui_app.push_widget(settings)
+  top, maps, toggles, device = TopLayoutMici(), OsmLayoutMici(), TogglesLayoutMici(), DeviceLayoutMici()
 
-  def panel(t):
-    return lambda: settings._set_current_panel(t)
-
-  def scroll(t, offset):
+  def show(panel):
+    # back to the settings hub instantly, then slide the panel in
     def f():
-      sp = settings._panels[t].instance._scroller.scroll_panel
-      sp.set_offset(offset)
+      while len(gui_app._nav_stack) > 1:
+        gui_app.pop_widget()
+      if panel is not None:
+        gui_app.push_widget(panel)
     return f
 
-  def close_overlay():
-    gui_app.set_modal_overlay(None)
-    gui_app._modal_overlay_shown = False  # normally reset by a frame without a modal
+  def scroll(panel, offset):
+    return lambda: panel._scroller.scroll_panel.set_offset(offset)
 
-  top = settings._panels[PanelType.TOP].instance
-  maps = settings._panels[PanelType.MAPS].instance
   steps = [
     ("hub", lambda: None),
-    ("hub_2", lambda: settings._scroller.scroll_panel.set_offset(-420)),
-    ("top", panel(PanelType.TOP)),
-    ("top_2", scroll(PanelType.TOP, -1300)),
+    ("hub_2", scroll(settings, -420)),
+    ("top", show(top)),
+    ("top_2", scroll(top, -1300)),
     ("top_car_brand_picker", lambda: (setattr(top, "_car_list", CARS), top._show_car_dialog())),
-    ("top_car_model_picker", lambda: (close_overlay(), top._show_model_dialog("TOYOTA"))),
-    ("maps", lambda: (close_overlay(), panel(PanelType.MAPS)())),
-    ("maps_2", scroll(PanelType.MAPS, -1300)),
+    ("top_car_model_picker", lambda: (show(top)(), top._show_model_dialog("TOYOTA"))),
+    ("maps", show(maps)),
+    ("maps_2", scroll(maps, -1300)),
     ("maps_country_picker", lambda: (setattr(maps, "_pending", ("country", COUNTRIES)), maps._handle_pending())),
-    ("maps_source_picker", lambda: (close_overlay(), maps._select_source())),
-    ("maps_offset_picker", lambda: (close_overlay(), maps._select_offset())),
-    ("toggles", lambda: (close_overlay(), panel(PanelType.TOGGLES)())),
-    ("device_top", lambda: (panel(PanelType.DEVICE)(), scroll(PanelType.DEVICE, -1700)())),
-    ("device_top_2", scroll(PanelType.DEVICE, -2500)),
-    ("device_footage", lambda: gui_app.set_modal_overlay(FootageDialogMici())),
-    ("device_error_log", lambda: (close_overlay(), settings._panels[PanelType.DEVICE].instance._show_error_log())),
+    ("maps_source_picker", lambda: (show(maps)(), maps._select_source())),
+    ("maps_offset_picker", lambda: (show(maps)(), maps._select_offset())),
+    ("toggles", show(toggles)),
+    ("device_top", lambda: (show(device)(), scroll(device, -1700)())),
+    ("device_top_2", scroll(device, -2500)),
+    ("device_footage", lambda: gui_app.push_widget(FootageDialogMici())),
+    ("device_error_log", lambda: (show(device)(), scroll(device, -2500)(), device._show_error_log())),
   ]
 
   frame = 0
@@ -94,8 +95,6 @@ def main():
   steps[0][1]()
   for _ in gui_app.render():
     ui_state.update()
-    if gui_app._modal_overlay.overlay is None:
-      settings.render()
     frame += 1
     if frame % FRAMES_PER_STEP == 0:
       rl.rl_draw_render_batch_active()

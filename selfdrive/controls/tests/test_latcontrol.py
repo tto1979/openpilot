@@ -1,5 +1,5 @@
 import numpy as np
-from parameterized import parameterized
+from openpilot.common.parameterized import parameterized
 
 from cereal import car, log
 from opendbc.car import gen_empty_fingerprint, structs

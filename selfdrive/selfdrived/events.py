@@ -555,6 +555,10 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("Stock AEB: Risk of Collision"),
   },
 
+  EventName.stockLkas: {
+    ET.NO_ENTRY: NoEntryAlert("Stock LKAS: Lane Departure Detected"),
+  },
+
   EventName.fcw: {
     ET.PERMANENT: Alert(
       "踩煞車!",
@@ -1238,7 +1242,7 @@ if __name__ == '__main__':
 
   for i, alerts in EVENTS.items():
     for et, alert in alerts.items():
-      if callable(alert):
+      if not isinstance(alert, Alert):
         alert = alert(CP, CS, sm, False, 1, log.LongitudinalPersonality.standard)
       alerts_by_type[et][alert.priority].append(event_names[i])
 

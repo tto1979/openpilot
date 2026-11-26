@@ -100,6 +100,7 @@ class SoftwareLayout(Widget):
     ], line_separator=True, spacing=0)
 
   def show_event(self):
+    super().show_event()
     self._scroller.show_event()
 
   def _render(self, rect):
@@ -185,27 +186,27 @@ class SoftwareLayout(Widget):
       os.system("pkill -SIGHUP -f system.updated.updated")
 
   def _on_uninstall(self):
-    def handle_uninstall_confirmation(result):
+    def handle_uninstall_confirmation(result: DialogResult):
       if result == DialogResult.CONFIRM:
         ui_state.params.put_bool("DoUninstall", True)
 
-    dialog = ConfirmDialog(tr("Are you sure you want to uninstall?"), tr("Uninstall"))
-    gui_app.set_modal_overlay(dialog, callback=handle_uninstall_confirmation)
+    dialog = ConfirmDialog(tr("Are you sure you want to uninstall?"), tr("Uninstall"), callback=handle_uninstall_confirmation)
+    gui_app.push_widget(dialog)
 
   def _on_offroad_mode(self):
     def handle_confirmation(result):
       if result == DialogResult.CONFIRM and not ui_state.engaged:
         ui_state.params.put_bool("dp_device_offroad", not ui_state.params.get_bool("dp_device_offroad"))
 
-    dialog = ConfirmDialog(tr("Are you sure you want to switch driving mode?"), tr("CONFIRM"))
-    gui_app.set_modal_overlay(dialog, callback=handle_confirmation)
+    dialog = ConfirmDialog(tr("Are you sure you want to switch driving mode?"), tr("CONFIRM"), callback=handle_confirmation)
+    gui_app.push_widget(dialog)
 
   def _on_error_log(self):
     text = read_error_log()
     if not text:
-      gui_app.set_modal_overlay(alert_dialog(tr("No error log found.")))
+      gui_app.push_widget(alert_dialog(tr("No error log found.")))
       return
-    gui_app.set_modal_overlay(HtmlModal(text=error_log_html(text)))
+    gui_app.push_widget(HtmlModal(text=error_log_html(text)))
 
   def _on_install_update(self):
     # Trigger reboot to install update
@@ -235,9 +236,8 @@ class SoftwareLayout(Widget):
         move_to(b, 0)
 
     current_target = ui_state.params.get("UpdaterTargetBranch") or ""
-    self._branch_dialog = MultiOptionDialog(tr("Select a branch"), branches, current_target)
 
-    def handle_selection(result):
+    def handle_selection(result: DialogResult):
       # Confirmed selection
       if result == DialogResult.CONFIRM and self._branch_dialog is not None and self._branch_dialog.selection:
         selection = self._branch_dialog.selection
@@ -246,4 +246,5 @@ class SoftwareLayout(Widget):
         os.system("pkill -SIGUSR1 -f system.updated.updated")
       self._branch_dialog = None
 
-    gui_app.set_modal_overlay(self._branch_dialog, callback=handle_selection)
+    self._branch_dialog = MultiOptionDialog(tr("Select a branch"), branches, current_target, callback=handle_selection)
+    gui_app.push_widget(self._branch_dialog)
