@@ -193,7 +193,7 @@ class OsmLayoutMici(NavScroller):
     dlg: BigMultiOptionDialog
 
     def on_confirm():
-      self._params.put("SpeedLimitPolicy", SPEED_LIMIT_SOURCES.index(dlg.get_selected_option()))
+      self._params.put("SpeedLimitPolicy", SPEED_LIMIT_SOURCES.index(dlg.get_selected_option()), block=True)
 
     dlg = BigMultiOptionDialog(SPEED_LIMIT_SOURCES, SPEED_LIMIT_SOURCES[current] if current in range(len(SPEED_LIMIT_SOURCES)) else None,
                                right_btn_callback=on_confirm)
@@ -206,7 +206,7 @@ class OsmLayoutMici(NavScroller):
     dlg: BigMultiOptionDialog
 
     def on_confirm():
-      self._params.put("SpeedLimitValueOffset", OFFSET_RANGE[options.index(dlg.get_selected_option())])
+      self._params.put("SpeedLimitValueOffset", OFFSET_RANGE[options.index(dlg.get_selected_option())], block=True)
 
     dlg = BigMultiOptionDialog(options, f"{current:+d}{unit}" if current in OFFSET_RANGE else options[30], right_btn_callback=on_confirm)
     gui_app.push_widget(dlg)

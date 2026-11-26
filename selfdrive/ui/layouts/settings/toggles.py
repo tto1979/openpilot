@@ -118,7 +118,7 @@ class TogglesLayout(Widget):
       lambda: tr(DESCRIPTIONS["AccelPersonality"]),
       buttons=[lambda: tr("Sport"), lambda: tr("Normal"), lambda: tr("Eco"), lambda: tr("Stock")],
       button_width=200,
-      callback=lambda button_index: self._params.put("AccelPersonality", button_index),
+      callback=lambda button_index: self._params.put("AccelPersonality", button_index, block=True),
       selected_index=self._accel_personality_index(),
       icon="speed_limit.png"
     )

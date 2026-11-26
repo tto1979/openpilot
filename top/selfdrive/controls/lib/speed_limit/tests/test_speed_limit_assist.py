@@ -52,10 +52,10 @@ class TestSpeedLimitAssist:
     return CI
 
   def reset_custom_params(self):
-    self.params.put("SpeedLimitMode", int(Mode.assist))
-    self.params.put_bool("IsMetric", False)
-    self.params.put("SpeedLimitOffsetType", 0)
-    self.params.put("SpeedLimitValueOffset", 0)
+    self.params.put("SpeedLimitMode", int(Mode.assist), block=True)
+    self.params.put_bool("IsMetric", False, block=True)
+    self.params.put("SpeedLimitOffsetType", 0, block=True)
+    self.params.put("SpeedLimitValueOffset", 0, block=True)
 
   def reset_state(self):
     self.sla.state = SpeedLimitAssistState.disabled
@@ -82,7 +82,7 @@ class TestSpeedLimitAssist:
     assert V_CRUISE_UNSET == self.sla.get_v_target_from_control()
 
   def test_disabled(self):
-    self.params.put("SpeedLimitMode", int(Mode.off))
+    self.params.put("SpeedLimitMode", int(Mode.off), block=True)
     for _ in range(int(10. / DT_MDL)):
       self.sla.update(True, False, SPEED_LIMITS['city'], 0, SPEED_LIMITS['highway'], SPEED_LIMITS['city'], SPEED_LIMITS['city'], True, 0, self.events)
     assert self.sla.state == SpeedLimitAssistState.disabled

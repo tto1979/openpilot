@@ -148,7 +148,7 @@ class TopLayoutMici(NavScroller):
     dlg: CompactOptionDialog
 
     def on_confirm():
-      self._params.put("CarModel", dlg.get_selected_option())
+      self._params.put("CarModel", dlg.get_selected_option(), block=True)
       self._car_btn.set_value(self._car_value())
 
     dlg = CompactOptionDialog(cars, current if current in cars else cars[0], right_btn_callback=on_confirm,

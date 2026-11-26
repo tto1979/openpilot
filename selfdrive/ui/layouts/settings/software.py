@@ -196,7 +196,7 @@ class SoftwareLayout(Widget):
   def _on_offroad_mode(self):
     def handle_confirmation(result):
       if result == DialogResult.CONFIRM and not ui_state.engaged:
-        ui_state.params.put_bool("dp_device_offroad", not ui_state.params.get_bool("dp_device_offroad"))
+        ui_state.params.put_bool("dp_device_offroad", not ui_state.params.get_bool("dp_device_offroad"), block=True)
 
     dialog = ConfirmDialog(tr("Are you sure you want to switch driving mode?"), tr("CONFIRM"), callback=handle_confirmation)
     gui_app.push_widget(dialog)

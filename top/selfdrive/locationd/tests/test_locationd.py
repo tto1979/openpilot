@@ -20,7 +20,7 @@ class TestLocationdProc:
     self.pm = messaging.PubMaster(self.LLD_MSGS)
 
     self.params = Params()
-    self.params.put_bool("UbloxAvailable", True)
+    self.params.put_bool("UbloxAvailable", True, block=True)
     managed_processes['locationd_llk'].prepare()
     managed_processes['locationd_llk'].start()
 

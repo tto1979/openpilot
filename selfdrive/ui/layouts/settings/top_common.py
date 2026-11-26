@@ -133,14 +133,14 @@ def load_car_list() -> list[str]:
 
 def apply_toggle(params: Params, param: str, state: bool) -> None:
   """Write a TOP toggle and run its side effects."""
-  params.put_bool(param, state)
+  params.put_bool(param, state, block=True)
   if param == "NNFF":
     # the learned torque / delay belong to the other controller, relearn and restart onroad
     params.remove("LiveTorqueParameters")
     params.remove("LiveDelay")
-    params.put_bool("OnroadCycleRequested", True)
+    params.put_bool("OnroadCycleRequested", True, block=True)
     if state:
-      params.put_bool("DisableLateralLagLearning", True)
+      params.put_bool("DisableLateralLagLearning", True, block=True)
 
 
 def lag_learning_locked(params: Params) -> bool:
