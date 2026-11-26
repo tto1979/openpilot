@@ -1,4 +1,5 @@
-export GIT_COMMITTER_NAME="Vehicle Researcher"
-export GIT_COMMITTER_EMAIL="user@comma.ai"
-export GIT_AUTHOR_NAME="Vehicle Researcher"
-export GIT_AUTHOR_EMAIL="user@comma.ai"
+# TOP: release commits under CT921's GitHub identity
+export GIT_COMMITTER_NAME="【TIM】"
+export GIT_COMMITTER_EMAIL="90225659+CT921@users.noreply.github.com"
+export GIT_AUTHOR_NAME="【TIM】"
+export GIT_AUTHOR_EMAIL="90225659+CT921@users.noreply.github.com"
