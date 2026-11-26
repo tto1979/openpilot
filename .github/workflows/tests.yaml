@@ -123,6 +123,9 @@ jobs:
 
   process_replay:
     name: process replay
+    # TOP: compares against commaai/ci-artifacts refs for the current upstream master, which v0.11.0 can't match
+    # (the v0.11.0 refs were pruned from ci-artifacts), so only upstream runs it
+    if: github.repository == 'commaai/openpilot'
     runs-on: ${{
       (github.repository == 'commaai/openpilot') &&
       ((github.event_name != 'pull_request') ||
