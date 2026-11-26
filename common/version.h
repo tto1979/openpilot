@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.11.0 DEV. - 2026.11.27 (CH3 Model)"
+#define COMMA_VERSION "0.11.0.0 DEV. - 2026.11.27 (CH3 Model)"
