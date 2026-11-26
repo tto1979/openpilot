@@ -17,6 +17,13 @@ if [ ! -f /TICI ]; then
   exit 1
 fi
 
+# the prebuilt links the libraries of the AGNOS it's built on, which must be the one this version runs on
+REQUIRED_AGNOS=$(bash -c "unset AGNOS_VERSION; source '$SOURCE_DIR/launch_env.sh' > /dev/null; echo \$AGNOS_VERSION")
+if [ "$(< /VERSION)" != "$REQUIRED_AGNOS" ]; then
+  echo "this version needs AGNOS $REQUIRED_AGNOS, the device has AGNOS $(< /VERSION): install the branch on the device first (it updates AGNOS on boot)"
+  exit 1
+fi
+
 # TOP: one prebuilt for comma 3 / 3X / four (a build from any of them runs on all three, like upstream
 # pushing its tizi build to release-mici), named after common/version.h:
 #   "0.11.0.0 DEV. - 2026.11.26 (CH Model)" -> branch TOP01100, commit "Update to T.O.P v0.11.0.0 DEV. - 2026.11.26" / "CH Model"
