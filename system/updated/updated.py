@@ -242,8 +242,13 @@ class Updater:
     b: str | None = self.params.get("UpdaterTargetBranch")
     if b is None:
       b = self.get_branch(BASEDIR)
-
-    # no tici -> -c3/-C3 branch migration anymore: the same branches run on comma three and comma 3X
+    # upstream's release3 -> per-device release branches. TOP's branches run on comma three, 3X and four as they are
+    b = {
+      ("tizi", "release3"): "release-tizi",
+      ("tizi", "release3-staging"): "release-tizi-staging",
+      ("mici", "release3"): "release-mici",
+      ("mici", "release3-staging"): "release-mici-staging",
+    }.get((HARDWARE.get_device_type(), b), b)
     return b
 
   @property
