@@ -41,6 +41,11 @@ assert arch in [
 
 pkg_names = ['bzip2', 'capnproto', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
 pkgs = [importlib.import_module(name) for name in pkg_names]
+# TOP: vendored libusb for the comma 3 USB pandad on PC/CI, the device builds against AGNOS's libusb
+try:
+  pkgs.append(importlib.import_module('libusb'))
+except ImportError:
+  pass
 
 env = Environment(
   ENV={

@@ -45,6 +45,8 @@ dependencies = [
 
   # panda
   "libusb1",
+  # TOP: libusb headers for the comma 3 USB pandad on PC/CI (the device uses AGNOS's libusb)
+  "libusb @ git+https://github.com/commaai/dependencies.git@8fcd62005047296efab2e10bbdaf1972257917c9#subdirectory=libusb",
   "spidev; platform_system == 'Linux'",
 
   # logging

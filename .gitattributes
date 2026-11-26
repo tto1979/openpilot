@@ -14,6 +14,9 @@ system/hardware/tici/updater_magic filter=lfs diff=lfs merge=lfs -text
 third_party/**/*.a filter=lfs diff=lfs merge=lfs -text
 third_party/**/*.dylib filter=lfs diff=lfs merge=lfs -text
 third_party/acados/*/t_renderer filter=lfs diff=lfs merge=lfs -text
+# TOP keeps the larch64 acados libraries as plain files, the x86_64 ones (PC/CI) are upstream's LFS objects
+third_party/acados/x86_64/lib/*.so filter=lfs diff=lfs merge=lfs -text
+third_party/acados/x86_64/lib/*.so.* filter=lfs diff=lfs merge=lfs -text
 third_party/bootstrap/bootstrap-icons.svg filter=lfs diff=lfs merge=lfs -text
 third_party/qt5/larch64/bin/lrelease filter=lfs diff=lfs merge=lfs -text
 third_party/qt5/larch64/bin/lupdate filter=lfs diff=lfs merge=lfs -text

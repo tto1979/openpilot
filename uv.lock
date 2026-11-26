@@ -570,6 +570,11 @@ version = "3.1.0"
 source = { git = "https://github.com/commaai/dependencies.git?subdirectory=libjpeg&rev=releases#9777ee38aa5ca9439843125392af38ed1262e500" }
 
 [[package]]
+name = "libusb"
+version = "1.0.29"
+source = { git = "https://github.com/commaai/dependencies.git?subdirectory=libusb&rev=8fcd62005047296efab2e10bbdaf1972257917c9#8fcd62005047296efab2e10bbdaf1972257917c9" }
+
+[[package]]
 name = "libusb1"
 version = "3.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -796,6 +801,7 @@ dependencies = [
     { name = "jeepney" },
     { name = "json-rpc" },
     { name = "libjpeg" },
+    { name = "libusb" },
     { name = "libusb1" },
     { name = "libyuv" },
     { name = "ncurses" },
@@ -875,6 +881,7 @@ requires-dist = [
     { name = "jinja2", marker = "extra == 'docs'" },
     { name = "json-rpc" },
     { name = "libjpeg", git = "https://github.com/commaai/dependencies.git?subdirectory=libjpeg&rev=releases" },
+    { name = "libusb", git = "https://github.com/commaai/dependencies.git?subdirectory=libusb&rev=8fcd62005047296efab2e10bbdaf1972257917c9" },
     { name = "libusb1" },
     { name = "libyuv", git = "https://github.com/commaai/dependencies.git?subdirectory=libyuv&rev=releases" },
     { name = "matplotlib", marker = "extra == 'dev'" },
