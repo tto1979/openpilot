@@ -5,15 +5,17 @@
 #     Clones/updates SRC_BRANCH on the device into /data/openpilot_source and builds the
 #     prebuilt into /data/openpilot (replaces what the device currently runs), then
 #     restarts openpilot so you can test the exact build before publishing.
+#     The prebuilt branch is named after common/version.h and the device it's built on:
+#     TOP01100-C3 on a comma 3, TOP01100 on a comma 3X (set RELEASE_BRANCH to override).
 #
 #   DEVICE=comma@192.168.1.50 ./release/remote_release.sh push
-#     Fetches the built commit from the device and force-pushes it to RELEASE_BRANCH
-#     using WSL's GitHub credentials.
+#     Fetches the built commit from the device and force-pushes it to the same branch
+#     name using WSL's GitHub credentials.
 set -euo pipefail
 
 DEVICE="${DEVICE:?set DEVICE, e.g. DEVICE=comma@192.168.1.50}"
-SRC_BRANCH="${SRC_BRANCH:-tqb}"
-RELEASE_BRANCH="${RELEASE_BRANCH:-tqb-prebuilt}"
+SRC_BRANCH="${SRC_BRANCH:-main-0.11.0}"
+RELEASE_BRANCH="${RELEASE_BRANCH:-}"  # empty: build_release.sh names it after the version and device
 SRC_REPO="${SRC_REPO:-https://github.com/tto1979/openpilot.git}"
 PUSH_REMOTE="${PUSH_REMOTE:-git@github.com:tto1979/openpilot.git}"
 
@@ -47,9 +49,13 @@ EOF
       echo "Build failed. openpilot on the device is stopped; fix and rerun 'build', or 'sudo reboot' the device."
       exit 1
     fi
-    echo "Build done, device is running the new build. After testing it, run: $0 push"
+    BUILT_BRANCH=$(ssh "$DEVICE" "git -C /data/openpilot rev-parse --abbrev-ref HEAD")
+    echo "Build done ($BUILT_BRANCH), device is running the new build. After testing it, run: $0 push"
     ;;
   push)
+    if [ -z "$RELEASE_BRANCH" ]; then
+      RELEASE_BRANCH=$(ssh "$DEVICE" "git -C /data/openpilot rev-parse --abbrev-ref HEAD")
+    fi
     git fetch "$DEVICE:/data/openpilot" "+refs/heads/$RELEASE_BRANCH:refs/remotes/device/$RELEASE_BRANCH"
     git push -f "$PUSH_REMOTE" "refs/remotes/device/$RELEASE_BRANCH:refs/heads/$RELEASE_BRANCH"
     echo "Pushed: https://github.com/tto1979/openpilot/tree/$RELEASE_BRANCH"

@@ -11,16 +11,44 @@ cd $DIR
 BUILD_DIR=/data/openpilot
 SOURCE_DIR="$(git rev-parse --show-toplevel)"
 
-if [ -z "$RELEASE_BRANCH" ]; then
-  echo "RELEASE_BRANCH is not set"
-  exit 1
-fi
-
 # prebuilt must be compiled on the comma device (larch64 + Adreno GPU for tinygrad DEV=QCOM)
 if [ ! -f /TICI ]; then
   echo "build_release.sh must run on a comma device. From WSL use release/remote_release.sh"
   exit 1
 fi
+
+# TOP: one prebuilt per device, named after the device it's compiled on
+#   comma 3 (tici):  version "0.11.0.0 DEV._C3 - ...", branch TOP01100-C3, "For C3 Only, ..."
+#   comma 3X (tizi): version "0.11.0.0 DEV. - ...",    branch TOP01100,    "For C3X Only, ..."
+DEVICE_TYPE=$(tr -d '\0' < /sys/firmware/devicetree/base/model | sed 's/.*comma //')
+case "$DEVICE_TYPE" in
+  tici) DEVICE_SUFFIX="C3"; DEVICE_NAME="C3" ;;
+  tizi) DEVICE_SUFFIX="";   DEVICE_NAME="C3X" ;;
+  mici) DEVICE_SUFFIX="C4"; DEVICE_NAME="C4" ;;
+  *) echo "unknown device type: $DEVICE_TYPE"; exit 1 ;;
+esac
+
+# add the device suffix to the version's second word ("DEV." -> "DEV._C3") unless it already has one
+version_h_with_suffix() {
+  if [ -n "$DEVICE_SUFFIX" ]; then
+    sed -E "s/^(#define COMMA_VERSION \"[^ ]+ [^ _\"]+) /\1_${DEVICE_SUFFIX} /" "$1"
+  else
+    cat "$1"
+  fi
+}
+# a version already marked for another device would name the branch after that device
+VERSION_SUFFIX=$(grep COMMA_VERSION "$SOURCE_DIR/common/version.h" | awk -F'"' '{split($2,a," "); if (index(a[2],"_")) {s=a[2]; sub(/.*_/,"",s); print s}}')
+if [ -n "$VERSION_SUFFIX" ] && [ "$VERSION_SUFFIX" != "$DEVICE_SUFFIX" ]; then
+  echo "common/version.h is marked _$VERSION_SUFFIX but this is a $DEVICE_NAME ($DEVICE_TYPE), remove the suffix from version.h"
+  exit 1
+fi
+VERSION_H="$(version_h_with_suffix "$SOURCE_DIR/common/version.h")"
+VERSION=$(echo "$VERSION_H" | grep COMMA_VERSION | awk -F'"' '{print $2}' | awk -F'(' '{print $1}' | sed 's/ *$//')
+MODEL=$(echo "$VERSION_H" | grep COMMA_VERSION | awk -F'"' '{print $2}' | awk -F'[()]' '{print $2}')
+BRANCH=$(echo "$VERSION_H" | grep COMMA_VERSION | awk -F'"' '{split($2,a," "); v=a[1]; gsub(/[^0-9]/,"",v); s=""; if (index(a[2],"_")) {s=a[2]; sub(/.*_/,"",s); s="-"s}; print v s}')
+RELEASE_BRANCH="${RELEASE_BRANCH:-TOP$BRANCH}"
+COMMIT_TITLE="For $DEVICE_NAME Only, Update to T.O.P v$VERSION"
+echo "[-] $DEVICE_TYPE: $RELEASE_BRANCH, \"$COMMIT_TITLE\" / \"$MODEL\""
 
 
 # set git identity
@@ -56,10 +84,11 @@ if [ -n "$LFS_POINTERS" ]; then
   exit 1
 fi
 
-VERSION=$(cat common/version.h | awk -F[\"-]  '{print $2}')
+echo "$VERSION_H" > common/version.h
+
 echo "[-] committing version $VERSION T=$SECONDS"
 git add -f .
-git commit -a -m "openpilot v$VERSION release"
+git commit -a -m "$COMMIT_TITLE" -m "$MODEL"
 
 # Build
 export PYTHONPATH="$BUILD_DIR"
@@ -105,7 +134,7 @@ touch prebuilt
 
 # Add built files to git
 git add -f .
-git commit --amend -m "openpilot v$VERSION"
+git commit --amend -m "$COMMIT_TITLE" -m "$MODEL"
 
 # GitHub rejects files over 100MB
 BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M)"
