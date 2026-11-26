@@ -634,12 +634,25 @@ class GuiApplication:
     for font_weight_file in FontWeight:
       with as_file(FONT_DIR) as fspath:
         fnt_path = fspath / font_weight_file
-        font = rl.load_font(fnt_path.as_posix())
+        font = self._load_font_file(fnt_path)
         if font_weight_file != FontWeight.UNIFONT:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
         self._font_file_by_texture[font.texture.id] = font_weight_file.value
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
+
+  @staticmethod
+  def _load_font_file(fnt_path):
+    if fnt_path.is_file():
+      return rl.load_font(fnt_path.as_posix())
+    # TOP: the .fnt atlases come from the build (selfdrive/assets/fonts/process.py). When it fails before
+    # making them ("openpilot failed to build"), load the source font instead of raylib's tiny pixel font
+    for src_path in (fnt_path.with_suffix(".ttf"), fnt_path.with_suffix(".otf")):
+      if src_path.is_file():
+        font = rl.load_font_ex(src_path.as_posix(), 100, None, 0)
+        if font.baseSize == 100:  # raylib hands back its default font (baseSize 10) when loading fails
+          return font
+    return rl.load_font(fnt_path.as_posix())
 
   def _set_styles(self):
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BORDER_WIDTH, 0)
