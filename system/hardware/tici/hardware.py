@@ -16,6 +16,8 @@ from openpilot.system.hardware.tici.lpa import TiciLPA
 from openpilot.system.hardware.tici.pins import GPIO
 from openpilot.system.hardware.tici.amplifier import Amplifier
 
+LITE = os.getenv("LITE") is not None
+
 NM = 'org.freedesktop.NetworkManager'
 NM_CON_ACT = NM + '.Connection.Active'
 NM_DEV = NM + '.Device'
@@ -65,7 +67,7 @@ class Tici(HardwareBase):
 
   @cached_property
   def amplifier(self):
-    if self.get_device_type() == "mici" or os.getenv("LITE"):
+    if self.get_device_type() == "mici" or LITE:
       return None
     return Amplifier()
 
@@ -163,7 +165,7 @@ class Tici(HardwareBase):
     return self.get_modem_state().get('imei', '')
 
   def get_network_info(self):
-    if self.get_device_type() == "mici" or os.getenv("LITE"):
+    if self.get_device_type() == "mici" or LITE:
       return None
 
     ms = self.get_modem_state()
@@ -231,6 +233,8 @@ class Tici(HardwareBase):
     return self.get_modem_state().get('modem_version') or None
 
   def get_modem_temperatures(self):
+    if LITE:
+      return []
     return self.get_modem_state().get('temperatures', [])
 
   def get_current_power_draw(self):
@@ -377,7 +381,7 @@ class Tici(HardwareBase):
       pid = subprocess.check_output(["pgrep", "-f", "spi0"], encoding='utf8').strip()
       subprocess.call(["sudo", "chrt", "-f", "-p", "1", pid])
       subprocess.call(["sudo", "taskset", "-pc", "3", pid])
-    except subprocess.CalledProcessException as e:
+    except subprocess.CalledProcessError as e:
       print(str(e))
 
   def get_networks(self):

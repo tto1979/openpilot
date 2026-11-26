@@ -12,6 +12,7 @@ from openpilot.system.hardware.hw import Paths
 from openpilot.top.mapd.mapd_manager import MAPD_PATH
 
 WEBCAM = os.getenv("USE_WEBCAM") is not None
+LITE = os.getenv("LITE") is not None  # comma three without the driver camera and modem
 # comma three with the internal "dos" (STM32F4) panda, detected in launch_chffrplus.sh
 TICI_DOS = "TICI_DOS" in os.environ
 PANDAD_BIN = "./pandad_tici" if TICI_DOS else "./pandad"  # same source, built against panda_tici
@@ -156,7 +157,7 @@ procs = [
   PythonProcess("lateral_maneuversd", "tools.lateral_maneuvers.lateral_maneuversd", lat_maneuver),
   PythonProcess("radard", "selfdrive.controls.radard", only_onroad),
   PythonProcess("hardwared", "system.hardware.hardwared", always_run),
-  PythonProcess("modem", "system.hardware.tici.modem", always_run, enabled=TICI),
+  PythonProcess("modem", "system.hardware.tici.modem", always_run, enabled=TICI and not LITE),
   PythonProcess("tombstoned", "system.tombstoned", always_run, enabled=not PC),
   PythonProcess("updated", "system.updated.updated", only_offroad, enabled=not PC),
   PythonProcess("uploader", "system.loggerd.uploader", always_run),
