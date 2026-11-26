@@ -52,6 +52,26 @@ struct EncoderSettings {
   }
 };
 
+// livestream size: within H.264 level 3.1 so WebRTC receivers (phones, head units) can hardware decode it.
+// From upstream (encoder/webrtc: resize streams to baseline 3.1 H264 profile), TOP adds the comma three.
+inline int livestream_width() {
+  switch (Hardware::get_device_type()) {
+    case cereal::InitData::DeviceType::TICI:
+    case cereal::InitData::DeviceType::TIZI: return 1152;
+    case cereal::InitData::DeviceType::MICI: return 1280;
+    default: return -1;
+  }
+}
+
+inline int livestream_height() {
+  switch (Hardware::get_device_type()) {
+    case cereal::InitData::DeviceType::TICI:
+    case cereal::InitData::DeviceType::TIZI:
+    case cereal::InitData::DeviceType::MICI: return 720;
+    default: return -1;
+  }
+}
+
 class EncoderInfo {
 public:
   const char *publish_name;
@@ -59,6 +79,7 @@ public:
   const char *filename = NULL;
   bool record = true;
   bool include_audio = false;
+  bool is_live = false;  // livestream (webrtcd): H.264 level 3.1
   int frame_width = -1;
   int frame_height = -1;
   int fps = MAIN_FPS;
@@ -104,6 +125,9 @@ const EncoderInfo stream_road_encoder_info = {
   .publish_name = "livestreamRoadEncodeData",
   //.thumbnail_name = "thumbnail",
   .record = false,
+  .is_live = true,
+  .frame_width = livestream_width(),
+  .frame_height = livestream_height(),
   .get_settings = [](int){return EncoderSettings::StreamEncoderSettings();},
   INIT_ENCODE_FUNCTIONS(LivestreamRoadEncode),
 };
@@ -111,6 +135,9 @@ const EncoderInfo stream_road_encoder_info = {
 const EncoderInfo stream_wide_road_encoder_info = {
   .publish_name = "livestreamWideRoadEncodeData",
   .record = false,
+  .is_live = true,
+  .frame_width = livestream_width(),
+  .frame_height = livestream_height(),
   .get_settings = [](int){return EncoderSettings::StreamEncoderSettings();},
   INIT_ENCODE_FUNCTIONS(LivestreamWideRoadEncode),
 };
@@ -118,6 +145,9 @@ const EncoderInfo stream_wide_road_encoder_info = {
 const EncoderInfo stream_driver_encoder_info = {
   .publish_name = "livestreamDriverEncodeData",
   .record = false,
+  .is_live = true,
+  .frame_width = livestream_width(),
+  .frame_height = livestream_height(),
   .get_settings = [](int){return EncoderSettings::StreamEncoderSettings();},
   INIT_ENCODE_FUNCTIONS(LivestreamDriverEncode),
 };
