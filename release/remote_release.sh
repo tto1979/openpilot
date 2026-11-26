@@ -5,8 +5,8 @@
 #     Clones/updates SRC_BRANCH on the device into /data/openpilot_source and builds the
 #     prebuilt into /data/openpilot (replaces what the device currently runs), then
 #     restarts openpilot so you can test the exact build before publishing.
-#     The prebuilt branch is named after common/version.h and the device it's built on:
-#     TOP01100-C3 on a comma 3, TOP01100 on a comma 3X (set RELEASE_BRANCH to override).
+#     The prebuilt runs on comma 3 / 3X / four whichever of them builds it. Its branch is named
+#     after common/version.h: TOP01100 for "0.11.0.0 DEV. - ..." (set RELEASE_BRANCH to override).
 #
 #   DEVICE=comma@192.168.1.50 ./release/remote_release.sh push
 #     Fetches the built commit from the device and force-pushes it to the same branch
@@ -15,7 +15,7 @@ set -euo pipefail
 
 DEVICE="${DEVICE:?set DEVICE, e.g. DEVICE=comma@192.168.1.50}"
 SRC_BRANCH="${SRC_BRANCH:-main-0.11.0}"
-RELEASE_BRANCH="${RELEASE_BRANCH:-}"  # empty: build_release.sh names it after the version and device
+RELEASE_BRANCH="${RELEASE_BRANCH:-}"  # empty: build_release.sh names it after common/version.h
 SRC_REPO="${SRC_REPO:-https://github.com/tto1979/openpilot.git}"
 PUSH_REMOTE="${PUSH_REMOTE:-git@github.com:tto1979/openpilot.git}"
 
