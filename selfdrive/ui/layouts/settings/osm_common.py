@@ -156,7 +156,7 @@ class OsmState:
   # *** actions ***
 
   def start_download(self):
-    self.params.put_bool("OsmDbUpdatesCheck", True, block=True)
+    self.params.put_bool("OsmDbUpdatesCheck", True)
 
   def delete_maps(self):
     """Blocking, run it in a thread."""
@@ -164,10 +164,10 @@ class OsmState:
     self.maps_size = None
 
   def set_country(self, title: str, code: str):
-    self.params.put_bool("OsmLocal", True, block=True)
-    self.params.put("OsmLocationTitle", title, block=True)
-    self.params.put("OsmLocationName", code, block=True)
+    self.params.put_bool("OsmLocal", True)
+    self.params.put("OsmLocationTitle", title)
+    self.params.put("OsmLocationName", code)
 
   def set_state(self, title: str, code: str):
-    self.params.put("OsmStateTitle", title, block=True)
-    self.params.put("OsmStateName", code, block=True)
+    self.params.put("OsmStateTitle", title)
+    self.params.put("OsmStateName", code)

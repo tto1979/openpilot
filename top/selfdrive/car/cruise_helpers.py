@@ -75,7 +75,7 @@ class CruiseHelper:
   def update_experimental_mode(self, events, experimental_mode) -> None:
     if self.button_frame_counts[ButtonType.gapAdjustCruise] >= DISTANCE_LONG_PRESS and not self.experimental_mode_switched:
       self._experimental_mode = not experimental_mode
-      self.params.put_bool_nonblocking("ExperimentalMode", self._experimental_mode)
+      self.params.put_bool("ExperimentalMode", self._experimental_mode)
       events.add(EventName.experimentalModeSwitched)
       self.experimental_mode_switched = True
 
@@ -104,8 +104,8 @@ class CruiseHelper:
         if self.gap_button_counter > DISTANCE_LONG_PRESS:
           if not self._should_defer_to_other_systems():
             new_exp_mode = not self.params.get_bool("ExperimentalMode")
-            self.params.put_bool_nonblocking('ExperimentalMode', new_exp_mode)
-            self.params.put_bool_nonblocking('UserExperimentalMode', new_exp_mode)
+            self.params.put_bool('ExperimentalMode', new_exp_mode)
+            self.params.put_bool('UserExperimentalMode', new_exp_mode)
             self.manual_exp_mode_change = True
             print(f"CruiseHelper: Manual experimental mode switch to {new_exp_mode}")
           else:

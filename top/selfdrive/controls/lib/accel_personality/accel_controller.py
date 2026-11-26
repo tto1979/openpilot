@@ -29,7 +29,7 @@ class AccelController:
     if (self.toyota_drive_mode_enabled and hasattr(carstate, 'accelProfile') and carstate.accelProfile is not None):
 
       if (not self.accel_profile_init or carstate.accelProfile != self.prev_car_accel_profile):
-        self.params.put_nonblocking('AccelPersonality', int(carstate.accelProfile))
+        self.params.put('AccelPersonality', int(carstate.accelProfile))
         self.personality = carstate.accelProfile
         self.accel_profile_init = True
         self.prev_car_accel_profile = carstate.accelProfile

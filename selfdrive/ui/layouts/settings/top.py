@@ -56,14 +56,14 @@ class TopLayout(Widget):
     # NNFF always runs on a fixed delay, so with NNFF on, delay learning is switched off and locked
     lag = self._toggles["DisableLateralLagLearning"]
     if nnff_on:
-      self._params.put_bool("DisableLateralLagLearning", True, block=True)
+      self._params.put_bool("DisableLateralLagLearning", True)
       lag.action_item.set_state(True)
     lag.action_item.set_enabled(not nnff_on)
 
   def _toggle_callback(self, param: str, state: bool):
     apply_toggle(self._params, param, state)
     if param == "NNFF":
-      self._lock_lag_toggle(lag_learning_locked(self._params))
+      self._lock_lag_toggle(state)  # the write is non-blocking, don't read NNFF back
 
   # *** car selection ***
 
@@ -96,7 +96,7 @@ class TopLayout(Widget):
         if selection == NOT_SELECTED:
           self._params.remove("CarModel")
         else:
-          self._params.put("CarModel", selection, block=True)
+          self._params.put("CarModel", selection)
       self._car_dialog = None
 
     self._car_dialog = MultiOptionDialog(tr("Select your car"), options, current if current in options else NOT_SELECTED, callback=on_close)

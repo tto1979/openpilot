@@ -87,9 +87,10 @@ class TopLayoutMici(NavScroller):
     self._car_btn.set_value(self._car_value())
     self._lock_lag_toggle()
 
-  def _lock_lag_toggle(self):
+  def _lock_lag_toggle(self, locked: bool | None = None):
     lag = self._toggles["DisableLateralLagLearning"]
-    locked = lag_learning_locked(self._params)
+    if locked is None:
+      locked = lag_learning_locked(self._params)
     if locked:
       lag.set_checked(True)
     lag.set_enabled(not locked)
@@ -98,7 +99,7 @@ class TopLayoutMici(NavScroller):
     # BigParamControl writes the param right after this, apply_toggle writes it too (with the side effects)
     apply_toggle(self._params, param, checked)
     if param == "NNFF":
-      self._lock_lag_toggle()
+      self._lock_lag_toggle(checked)  # the write is non-blocking, don't read NNFF back
 
   # *** car selection ***
 
@@ -148,7 +149,7 @@ class TopLayoutMici(NavScroller):
     dlg: CompactOptionDialog
 
     def on_confirm():
-      self._params.put("CarModel", dlg.get_selected_option(), block=True)
+      self._params.put("CarModel", dlg.get_selected_option())
       self._car_btn.set_value(self._car_value())
 
     dlg = CompactOptionDialog(cars, current if current in cars else cars[0], right_btn_callback=on_confirm,

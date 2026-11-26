@@ -226,13 +226,13 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
 
       # Enhanced exit conditions
       if lead_moving_away and self.experimental_mode_active_by_standstill:
-        self.params.put_bool_nonblocking("ExperimentalMode", False)
+        self.params.put_bool("ExperimentalMode", False)
         self.experimental_mode_active_by_standstill = False
         print(f"Lead vehicle moving away: dist={lead_dist:.1f}m, speed={lead_speed*3.6:.1f}km/h, disabling ExperimentalMode")
 
       # Use green light detection for more reliable exit
       elif (self.green_light_detected or not red_light_detected) and self.experimental_mode_active_by_traffic_light:
-        self.params.put_bool_nonblocking("ExperimentalMode", False)
+        self.params.put_bool("ExperimentalMode", False)
         self.experimental_mode_active_by_traffic_light = False
         print("Traffic light turned green or red light no longer detected: disabling ExperimentalMode")
 
@@ -259,10 +259,10 @@ class LongitudinalPlanner(LongitudinalPlannerTOP):
               print("Entering standstill at red light: Enabling ExperimentalMode")
 
             if should_enable_experimental:
-              self.params.put_bool_nonblocking("ExperimentalMode", True)
+              self.params.put_bool("ExperimentalMode", True)
           else:
             if self.experimental_mode_active_by_standstill or self.experimental_mode_active_by_traffic_light:
-              self.params.put_bool_nonblocking("ExperimentalMode", False)
+              self.params.put_bool("ExperimentalMode", False)
               self.experimental_mode_active_by_standstill = False
               self.experimental_mode_active_by_traffic_light = False
               print("Leaving standstill: Disabling ExperimentalMode")

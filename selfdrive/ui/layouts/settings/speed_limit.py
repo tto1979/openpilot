@@ -97,7 +97,7 @@ class SpeedLimitPolicyLayout(SubPage):
       buttons=[lambda: tr("Car Only"), lambda: tr("Map Only"), lambda: tr("Car First"), lambda: tr("Map First"), lambda: tr("Combined")],
       button_width=230,
       selected_index=_param_int(self._params, "SpeedLimitPolicy", SpeedLimitSourcePolicy.MAP_FIRST),
-      callback=lambda index: self._params.put("SpeedLimitPolicy", index, block=True),
+      callback=lambda index: self._params.put("SpeedLimitPolicy", index),
     )
     super().__init__([self._policy], back_callback)
 
@@ -125,7 +125,7 @@ class SpeedLimitLayout(SubPage):
       buttons=[lambda: tr("Off"), lambda: tr("Info."), lambda: tr("Warning"), lambda: tr("Assist")],
       button_width=220,
       selected_index=self._mode_value(),
-      callback=lambda index: self._params.put("SpeedLimitMode", index, block=True),
+      callback=lambda index: self._params.put("SpeedLimitMode", index),
     )
     self._source = button_item(lambda: tr("Speed Limit Source"), lambda: tr("CUSTOMIZE"),
                                lambda: tr("Choose where the speed limit comes from: the car, OpenStreetMaps or both."),
@@ -135,12 +135,12 @@ class SpeedLimitLayout(SubPage):
       buttons=[lambda: tr("None"), lambda: tr("Fixed"), lambda: tr("Percent")],
       button_width=240,
       selected_index=self._offset_type_value(),
-      callback=lambda index: self._params.put("SpeedLimitOffsetType", index, block=True),
+      callback=lambda index: self._params.put("SpeedLimitOffsetType", index),
     )
     self._offset = value_step_item(
       lambda: tr("Offset"), lambda: tr(OFFSET_DESCRIPTIONS.get(self._offset_type_value(), OFFSET_DESCRIPTIONS[SpeedLimitOffsetType.NONE])),
       get_value=lambda: _param_int(self._params, "SpeedLimitValueOffset", 0),
-      set_value=lambda v: self._params.put("SpeedLimitValueOffset", v, block=True),
+      set_value=lambda v: self._params.put("SpeedLimitValueOffset", v),
       min_value=-30, max_value=30, label=self._offset_unit,
     )
     self._offset.set_visible(lambda: self._offset_type_value() != SpeedLimitOffsetType.NONE)

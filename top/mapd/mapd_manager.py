@@ -56,8 +56,8 @@ def cleanup_old_osm_data(files_to_remove: list[str]) -> None:
 
 
 def request_refresh_osm_location_data(nations: list[str], states: list[str] | None = None) -> None:
-  params.put("OsmDownloadedDate", str(datetime.now().timestamp()), block=True)
-  params.put_bool("OsmDbUpdatesCheck", False, block=True)
+  params.put("OsmDownloadedDate", str(datetime.now().timestamp()))
+  params.put_bool("OsmDbUpdatesCheck", False)
 
   osm_download_locations = {
     "nations": nations,
