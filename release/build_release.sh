@@ -48,9 +48,11 @@ rm -f panda/board/obj/panda_h7.bin.signed
 rm -f panda_tici/board/obj/panda.bin.signed
 rm -f panda_tici/board/obj/panda_h7.bin.signed
 
-# make sure LFS objects were pulled, not just pointer files
-if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_supercombo.onnx; then
-  echo "driving_supercombo.onnx is an LFS pointer, run 'git lfs pull' in $SOURCE_DIR first"
+# make sure LFS objects were pulled, not just pointer files (models, fonts, icons, sounds, acados libs)
+LFS_POINTERS="$(find . -type f -not -path './.git/*' -size -200c -exec grep -l '^version https://git-lfs.github.com/spec/v1' {} + || true)"
+if [ -n "$LFS_POINTERS" ]; then
+  echo "LFS pointer files instead of their content, run 'git lfs pull' in $SOURCE_DIR first:"
+  echo "$LFS_POINTERS"
   exit 1
 fi
 
@@ -88,7 +90,8 @@ find . -name '*.pyc' -delete
 find . -name 'moc_*' -delete
 find . -name '__pycache__' -delete
 rm -rf .sconsign.dblite Jenkinsfile release/
-rm -f selfdrive/modeld/models/driving_supercombo.onnx
+# modeld only loads the compiled tinygrad pkls
+rm -f selfdrive/modeld/models/*.onnx
 
 find third_party/ -name '*x86*' -exec rm -r {} +
 find third_party/ -name '*Darwin*' -exec rm -r {} +
