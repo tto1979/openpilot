@@ -303,10 +303,6 @@ class StreamRequestBody:
 async def get_stream(request: 'web.Request'):
   stream_dict, debug_mode = request.app['streams'], request.app['debug']
   raw_body = await request.json()
-  # TOP: keeps the cameras list API (opview, bodyteleop). Upstream 0.11.1 clients (comma connect) send a single initCamera
-  if "initCamera" in raw_body:
-    init_camera = raw_body.pop("initCamera")
-    raw_body.setdefault("cameras", [init_camera])
   body = StreamRequestBody(**raw_body)
 
   session = StreamSession(body.sdp, body.cameras, body.bridge_services_in, body.bridge_services_out, debug_mode)
