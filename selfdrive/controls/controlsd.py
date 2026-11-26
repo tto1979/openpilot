@@ -44,7 +44,7 @@ class Controls:
     self.CI = interfaces[self.CP.carFingerprint](self.CP, top_params)
 
     self.sm = messaging.SubMaster(['liveDelay', 'liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
-                                   'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
+                                   'liveCalibration', 'livePose', 'longitudinalPlan', 'lateralManeuverPlan', 'carState', 'carOutput',
                                    'driverMonitoringState', 'onroadEvents', 'driverAssistance', 'radarState'], poll='selfdriveState')
     self.pm = messaging.PubMaster(['carControl', 'controlsState', 'topControlsState'])
 
@@ -141,7 +141,10 @@ class Controls:
 
     # Steering PID loop and lateral MPC
     # Reset desired curvature to current to avoid violating the limits on engage
-    new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
+    if self.sm.valid['lateralManeuverPlan']:
+      new_desired_curvature = self.sm['lateralManeuverPlan'].desiredCurvature if CC.latActive else self.curvature
+    else:
+      new_desired_curvature = model_v2.action.desiredCurvature if CC.latActive else self.curvature
     lat_delay = self.sm["liveDelay"].lateralDelay + LAT_SMOOTH_SECONDS
     lane_centering = self.lane_centering.update(self.lane_centering_enabled and CC.latActive, model_v2, self.sm.updated['modelV2'],
                                                 CS.vEgo, CS.steeringPressed, self.curvature, model_v2.action.desiredCurvature, lat_delay)

@@ -75,6 +75,7 @@ class Sidebar(Widget):
     self._hotspot = False
 
     self._temp_status = MetricData(tr_noop("TEMP"), tr_noop("GOOD"), Colors.GOOD)
+    self._temp_warm = False
     self._panda_status = MetricData(tr_noop("VEHICLE"), tr_noop("ONLINE"), Colors.GOOD)
     self._connect_status = MetricData(tr_noop("CONNECT"), tr_noop("OFFLINE"), Colors.WARNING)
     self._recording_audio = False
@@ -133,10 +134,14 @@ class Sidebar(Widget):
     thermal_status = device_state.thermalStatus
     temp = f"{device_state.maxTempC:.0f}°C"  # TOP: the temperature instead of GOOD / OK / HIGH
 
-    if thermal_status == ThermalStatus.green:
-      self._temp_status.update(tr_noop("TEMP"), temp, Colors.GOOD)
-    elif thermal_status == ThermalStatus.yellow:
-      self._temp_status.update(tr_noop("TEMP"), temp, Colors.WARNING)
+    # TOP: three colours. Upstream merged green/yellow into one "ok" band (up to 96°C),
+    # so split it by temperature like the old bands did (yellow above 80°C, back to green below 75°C)
+    if thermal_status == ThermalStatus.ok:
+      if device_state.maxTempC > 80.:
+        self._temp_warm = True
+      elif device_state.maxTempC < 75.:
+        self._temp_warm = False
+      self._temp_status.update(tr_noop("TEMP"), temp, Colors.WARNING if self._temp_warm else Colors.GOOD)
     else:
       self._temp_status.update(tr_noop("TEMP"), temp, Colors.DANGER)
 
@@ -173,14 +178,14 @@ class Sidebar(Widget):
     # Settings button
     settings_down = mouse_down and rl.check_collision_point_rec(mouse_pos, SETTINGS_BTN)
     tint = Colors.BUTTON_PRESSED if settings_down else Colors.BUTTON_NORMAL
-    rl.draw_texture(self._settings_img, int(SETTINGS_BTN.x), int(SETTINGS_BTN.y), tint)
+    rl.draw_texture_ex(self._settings_img, rl.Vector2(SETTINGS_BTN.x, SETTINGS_BTN.y), 0.0, 1.0, tint)
 
     # Home/Flag button
     flag_pressed = mouse_down and rl.check_collision_point_rec(mouse_pos, HOME_BTN)
     button_img = self._flag_img if ui_state.started else self._home_img
 
     tint = Colors.BUTTON_PRESSED if (ui_state.started and flag_pressed) else Colors.BUTTON_NORMAL
-    rl.draw_texture(button_img, int(HOME_BTN.x), int(HOME_BTN.y), tint)
+    rl.draw_texture_ex(button_img, rl.Vector2(HOME_BTN.x, HOME_BTN.y), 0.0, 1.0, tint)
 
     # Microphone button
     if self._recording_audio:
@@ -190,8 +195,8 @@ class Sidebar(Widget):
       bg_color = rl.Color(Colors.DANGER.r, Colors.DANGER.g, Colors.DANGER.b, int(255 * 0.65)) if mic_pressed else Colors.DANGER
 
       rl.draw_rectangle_rounded(self._mic_indicator_rect, 1, 10, bg_color)
-      rl.draw_texture(self._mic_img, int(self._mic_indicator_rect.x + (self._mic_indicator_rect.width - self._mic_img.width) / 2),
-                      int(self._mic_indicator_rect.y + (self._mic_indicator_rect.height - self._mic_img.height) / 2), Colors.WHITE)
+      rl.draw_texture_ex(self._mic_img, rl.Vector2(self._mic_indicator_rect.x + (self._mic_indicator_rect.width - self._mic_img.width) / 2,
+                         self._mic_indicator_rect.y + (self._mic_indicator_rect.height - self._mic_img.height) / 2), 0.0, 1.0, Colors.WHITE)
 
   def _draw_network_indicator(self, rect: rl.Rectangle):
     # Signal strength dots
@@ -209,7 +214,7 @@ class Sidebar(Widget):
     # Network type text. TOP: link icon with the hotspot on, the IP address on Wi-Fi
     text_y = rect.y + 247
     if self._hotspot:
-      rl.draw_texture(self._link_img, int(rect.x + (rect.width - LINK_ICON_SIZE) / 2), int(text_y + (50 - LINK_ICON_SIZE) / 2), Colors.WHITE)
+      rl.draw_texture_ex(self._link_img, rl.Vector2(rect.x + (rect.width - LINK_ICON_SIZE) / 2, text_y + (50 - LINK_ICON_SIZE) / 2), 0, 1.0, Colors.WHITE)
       return
     on_wifi = self._net_type == NETWORK_TYPES[NetworkType.wifi] and self._wifi_ip not in NO_IP
     text = self._wifi_ip if on_wifi else tr(self._net_type)

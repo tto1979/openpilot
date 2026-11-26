@@ -1,5 +1,5 @@
 import pyray as rl
-from cereal import log, messaging
+from cereal import car, log, messaging
 from msgq.visionipc import VisionStreamType
 from openpilot.selfdrive.ui.mici.onroad.cameraview import CameraView
 from openpilot.selfdrive.ui.mici.onroad.driver_state import DriverStateRenderer
@@ -104,16 +104,14 @@ class BaseDriverCameraDialog(Widget):
     if self._pm is None:
       return
 
-    # TOP: reworked DriverMonitoringState has an alert level instead of events
-    AudibleAlert = log.SelfdriveState.AudibleAlert
-    alert_sounds = {
-      'one': AudibleAlert.preAlert,
+    AudibleAlert = car.CarControl.HUDControl.AudibleAlert
+    ALERT_SOUNDS = {
       'two': AudibleAlert.promptDistracted,
       'three': AudibleAlert.warningImmediate,
     }
     msg = messaging.new_message('selfdriveState')
     if dm_state is not None:
-      msg.selfdriveState.alertSound = alert_sounds.get(str(dm_state.alertLevel), AudibleAlert.none)
+      msg.selfdriveState.alertSound = ALERT_SOUNDS.get(str(dm_state.alertLevel), AudibleAlert.none)
     self._pm.send('selfdriveState', msg)
 
   def _render_dm_alerts(self, rect: rl.Rectangle):
@@ -136,6 +134,7 @@ class BaseDriverCameraDialog(Widget):
     if dm_state.alertLevel == log.DriverMonitoringState.AlertLevel.none:
       return
 
+    # Show alert level
     alert_level_str = f"{'Pay Attention' if is_vision else 'Touch Wheel'} - level {dm_state.alertLevel}"
     alignment = rl.GuiTextAlignment.TEXT_ALIGN_RIGHT if self.driver_state_renderer.is_rhd else rl.GuiTextAlignment.TEXT_ALIGN_LEFT
 

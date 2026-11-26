@@ -1,5 +1,7 @@
 * text=auto
 
+# to move existing files into LFS:
+# git add --renormalize .
 *.onnx filter=lfs diff=lfs merge=lfs -text
 *.svg filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
@@ -11,16 +13,6 @@
 selfdrive/car/tests/test_models_segs.txt filter=lfs diff=lfs merge=lfs -text
 system/hardware/tici/updater_weston filter=lfs diff=lfs merge=lfs -text
 system/hardware/tici/updater_magic filter=lfs diff=lfs merge=lfs -text
-third_party/**/*.a filter=lfs diff=lfs merge=lfs -text
-third_party/**/*.dylib filter=lfs diff=lfs merge=lfs -text
-third_party/acados/*/t_renderer filter=lfs diff=lfs merge=lfs -text
-# TOP keeps the larch64 acados libraries as plain files, the x86_64 ones (PC/CI) are upstream's LFS objects
-third_party/acados/x86_64/lib/*.so filter=lfs diff=lfs merge=lfs -text
-third_party/acados/x86_64/lib/*.so.* filter=lfs diff=lfs merge=lfs -text
-third_party/bootstrap/bootstrap-icons.svg filter=lfs diff=lfs merge=lfs -text
-third_party/qt5/larch64/bin/lrelease filter=lfs diff=lfs merge=lfs -text
-third_party/qt5/larch64/bin/lupdate filter=lfs diff=lfs merge=lfs -text
-third_party/catch2/include/catch2/catch.hpp filter=lfs diff=lfs merge=lfs -text
 
 # TOP keeps these assets as regular git blobs (not LFS): do not run them through the LFS filter
 docs/assets/icon-star-empty.svg !filter !diff !merge

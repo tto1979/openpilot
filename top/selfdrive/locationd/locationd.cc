@@ -255,7 +255,8 @@ void Localizer::handle_sensor(double current_time, const cereal::SensorEventData
   }
 
   // Gyro Uncalibrated
-  if (log.getSensor() == SENSOR_GYRO_UNCALIBRATED && log.getType() == SENSOR_TYPE_GYROSCOPE_UNCALIBRATED) {
+  // sensord no longer fills the android sensor/type ids (deprecated in 0.11.1), go by the union
+  if (log.which() == cereal::SensorEventData::GYRO_UNCALIBRATED) {
     auto v = log.getGyroUncalibrated().getV();
     auto meas = Vector3d(-v[2], -v[1], -v[0]);
 
@@ -273,7 +274,7 @@ void Localizer::handle_sensor(double current_time, const cereal::SensorEventData
   }
 
   // Accelerometer
-  if (log.getSensor() == SENSOR_ACCELEROMETER && log.getType() == SENSOR_TYPE_ACCELEROMETER) {
+  if (log.which() == cereal::SensorEventData::ACCELERATION) {
     auto v = log.getAcceleration().getV();
 
     // TODO: reduce false positives and re-enable this check

@@ -75,7 +75,7 @@ git commit -a -m "$COMMIT_TITLE" -m "$MODEL"
 
 # Build
 export PYTHONPATH="$BUILD_DIR"
-scons -j$(nproc) --minimal
+scons
 
 if [ -z "$PANDA_DEBUG_BUILD" ]; then
   # release panda fw
@@ -103,14 +103,7 @@ find . -name 'moc_*' -delete
 find . -name '__pycache__' -delete
 rm -rf .sconsign.dblite Jenkinsfile release/
 # modeld only loads the compiled tinygrad pkls
-rm -f selfdrive/modeld/models/*.onnx
-
-find third_party/ -name '*x86*' -exec rm -r {} +
-find third_party/ -name '*Darwin*' -exec rm -r {} +
-
-
-# Restore third_party
-git checkout third_party/
+rm -f selfdrive/modeld/models/*.onnx*
 
 # Mark as prebuilt release
 touch prebuilt

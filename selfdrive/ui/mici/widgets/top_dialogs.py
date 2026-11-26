@@ -119,9 +119,9 @@ class SideCheckButton(Widget):
     self._txt_btn_pressed = gui_app.texture("icons_mici/buttons/button_side_check_pressed.png", 100, 224)
 
   def _render(self, _):
-    x = int(self._rect.x + 12)
-    y = int(self._rect.y + (self._rect.height - self._txt_btn.height) / 2)
-    rl.draw_texture(self._txt_btn_pressed if self.is_pressed else self._txt_btn, x, y, rl.WHITE)
+    x = self._rect.x + 12
+    y = self._rect.y + (self._rect.height - self._txt_btn.height) / 2
+    rl.draw_texture_ex(self._txt_btn_pressed if self.is_pressed else self._txt_btn, rl.Vector2(x, y), 0, 1.0, rl.WHITE)
 
 
 class BigDialogOptionButton(Widget):

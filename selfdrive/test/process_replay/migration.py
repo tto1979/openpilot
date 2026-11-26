@@ -14,7 +14,7 @@ from opendbc.car.gm.values import GMSafetyFlags
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.modeld.fill_model_msg import fill_xyz_poly, fill_lane_line_meta
 from openpilot.selfdrive.test.process_replay.vision_meta import meta_from_encode_index
-from openpilot.selfdrive.controls.lib.longitudinal_planner import get_accel_from_plan, CONTROL_N_T_IDX
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.system.manager.process_config import managed_processes
 from openpilot.tools.lib.logreader import LogIterable
 
@@ -89,6 +89,10 @@ def migrate(lr: LogIterable, migration_funcs: list[MigrationFunc]):
   return lr
 
 
+def as_reader(builder) -> capnp.lib.capnp._DynamicStructReader:
+  return log.Event.from_bytes(builder.to_bytes()).__enter__()  # round-trip through bytes, 2x faster and 30x less memory than builder.as_reader()
+
+
 def migration(inputs: list[str], product: str|None=None):
   def decorator(func):
     @functools.wraps(func)
@@ -124,9 +128,9 @@ def migrate_longitudinalPlan(msgs):
     if msg.which() != 'longitudinalPlan':
       continue
     new_msg = msg.as_builder()
-    a_target, should_stop = get_accel_from_plan(msg.longitudinalPlan.speeds, msg.longitudinalPlan.accels, CONTROL_N_T_IDX)
+    a_target, should_stop = get_accel_from_plan(msg.longitudinalPlan.speeds, msg.longitudinalPlan.accels, ModelConstants.T_IDXS[:CONTROL_N])
     new_msg.longitudinalPlan.aTarget, new_msg.longitudinalPlan.shouldStop = float(a_target), bool(should_stop)
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
@@ -135,7 +139,7 @@ def migrate_driverAssistance(msgs):
   add_ops = []
   for _, msg in msgs:
     new_msg = messaging.new_message('driverAssistance', valid=True, logMonoTime=msg.logMonoTime)
-    add_ops.append(new_msg.as_reader())
+    add_ops.append(as_reader(new_msg))
   return [], add_ops, []
 
 
@@ -152,7 +156,7 @@ def migrate_drivingModelData(msgs):
       fill_lane_line_meta(dmd.drivingModelData.laneLineMeta, msg.modelV2.laneLines, msg.modelV2.laneLineProbs)
     if all(len(a) for a in [msg.modelV2.position.x, msg.modelV2.position.y, msg.modelV2.position.z]):
       fill_xyz_poly(dmd.drivingModelData.path, ModelConstants.POLY_PATH_DEGREE, msg.modelV2.position.x, msg.modelV2.position.y, msg.modelV2.position.z)
-    add_ops.append( dmd.as_reader())
+    add_ops.append(as_reader(dmd))
   return [], add_ops, []
 
 
@@ -177,11 +181,11 @@ def migrate_liveTracks(msgs):
       pts.append(pt)
 
     new_msg.liveTracks.points = pts
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
-@migration(inputs=["liveLocationKalmanDEPRECATED"], product="livePose")
+@migration(inputs=["liveLocationKalman"], product="livePose")
 def migrate_liveLocationKalman(msgs):
   nans = [float('nan')] * 3
   ops = []
@@ -191,13 +195,13 @@ def migrate_liveLocationKalman(msgs):
     m.logMonoTime = msg.logMonoTime
     m.livePose.timestamp = msg.logMonoTime
     for field in ["orientationNED", "velocityDevice", "accelerationDevice", "angularVelocityDevice"]:
-      lp_field, llk_field = getattr(m.livePose, field), getattr(msg.liveLocationKalmanDEPRECATED, field)
+      lp_field, llk_field = getattr(m.livePose, field), getattr(msg.liveLocationKalman, field)
       lp_field.x, lp_field.y, lp_field.z = llk_field.value or nans
       lp_field.xStd, lp_field.yStd, lp_field.zStd = llk_field.std or nans
       lp_field.valid = llk_field.valid
     for flag in ["inputsOK", "posenetOK", "sensorsOK"]:
-      setattr(m.livePose, flag, getattr(msg.liveLocationKalmanDEPRECATED, flag))
-    ops.append((index, m.as_reader()))
+      setattr(m.livePose, flag, getattr(msg.liveLocationKalman, flag))
+    ops.append((index, as_reader(m)))
   return ops, [], []
 
 
@@ -212,7 +216,7 @@ def migrate_livePose(msgs):
     if msg.which() == "livePose":
       new_msg = msg.as_builder()
       new_msg.livePose.timestamp = msg.logMonoTime
-      ops.append((index, new_msg.as_reader()))
+      ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
@@ -227,8 +231,8 @@ def migrate_controlsState(msgs):
     for field in ("enabled", "active", "state", "engageable", "alertText1", "alertText2",
                   "alertStatus", "alertSize", "alertType", "experimentalMode",
                   "personality"):
-      setattr(ss, field, getattr(msg.controlsState, field+"DEPRECATED"))
-    add_ops.append(m.as_reader())
+      setattr(ss, field, getattr(msg.controlsState.deprecated, field))
+    add_ops.append(as_reader(m))
   return [], add_ops, []
 
 
@@ -240,11 +244,11 @@ def migrate_carState(msgs):
     if msg.which() == 'controlsState':
       last_cs = msg
     elif msg.which() == 'carState' and last_cs is not None:
-      if last_cs.controlsState.vCruiseDEPRECATED - msg.carState.vCruise > 0.1:
+      if last_cs.controlsState.deprecated.vCruise - msg.carState.vCruise > 0.1:
         msg = msg.as_builder()
-        msg.carState.vCruise = last_cs.controlsState.vCruiseDEPRECATED
-        msg.carState.vCruiseCluster = last_cs.controlsState.vCruiseClusterDEPRECATED
-        ops.append((index, msg.as_reader()))
+        msg.carState.vCruise = last_cs.controlsState.deprecated.vCruise
+        msg.carState.vCruiseCluster = last_cs.controlsState.deprecated.vCruiseCluster
+        ops.append((index, as_reader(msg)))
   return ops, [], []
 
 
@@ -254,7 +258,7 @@ def migrate_managerState(msgs):
   for index, msg in msgs:
     new_msg = msg.as_builder()
     new_msg.managerState.processes = [{'name': name, 'running': True} for name in managed_processes]
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
@@ -267,7 +271,7 @@ def migrate_gpsLocation(msgs):
     # hasFix is a newer field
     if not g.hasFix and g.flags == 1:
       g.hasFix = True
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
@@ -283,7 +287,7 @@ def migrate_deviceState(msgs):
     if msg.which() == 'deviceState':
       n = msg.as_builder()
       n.deviceState.deviceType = init_data.deviceType
-      ops.append((i, n.as_reader()))
+      ops.append((i, as_reader(n)))
   return ops, [], []
 
 
@@ -295,7 +299,7 @@ def migrate_carOutput(msgs):
     co.valid = msg.valid
     co.logMonoTime = msg.logMonoTime
     co.carOutput.actuatorsOutput = msg.carControl.actuatorsOutputDEPRECATED
-    add_ops.append(co.as_reader())
+    add_ops.append(as_reader(co))
   return [], add_ops, []
 
 
@@ -305,7 +309,7 @@ def migrate_pandaStates(msgs):
   safety_param_migration = {
     "TOYOTA_PRIUS": EPS_SCALE["TOYOTA_PRIUS"] | ToyotaSafetyFlags.STOCK_LONGITUDINAL,
     "TOYOTA_RAV4": EPS_SCALE["TOYOTA_RAV4"] | ToyotaSafetyFlags.ALT_BRAKE,
-    "KIA_EV6": HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CANFD_LKA_STEERING,
+    "KIA_EV6": HyundaiSafetyFlags.EV_GAS | HyundaiSafetyFlags.CANFD_LKA_STEER_MSG,
     "CHEVROLET_VOLT": GMSafetyFlags.EV,
     "CHEVROLET_BOLT_EUV": GMSafetyFlags.EV | GMSafetyFlags.HW_CAM,
   }
@@ -333,13 +337,13 @@ def migrate_pandaStates(msgs):
       new_msg.logMonoTime = msg.logMonoTime
       new_msg.pandaStates[0] = msg.pandaStateDEPRECATED
       new_msg.pandaStates[0].safetyParam = safety_param
-      ops.append((index, new_msg.as_reader()))
+      ops.append((index, as_reader(new_msg)))
     elif msg.which() == 'pandaStates':
       new_msg = msg.as_builder()
       new_msg.pandaStates[-1].safetyParam = safety_param
       # Clear DISABLE_DISENGAGE_ON_GAS bit to fix controls mismatch
       new_msg.pandaStates[-1].alternativeExperience &= ~1
-      ops.append((index, new_msg.as_reader()))
+      ops.append((index, as_reader(new_msg)))
   return ops, [], []
 
 
@@ -354,7 +358,7 @@ def migrate_peripheralState(msgs):
     new_msg = messaging.new_message("peripheralState")
     new_msg.valid = msg.valid
     new_msg.logMonoTime = msg.logMonoTime
-    add_ops.append(new_msg.as_reader())
+    add_ops.append(as_reader(new_msg))
   return [], add_ops, []
 
 
@@ -409,7 +413,7 @@ def migrate_cameraStates(msgs):
     new_msg.valid = msg.valid
 
     del_ops.append(index)
-    add_ops.append(new_msg.as_reader())
+    add_ops.append(as_reader(new_msg))
   return [], add_ops, del_ops
 
 
@@ -421,7 +425,7 @@ def migrate_carParams(msgs):
     CP.carParams.carFingerprint = MIGRATION.get(CP.carParams.carFingerprint, CP.carParams.carFingerprint)
     for car_fw in CP.carParams.carFw:
       car_fw.brand = CP.carParams.brand
-    ops.append((index, CP.as_reader()))
+    ops.append((index, as_reader(CP)))
   return ops, [], []
 
 
@@ -449,14 +453,11 @@ def migrate_sensorEvents(msgs):
       m.logMonoTime = msg.logMonoTime
 
       m_dat = getattr(m, sensor_service)
-      m_dat.version = evt.version
-      m_dat.sensor = evt.sensor
-      m_dat.type = evt.type
       m_dat.source = evt.source
       m_dat.timestamp = evt.timestamp
       setattr(m_dat, evt.which(), getattr(evt, evt.which()))
 
-      add_ops.append(m.as_reader())
+      add_ops.append(as_reader(m))
     del_ops.append(index)
   return [], add_ops, del_ops
 
@@ -479,7 +480,7 @@ def migrate_onroadEvents(msgs):
     new_msg.valid = msg.valid
     new_msg.logMonoTime = msg.logMonoTime
     new_msg.onroadEvents = onroadEvents
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
 
   return ops, [], []
 
@@ -524,6 +525,6 @@ def migrate_driverMonitoringState(msgs):
     dm.visionPolicyState.uncertainOffroadAlertPercent = int(min(100, old.uncertainCount / 1200 * 100))
     dm.wheeltouchPolicyState.awarenessPercent = int(max(0, min(100, (old.awarenessPassive if old.isActiveMode else old.awarenessStatus) * 100)))
     dm.wheeltouchPolicyState.awarenessStep = 0. if old.isActiveMode else old.stepChange
-    ops.append((index, new_msg.as_reader()))
+    ops.append((index, as_reader(new_msg)))
 
   return ops, [], []

@@ -55,8 +55,8 @@ class TestLagd:
     msg.liveDelay.lateralDelayEstimate = random.random()
     msg.liveDelay.validBlocks = random.randint(1, 10)
     msg.liveDelay.version = VERSION
-    params.put("LiveDelay", msg.to_bytes())
-    params.put("CarParamsPrevRoute", CP.as_builder().to_bytes())
+    params.put("LiveDelay", msg.to_bytes(), block=True)
+    params.put("CarParamsPrevRoute", CP.as_builder().to_bytes(), block=True)
 
     saved_lag_params = retrieve_initial_lag(params, CP)
     assert saved_lag_params is not None

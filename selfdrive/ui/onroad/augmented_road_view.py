@@ -2,7 +2,7 @@ import os
 import time
 import numpy as np
 import pyray as rl
-from cereal import log, messaging
+from cereal import log
 from msgq.visionipc import VisionStreamType
 from openpilot.selfdrive.ui import UI_BORDER_SIZE
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
@@ -89,12 +89,8 @@ class AugmentedRoadView(CameraView):
     self._indicator_right = SideIndicator()
     self._last_tap_t = 0.0
 
-    # debug
-    self._pm = messaging.PubMaster(['uiDebug'])
-
   def _render(self, rect):
     # Only render when system is started to avoid invalid data access
-    start_draw = time.monotonic()
     if not ui_state.started:
       return
 
@@ -139,11 +135,6 @@ class AugmentedRoadView(CameraView):
     # Draw colored border based on driving state
     self._draw_border(rect)
 
-    # publish uiDebug
-    msg = messaging.new_message('uiDebug')
-    msg.uiDebug.drawTimeMillis = (time.monotonic() - start_draw) * 1000
-    self._pm.send('uiDebug', msg)
-
   def _handle_mouse_press(self, mouse_pos):
     if self._hud_renderer.user_interacting():
       return
@@ -162,14 +153,14 @@ class AugmentedRoadView(CameraView):
     y = self._rect.y + self._rect.height - PERSONALITY_TAP_Y
     if abs(mouse_pos.x - x) + abs(mouse_pos.y - y) <= PERSONALITY_TAP_DISTANCE:
       personality = (int(ui_state.params.get("LongitudinalPersonality", return_default=True) or 0) + 2) % 3
-      ui_state.params.put_nonblocking("LongitudinalPersonality", personality)
+      ui_state.params.put("LongitudinalPersonality", personality)
       self._last_tap_t = 0.0
       return True
 
     if ui_state.experimental_mode_via_wheel and ui_state.has_longitudinal_control:
       now = time.monotonic()
       if now - self._last_tap_t < DOUBLE_TAP_TIME:
-        ui_state.params.put_bool_nonblocking("ExperimentalMode", not ui_state.params.get_bool("ExperimentalMode"))
+        ui_state.params.put_bool("ExperimentalMode", not ui_state.params.get_bool("ExperimentalMode"))
         self._last_tap_t = 0.0
       else:
         self._last_tap_t = now
