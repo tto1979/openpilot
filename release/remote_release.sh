@@ -2,7 +2,8 @@
 # Run from WSL: the comma device compiles the prebuilt release, WSL pushes it to GitHub.
 #
 #   DEVICE=comma@192.168.1.50 ./release/remote_release.sh build
-#     Clones/updates SRC_BRANCH on the device into /data/openpilot_source and builds the
+#     Clones/updates SRC_BRANCH (default: main-x.xx.x from common/version.h, e.g. main-0.11.0)
+#     on the device into /data/openpilot_source and builds the
 #     prebuilt into /data/openpilot (replaces what the device currently runs), then
 #     restarts openpilot so you can test the exact build before publishing.
 #     The prebuilt runs on comma 3 / 3X / four whichever of them builds it. Its branch is named
@@ -14,12 +15,16 @@
 set -euo pipefail
 
 DEVICE="${DEVICE:?set DEVICE, e.g. DEVICE=comma@192.168.1.50}"
-SRC_BRANCH="${SRC_BRANCH:-main-0.11.0}"
 RELEASE_BRANCH="${RELEASE_BRANCH:-}"  # empty: build_release.sh names it after common/version.h
 SRC_REPO="${SRC_REPO:-https://github.com/tto1979/openpilot.git}"
 PUSH_REMOTE="${PUSH_REMOTE:-git@github.com:tto1979/openpilot.git}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+# source branch from this checkout's version: "0.11.0.0 DEV. - ..." -> main-0.11.0
+VERSION_BRANCH=$(awk -F'"' '/COMMA_VERSION/{split($2,a," "); split(a[1],v,"."); print "main-" v[1] "." v[2] "." v[3]}' common/version.h)
+SRC_BRANCH="${SRC_BRANCH:-$VERSION_BRANCH}"
+echo "source branch: $SRC_BRANCH"
 
 case "${1:-}" in
   build)
