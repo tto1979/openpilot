@@ -95,6 +95,11 @@ ASSETS_DIR = files("openpilot.selfdrive").joinpath("assets")
 FONT_DIR = ASSETS_DIR.joinpath("fonts")
 
 
+def _is_sfnt(path: Path) -> bool:
+  with open(path, "rb") as f:
+    return f.read(4) in (b"\x00\x01\x00\x00", b"OTTO", b"true", b"ttcf")
+
+
 class FontWeight(StrEnum):
   NORMAL = "Inter-Regular.fnt" if BIG_UI else "Inter-Medium.fnt"
   MEDIUM = "Inter-Medium.fnt"
@@ -756,7 +761,8 @@ class GuiApplication:
     # TOP: the .fnt atlases come from the build (selfdrive/assets/fonts/process.py). When it fails before
     # making them ("openpilot failed to build"), load the source font instead of raylib's tiny pixel font
     for src_path in (fnt_path.with_suffix(".ttf"), fnt_path.with_suffix(".otf")):
-      if src_path.is_file():
+      # raylib 6 crashes on data that isn't a font (e.g. a git-lfs pointer), check the sfnt signature first
+      if src_path.is_file() and _is_sfnt(src_path):
         font = rl.load_font_ex(src_path.as_posix(), 100, None, 0)
         if font.baseSize == 100:  # raylib hands back its default font (baseSize 10) when loading fails
           return font
