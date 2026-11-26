@@ -11,16 +11,29 @@ cd $DIR
 BUILD_DIR=/data/openpilot
 SOURCE_DIR="$(git rev-parse --show-toplevel)"
 
-if [ -z "$RELEASE_BRANCH" ]; then
-  echo "RELEASE_BRANCH is not set"
-  exit 1
-fi
-
 # prebuilt must be compiled on the comma device (larch64 + Adreno GPU for tinygrad DEV=QCOM)
 if [ ! -f /TICI ]; then
   echo "build_release.sh must run on a comma device. From WSL use release/remote_release.sh"
   exit 1
 fi
+
+# the prebuilt links the libraries of the AGNOS it's built on, which must be the one this version runs on
+REQUIRED_AGNOS=$(bash -c "unset AGNOS_VERSION; source '$SOURCE_DIR/launch_env.sh' > /dev/null; echo \$AGNOS_VERSION")
+if [ "$(< /VERSION)" != "$REQUIRED_AGNOS" ]; then
+  echo "this version needs AGNOS $REQUIRED_AGNOS, the device has AGNOS $(< /VERSION): install the branch on the device first (it updates AGNOS on boot)"
+  exit 1
+fi
+
+# TOP: one prebuilt for comma 3 / 3X / four (a build from any of them runs on all three, like upstream
+# pushing its tizi build to release-mici), named after common/version.h:
+#   "0.11.0.0 DEV. - 2026.11.26 (CH Model)" -> branch TOP01100, commit "Update to T.O.P v0.11.0.0 DEV. - 2026.11.26" / "CH Model"
+#   a suffix in the version's second word names the branch too: "DEV._C3" -> TOP01100-C3
+VERSION=$(cat "$SOURCE_DIR/common/version.h" | awk -F'"' '{print $2}' | awk -F'(' '{print $1}' | sed 's/ *$//')
+MODEL=$(cat "$SOURCE_DIR/common/version.h" | awk -F'"' '{print $2}' | awk -F'[()]' '{print $2}')
+BRANCH=$(awk -F'"' '/COMMA_VERSION/{split($2,a," "); v=a[1]; gsub(/[^0-9]/,"",v); s=""; if (index(a[2],"_")) {s=a[2]; sub(/.*_/,"",s); s="-"s}; print v s}' "$SOURCE_DIR/common/version.h")
+RELEASE_BRANCH="${RELEASE_BRANCH:-TOP$BRANCH}"
+COMMIT_TITLE="Update to T.O.P v$VERSION"
+echo "[-] $RELEASE_BRANCH: \"$COMMIT_TITLE\" / \"$MODEL\""
 
 
 # set git identity
@@ -48,16 +61,17 @@ rm -f panda/board/obj/panda_h7.bin.signed
 rm -f panda_tici/board/obj/panda.bin.signed
 rm -f panda_tici/board/obj/panda_h7.bin.signed
 
-# make sure LFS objects were pulled, not just pointer files
-if grep -q "git-lfs.github.com" selfdrive/modeld/models/driving_supercombo.onnx; then
-  echo "driving_supercombo.onnx is an LFS pointer, run 'git lfs pull' in $SOURCE_DIR first"
+# make sure LFS objects were pulled, not just pointer files (models, fonts, icons, sounds, acados libs)
+LFS_POINTERS="$(find . -type f -not -path './.git/*' -size -200c -exec grep -l '^version https://git-lfs.github.com/spec/v1' {} + || true)"
+if [ -n "$LFS_POINTERS" ]; then
+  echo "LFS pointer files instead of their content, run 'git lfs pull' in $SOURCE_DIR first:"
+  echo "$LFS_POINTERS"
   exit 1
 fi
 
-VERSION=$(cat common/version.h | awk -F[\"-]  '{print $2}')
 echo "[-] committing version $VERSION T=$SECONDS"
 git add -f .
-git commit -a -m "openpilot v$VERSION release"
+git commit -a -m "$COMMIT_TITLE" -m "$MODEL"
 
 # Build
 export PYTHONPATH="$BUILD_DIR"
@@ -88,7 +102,8 @@ find . -name '*.pyc' -delete
 find . -name 'moc_*' -delete
 find . -name '__pycache__' -delete
 rm -rf .sconsign.dblite Jenkinsfile release/
-rm -f selfdrive/modeld/models/driving_supercombo.onnx
+# modeld only loads the compiled tinygrad pkls
+rm -f selfdrive/modeld/models/*.onnx
 
 find third_party/ -name '*x86*' -exec rm -r {} +
 find third_party/ -name '*Darwin*' -exec rm -r {} +
@@ -102,7 +117,7 @@ touch prebuilt
 
 # Add built files to git
 git add -f .
-git commit --amend -m "openpilot v$VERSION"
+git commit --amend -m "$COMMIT_TITLE" -m "$MODEL"
 
 # GitHub rejects files over 100MB
 BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M)"

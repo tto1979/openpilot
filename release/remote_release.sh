@@ -2,22 +2,29 @@
 # Run from WSL: the comma device compiles the prebuilt release, WSL pushes it to GitHub.
 #
 #   DEVICE=comma@192.168.1.50 ./release/remote_release.sh build
-#     Clones/updates SRC_BRANCH on the device into /data/openpilot_source and builds the
+#     Clones/updates SRC_BRANCH (default: main-x.xx.x from common/version.h, e.g. main-0.11.0)
+#     on the device into /data/openpilot_source and builds the
 #     prebuilt into /data/openpilot (replaces what the device currently runs), then
 #     restarts openpilot so you can test the exact build before publishing.
+#     The prebuilt runs on comma 3 / 3X / four whichever of them builds it. Its branch is named
+#     after common/version.h: TOP01100 for "0.11.0.0 DEV. - ..." (set RELEASE_BRANCH to override).
 #
 #   DEVICE=comma@192.168.1.50 ./release/remote_release.sh push
-#     Fetches the built commit from the device and force-pushes it to RELEASE_BRANCH
-#     using WSL's GitHub credentials.
+#     Fetches the built commit from the device and force-pushes it to the same branch
+#     name using WSL's GitHub credentials.
 set -euo pipefail
 
 DEVICE="${DEVICE:?set DEVICE, e.g. DEVICE=comma@192.168.1.50}"
-SRC_BRANCH="${SRC_BRANCH:-tqb}"
-RELEASE_BRANCH="${RELEASE_BRANCH:-tqb-prebuilt}"
+RELEASE_BRANCH="${RELEASE_BRANCH:-}"  # empty: build_release.sh names it after common/version.h
 SRC_REPO="${SRC_REPO:-https://github.com/tto1979/openpilot.git}"
 PUSH_REMOTE="${PUSH_REMOTE:-git@github.com:tto1979/openpilot.git}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+# source branch from this checkout's version: "0.11.0.0 DEV. - ..." -> main-0.11.0
+VERSION_BRANCH=$(awk -F'"' '/COMMA_VERSION/{split($2,a," "); split(a[1],v,"."); print "main-" v[1] "." v[2] "." v[3]}' common/version.h)
+SRC_BRANCH="${SRC_BRANCH:-$VERSION_BRANCH}"
+echo "source branch: $SRC_BRANCH"
 
 case "${1:-}" in
   build)
@@ -47,9 +54,13 @@ EOF
       echo "Build failed. openpilot on the device is stopped; fix and rerun 'build', or 'sudo reboot' the device."
       exit 1
     fi
-    echo "Build done, device is running the new build. After testing it, run: $0 push"
+    BUILT_BRANCH=$(ssh "$DEVICE" "git -C /data/openpilot rev-parse --abbrev-ref HEAD")
+    echo "Build done ($BUILT_BRANCH), device is running the new build. After testing it, run: $0 push"
     ;;
   push)
+    if [ -z "$RELEASE_BRANCH" ]; then
+      RELEASE_BRANCH=$(ssh "$DEVICE" "git -C /data/openpilot rev-parse --abbrev-ref HEAD")
+    fi
     git fetch "$DEVICE:/data/openpilot" "+refs/heads/$RELEASE_BRANCH:refs/remotes/device/$RELEASE_BRANCH"
     git push -f "$PUSH_REMOTE" "refs/remotes/device/$RELEASE_BRANCH:refs/heads/$RELEASE_BRANCH"
     echo "Pushed: https://github.com/tto1979/openpilot/tree/$RELEASE_BRANCH"
