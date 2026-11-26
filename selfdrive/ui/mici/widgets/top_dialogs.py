@@ -124,6 +124,25 @@ class SideCheckButton(Widget):
     rl.draw_texture_ex(self._txt_btn_pressed if self.is_pressed else self._txt_btn, rl.Vector2(x, y), 0, 1.0, rl.WHITE)
 
 
+class _VerticalSnapScroller(_Scroller):
+  """Vertical scroller that snaps the closest row to the center when released. Upstream's only snaps horizontally
+  since v0.11.1 (the snap moved into GuiScrollPanel2, which handles either direction)."""
+  def __init__(self, items: list[Widget], **kwargs):
+    super().__init__(items, horizontal=False, snap_items=False, **kwargs)
+
+  def _get_scroll(self, visible_items: list[Widget], content_size: float) -> float:
+    scroll_enabled = self._scroll_enabled() if callable(self._scroll_enabled) else self._scroll_enabled
+    self.scroll_panel.set_enabled(scroll_enabled and self.enabled and not self._scrolling_to[1])
+
+    snap_target: float | None = None
+    if visible_items and self._scrolling_to[0] is None:
+      center_pos = self._rect.y + self._rect.height / 2
+      closest_delta_pos = min((((item.rect.y + item.rect.height / 2) - center_pos) for item in visible_items), key=abs)
+      snap_target = self.scroll_panel.get_offset() - closest_delta_pos
+
+    return self.scroll_panel.update(self._rect, content_size, snap_target=snap_target)
+
+
 class BigDialogOptionButton(Widget):
   """One row of the option wheel (upstream's BigDialogOptionButton, removed in v0.11.0)."""
   HEIGHT = 64
@@ -181,7 +200,7 @@ class BigMultiOptionDialog(BigDialogBase):
     self._right_btn.set_click_callback(lambda: self.dismiss(right_btn_callback))
     self._right_btn.set_enabled(lambda: self.enabled and not self.is_dismissing)
 
-    self._scroller = self._child(_Scroller([], horizontal=False, pad=100, spacing=0, snap_items=True))
+    self._scroller = self._child(_VerticalSnapScroller([], pad=100, spacing=0))
     self._scroller.set_enabled(lambda: self.enabled and not self.is_dismissing and not self._right_btn.is_pressed)
     self._scroller.add_widgets(self._make_buttons(options))
     self._recenter_pending = False
