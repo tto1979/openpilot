@@ -156,7 +156,7 @@ def main() -> None:
           params.put_bool("PandaHeartbeatLost", True)
           cloudlog.event("heartbeat lost", deviceState=health, serial=panda.get_usb_serial())
         if health["som_reset_triggered"]:
-          params.put_bool("PandaSomResetTriggered", True)
+          # the PandaSomResetTriggered param is gone since 0.11.1 (as in dragonpilot's pandad_tici), log only
           cloudlog.event("panda.som_reset_triggered", health=health, serial=panda.get_usb_serial())
 
         if first_run:

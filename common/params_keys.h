@@ -136,6 +136,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"Version", {PERSISTENT, STRING}},
 
     // TOP
+    {"PandaSignatures", {CLEAR_ON_MANAGER_START, BYTES}},  // upstream dropped it in 0.11.1, TOP's pandad.py + "Flash Panda" use it
     {"AccelPersonality", {PERSISTENT, INT}},
     {"AleSato_AutomaticBrakeHold", {PERSISTENT, BOOL}},
     {"Dynamic_Follow", {PERSISTENT, BOOL}},
