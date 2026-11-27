@@ -21,7 +21,7 @@ from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.modeld.modeld import LAT_SMOOTH_SECONDS
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
-from openpilot.top.selfdrive.car.car_params_top import get_car_params_top
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top, nnff_active
 
 State = log.SelfdriveState.OpenpilotState
 LaneChangeState = log.LaneChangeState
@@ -42,6 +42,9 @@ class Controls:
     self.CP_TOP = get_car_params_top(self.params)
     top_params = structs.TopFlags.NNFF if self.CP_TOP.twilsoncoNNFF else 0
     self.CI = interfaces[self.CP.carFingerprint](self.CP, top_params)
+    # NNFF runs on the torque params torqued publishes without learning them (see torqued): apply them even where the
+    # brand doesn't use learned params. Only when the car really runs the NN path, and read once, not every frame
+    self.live_torque = nnff_active(self.CP, self.CP_TOP)
 
     self.sm = messaging.SubMaster(['liveDelay', 'liveParameters', 'liveTorqueParameters', 'modelV2', 'selfdriveState',
                                    'liveCalibration', 'livePose', 'longitudinalPlan', 'carState', 'carOutput',
@@ -51,7 +54,6 @@ class Controls:
     self.steer_limited_by_safety = False
     self.curvature = 0.0
     self.desired_curvature = 0.0
-    self.live_torque = False
 
     self.pose_calibrator = PoseCalibrator()
     self.calibrated_pose: Pose | None = None
@@ -89,7 +91,6 @@ class Controls:
     x = max(lp.stiffnessFactor, 0.1)
     sr = max(lp.steerRatio, 0.1)
     self.VM.update_params(x, sr)
-    self.live_torque = self.params.get_bool("NNFF")
 
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - lp.angleOffsetDeg)
     self.curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo, lp.roll)

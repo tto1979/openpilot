@@ -11,6 +11,7 @@ from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.locationd.helpers import PointBuckets, ParameterEstimator, PoseCalibrator, Pose
+from openpilot.top.selfdrive.car.car_params_top import get_car_params_top, nnff_active
 
 HISTORY = 5  # secs
 POINTS_PER_BUCKET = 1500
@@ -72,6 +73,11 @@ class TorqueEstimator(ParameterEstimator):
     self.offline_friction = 0.0
     self.offline_latAccelFactor = 0.0
     self.resets = 0.0
+    # TOP: no learning while the car runs the NN path: the NN learned the car's response itself, and the friction is
+    # what scales its stuck-wheel push (stuck_friction_gain was set against the offline value). With the NNFF toggle on
+    # but no NN model for the car it runs the official controller, which needs the learning
+    params = Params()
+    self.nnff = nnff_active(CP, get_car_params_top(params))
     self.use_params = CP.brand in ALLOWED_CARS and CP.lateralTuning.which() == 'torque'
 
     if CP.lateralTuning.which() == 'torque':
@@ -95,10 +101,9 @@ class TorqueEstimator(ParameterEstimator):
     self.max_friction = (1.0 + self.friction_sanity) * self.offline_friction
 
     # try to restore cached params
-    params = Params()
     params_cache = params.get("CarParamsPrevRoute")
     torque_cache = params.get("LiveTorqueParameters")
-    if params_cache is not None and torque_cache is not None and not params.get_bool("NNFF"):
+    if params_cache is not None and torque_cache is not None and not self.nnff:
       try:
         with log.Event.from_bytes(torque_cache) as log_evt:
           cache_ltp = log_evt.liveTorqueParameters
@@ -157,7 +162,7 @@ class TorqueEstimator(ParameterEstimator):
     return slope, offset, friction_coeff
 
   def update_params(self, params):
-    if Params().get_bool("NNFF"):
+    if self.nnff:
       return
 
     self.decay = min(self.decay + DT_MDL, MAX_FILTER_DECAY)
