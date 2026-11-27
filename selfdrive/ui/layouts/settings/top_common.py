@@ -3,12 +3,14 @@ TOP settings shared by the comma 3/3X (selfdrive/ui/layouts) and comma four (sel
 toggle list, forced car model list and the side effects of some toggles. No UI code here.
 """
 import os
+from collections.abc import Callable
 import subprocess
 
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
-from openpilot.system.ui.lib.multilang import tr_noop
+from openpilot.system.ui.lib.multilang import tr, tr_noop
+from openpilot.top.system.opview_api.pairing import pairing_code
 
 CARS_DIR = os.path.join(BASEDIR, "selfdrive", "car", "top_tmp")
 ALL_CARS_FILE = os.path.join(CARS_DIR, "AllCars")
@@ -131,16 +133,30 @@ def load_car_list() -> list[str]:
     return []
 
 
-def apply_toggle(params: Params, param: str, state: bool) -> None:
-  """Write a TOP toggle and run its side effects."""
-  params.put_bool(param, state)
+def apply_toggle(params: Params, param: str, state: bool, block: bool = False) -> None:
+  """Write a TOP toggle and run its side effects. block: wait for the writes (off the UI thread, e.g. the opview API)"""
+  params.put_bool(param, state, block=block)
   if param == "NNFF":
     # the learned torque / delay belong to the other controller, relearn and restart onroad
     params.remove("LiveTorqueParameters")
     params.remove("LiveDelay")
-    params.put_bool("OnroadCycleRequested", True)
+    params.put_bool("OnroadCycleRequested", True, block=block)
     if state:
-      params.put_bool("DisableLateralLagLearning", True)
+      params.put_bool("DisableLateralLagLearning", True, block=block)
+
+
+OPVIEW_PAIRING_TEXT = tr_noop("Pairing code for settings and drives in the opview app: {}")
+
+
+def opview_description(params: Params, desc: str) -> Callable[[], str]:
+  """opview toggle description with the pairing code the app asks for (read once, not every frame)"""
+  code: list[str] = []
+
+  def text() -> str:
+    if not code:
+      code.append(pairing_code(params))
+    return tr(desc) + "\n\n" + tr(OPVIEW_PAIRING_TEXT).format(code[0])
+  return text
 
 
 def lag_learning_locked(params: Params) -> bool:

@@ -41,6 +41,17 @@ msgstr "3จี"
 msgid "5G"
 msgstr "5จี"
 
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid ""
+"<b>WARNING: openpilot longitudinal control is in alpha for this car and may "
+"disable Automatic Emergency Braking (AEB).</b><br><br>On this car, openpilot"
+" defaults to the car's built-in ACC instead of openpilot's longitudinal "
+"control. Enable this to switch to openpilot longitudinal control. Enabling "
+"Experimental mode is recommended when enabling openpilot longitudinal "
+"control alpha. Changing this setting will restart openpilot if the car is "
+"powered on."
+msgstr ""
+
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "<br><br>Steering lag calibration is complete."
 msgstr "<br><br>การปรับเทียบความล่าช้าของพวงมาลัยเสร็จสมบูรณ์"
@@ -51,6 +62,13 @@ msgstr "<br><br>การปรับเทียบความล่าช้�
 
 #: openpilot/selfdrive/ui/layouts/settings/top_common.py
 msgid "ACC +/-: Long Press Reverse"
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid ""
+"ADB (Android Debug Bridge) allows connecting to your device over USB or over"
+" the network. See https://docs.comma.ai/how-to/connect-to-comma for more "
+"info."
 msgstr ""
 
 #: openpilot/selfdrive/ui/widgets/ssh_key.py
@@ -66,6 +84,7 @@ msgid "APN Setting"
 msgstr "การตั้งค่า APN"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Acceleration Personality"
 msgstr ""
 
@@ -84,7 +103,7 @@ msgid "Advanced"
 msgstr "ขั้นสูง"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-#: openpilot/selfdrive/ui/onroad/top_hud.py
+#: openpilot/selfdrive/ui/onroad/top_hud.py top/system/opview_api/settings.py
 msgid "Aggressive"
 msgstr "ก้าวร้าว"
 
@@ -92,9 +111,20 @@ msgstr "ก้าวร้าว"
 msgid "Agree"
 msgstr "เห็นด้วย"
 
+#: top/system/opview_api/settings.py
+msgid "Always on with NNFF Torque Control."
+msgstr ""
+
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Always-On Driver Monitoring"
 msgstr "การตรวจสอบไดรเวอร์ตลอดเวลา"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid ""
+"An alpha version of openpilot longitudinal control can be tested, along with"
+" Experimental mode, on non-release branches."
+msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "Are you sure you want to flash the Panda firmware?"
@@ -121,10 +151,12 @@ msgid "Are you sure you want to uninstall?"
 msgstr "คุณแน่ใจหรือไม่ว่าต้องการถอนการติดตั้ง?"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Assist"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid ""
 "Assist: Adjusts the vehicle's cruise speed based on the current road's speed"
 " limit when operating the +/- buttons."
@@ -198,14 +230,17 @@ msgid "Cancel"
 msgstr "ยกเลิก"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Car First"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/top.py
+#: top/system/opview_api/settings.py
 msgid "Car Model"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Car Only"
 msgstr ""
 
@@ -220,6 +255,25 @@ msgstr "เซลล์วัดแสง"
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "Change Language"
 msgstr "เปลี่ยนภาษา"
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Change lanes without the need to nudge the steering wheel first.\n"
+"Disabled: Need to nudge the steering wheel to change lanes.\n"
+"Enabled: Nudgeless.\n"
+"Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above 35mph."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Change the ACC +/- buttons behavior with cruise speed change in openpilot.\n"
+"Disabled (Stock): Short = 1, Long = 5.\n"
+"Enabled: Short and Long = 5."
+msgstr ""
+
+#: top/system/opview_api/settings.py
+msgid "Change this on the device, or after the car is off."
+msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Changing this setting will restart openpilot if the car is powered on."
@@ -239,6 +293,7 @@ msgid "Close"
 msgstr "ปิด"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Combined"
 msgstr ""
 
@@ -307,6 +362,7 @@ msgid "Disable Steering Delay Learning"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Disengage on Accelerator Pedal"
 msgstr "ปลดเมื่อเหยียบคันเร่ง"
 
@@ -327,6 +383,7 @@ msgid "Disengage to Reset Calibration"
 msgstr "ปลดเพื่อรีเซ็ตการปรับเทียบ"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Display speed in km/h instead of mph."
 msgstr "แสดงความเร็วเป็น km/h แทน mph"
 
@@ -359,6 +416,7 @@ msgid "Driver Camera"
 msgstr "กล้องไดร์เวอร์"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Driving Personality"
 msgstr "บุคลิกภาพในการขับขี่"
 
@@ -386,7 +444,14 @@ msgstr "ผลประโยชน์ทับซ้อน"
 msgid "EXPERIMENTAL MODE ON"
 msgstr "โหมดทดลองเปิดอยู่"
 
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Eases off the brake in the final moments of a stop for a gentle landing. "
+"Planned braking is never softened. Requires openpilot longitudinal control."
+msgstr ""
+
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Eco"
 msgstr ""
 
@@ -416,6 +481,7 @@ msgid "Enable Experiment Mode In SNG"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Enable Lane Departure Warnings"
 msgstr "เปิดใช้งานคำเตือนการออกนอกเลน"
 
@@ -440,10 +506,12 @@ msgid "Enable Toyota Drive Mode Button"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Enable driver monitoring even when openpilot is not engaged."
 msgstr "เปิดใช้งานการตรวจสอบไดรเวอร์แม้ว่าจะไม่ได้ใช้งาน openpilot ก็ตาม"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Enable openpilot"
 msgstr "เปิดใช้งานโอเพ่นไพลอต"
 
@@ -522,10 +590,12 @@ msgid "Error Log"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Experimental Mode"
 msgstr "โหมดทดลอง"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid ""
 "Experimental mode is currently unavailable on this car since the car's stock"
 " ACC is used for longitudinal control."
@@ -570,10 +640,12 @@ msgid "Fix Toyota BSM Signal"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Fixed"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Fixed: Adds a fixed offset [Speed Limit + Offset]"
 msgstr ""
 
@@ -591,6 +663,24 @@ msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "Flashing..."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/firehose.py
+msgid ""
+"For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n"
+"\n"
+"Firehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card.\n"
+"\n"
+"\n"
+"Frequently Asked Questions\n"
+"\n"
+"Does it matter how or where I drive? Nope, just drive as you normally would.\n"
+"\n"
+"Do all of my segments get pulled in Firehose Mode? No, we selectively pull a subset of your segments.\n"
+"\n"
+"What's a good USB-C adapter? Any fast phone or laptop charger should be fine.\n"
+"\n"
+"Does it matter which software I run? Yes, only upstream openpilot (and particular forks) are able to be used for training."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/top.py
@@ -636,10 +726,12 @@ msgid "IP Address"
 msgstr "ที่อยู่ IP"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Info."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Information: Displays the current road's speed limit."
 msgstr ""
 
@@ -650,6 +742,18 @@ msgstr "ติดตั้งอัปเดต"
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "Joystick Debug Mode"
 msgstr "โหมดดีบักจอยสติ๊ก"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid ""
+"Keep openpilot offroad while the car is on, e.g. to change settings or "
+"update. Back to normal after a reboot. Not available while engaged."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Keep the fixed default steering delay instead of learning the delay of the car while driving. Turn on for cars whose steering wheel sticks: the learned delay comes out too long and the steering can wobble.\n"
+"Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive."
+msgstr ""
 
 #: openpilot/selfdrive/ui/onroad/top_hud.py
 msgid "LIMIT"
@@ -699,10 +803,12 @@ msgid "Map Based Turn Control"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Map First"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Map Only"
 msgstr ""
 
@@ -754,15 +860,32 @@ msgid "No results found for keywords: {}"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "None"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "None: No Offset"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Normal"
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
+msgid ""
+"Normal is recommended. In sport mode, TOP will provide aggressive "
+"acceleration for a dynamic driving experience. In eco mode, TOP will apply "
+"smoother and more relaxed acceleration. On supported cars, you can cycle "
+"through these acceleration personality within Onroad Settings on the driving"
+" screen."
+msgstr ""
+
+#: top/system/opview_api/server.py
+msgid "Not available while driving."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
@@ -782,10 +905,12 @@ msgid "OSM"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Off"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Off: Disables the Speed Limit functions."
 msgstr ""
 
@@ -794,6 +919,7 @@ msgid "Offline Maps ETA"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Offset"
 msgstr ""
 
@@ -842,11 +968,17 @@ msgstr ""
 "จับคู่อุปกรณ์ของคุณกับการเชื่อมต่อด้วยเครื่องหมายจุลภาค (connect.comma.ai) "
 "และรับข้อเสนอจุลภาคเฉพาะของคุณ"
 
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid "Pairing code for settings and drives in the opview app: {}"
+msgstr ""
+
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Percent"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Percent: Adds a percent offset [Speed Limit + (Offset % Speed Limit)]"
 msgstr ""
 
@@ -924,14 +1056,25 @@ msgid "Rebooting..."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
+msgid ""
+"Receive alerts to steer back into the lane when your vehicle drifts over a "
+"detected lane line without a turn signal activated while driving over 31 mph"
+" (50 km/h)."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Record and Upload Driver Camera"
 msgstr "บันทึกและอัพโหลดกล้องไดร์เวอร์"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Record and Upload Microphone Audio"
 msgstr "บันทึกและอัปโหลดเสียงไมโครโฟน"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid ""
 "Record and store microphone audio while driving. The audio will be included "
 "in the dashcam video in comma connect."
@@ -948,7 +1091,7 @@ msgid "Reinstall the Panda firmware to fix connection or reliability issues."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-#: openpilot/selfdrive/ui/onroad/top_hud.py
+#: openpilot/selfdrive/ui/onroad/top_hud.py top/system/opview_api/settings.py
 msgid "Relaxed"
 msgstr "ผ่อนคลาย"
 
@@ -1052,29 +1195,43 @@ msgid "Software"
 msgstr "ซอฟต์แวร์"
 
 #: openpilot/selfdrive/ui/layouts/settings/osm.py
+#: top/system/opview_api/settings.py
 msgid "Speed Limit"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Speed Limit Mode"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Speed Limit Offset"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Speed Limit Source"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Sport"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-#: openpilot/selfdrive/ui/onroad/top_hud.py
+#: openpilot/selfdrive/ui/onroad/top_hud.py top/system/opview_api/settings.py
 msgid "Standard"
 msgstr "มาตรฐาน"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
+msgid ""
+"Standard is recommended. In aggressive mode, openpilot will follow lead cars"
+" closer and be more aggressive with the gas and brake. In relaxed mode "
+"openpilot will stay further away from lead cars. On supported cars, you can "
+"cycle through these personalities with your steering wheel distance button."
+msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/osm.py
 msgid "Start Download"
@@ -1085,11 +1242,19 @@ msgid "State"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Stock"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/top_common.py
 msgid "Stop And Go"
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Stream the road camera and driving display to the opview app (Android, "
+"github.com/eFiniLan/opview) on a phone on the same Wi-Fi network as the "
+"device, such as the phone's hotspot. Uses extra CPU while driving."
 msgstr ""
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
@@ -1132,6 +1297,19 @@ msgstr "สาขาเป้าหมาย"
 msgid "Tethering Password"
 msgstr "รหัสผ่านการแชร์อินเทอร์เน็ต"
 
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"The distance to the lead car will no longer be a fixed reaction time, but "
+"will be dynamically adjusted based on the speed of the vehicle."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"This will allow you to play or download openpilot driving record files through your browser.\n"
+"Use web interface to control it: http://[device_ip]:8082\n"
+"Internet access from mobile phone (tethering) is required."
+msgstr ""
+
 #: openpilot/selfdrive/ui/layouts/settings/osm.py
 msgid ""
 "This will delete ALL downloaded maps\n"
@@ -1153,8 +1331,21 @@ msgid "Time remaining: "
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/settings.py
+#: top/system/opview_api/settings.py
 msgid "Toggles"
 msgstr "สลับ"
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"Turn off the device screen to protect the OLED panel after driving starts. "
+"It automatically brightens or turns on when a touch or event occurs."
+msgstr ""
+
+#: top/system/opview_api/settings.py
+msgid ""
+"Turn on Experimental Mode once on the device to confirm its description "
+"first."
+msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "UI Debug Mode"
@@ -1190,6 +1381,7 @@ msgid "Upgrade Now"
 msgstr "อัพเกรดทันที"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid ""
 "Upload data from the driver facing camera and help improve the driver "
 "monitoring algorithm."
@@ -1197,6 +1389,7 @@ msgstr ""
 "อัปโหลดข้อมูลจากกล้องที่หันเข้าหาคนขับและช่วยปรับปรุงอัลกอริธึมการตรวจสอบผู้ขับขี่"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "Use Metric System"
 msgstr "ใช้ระบบเมตริก"
 
@@ -1206,7 +1399,20 @@ msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/top_common.py
 msgid ""
+"Use Twilsonco's Neural Network Feedforward torque system for more precise lateral control.\n"
+"Changing this setting will restart openpilot."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
 "Use map data to estimate the appropriate speed to drive through turns ahead."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
+msgid ""
+"Use the openpilot system for adaptive cruise control and lane keep driver "
+"assistance. Your attention is required at all times to use this feature."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/top_common.py
@@ -1243,12 +1449,21 @@ msgid "Waiting to start"
 msgstr "กำลังรอที่จะเริ่ม"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "Warning"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid ""
 "Warning: Provides a warning when exceeding the current road's speed limit."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid ""
+"Warning: This grants SSH access to all public keys in your GitHub settings. "
+"Never enter a GitHub username other than your own. A comma employee will "
+"NEVER ask you to add their GitHub username."
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/osm.py
@@ -1265,8 +1480,30 @@ msgid "Welcome to openpilot"
 msgstr "ยินดีต้อนรับสู่ openpilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+#: top/system/opview_api/settings.py
 msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
 msgstr "เมื่อเปิดใช้งาน การกดแป้นคันเร่งจะเป็นการปลดโอเพ่นไพลอต"
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"When the driving model keeps the car off the middle of a marked lane, "
+"cutting curves or hugging a line, steer it back toward the lane centre. Only"
+" from 45 km/h (full from 60 km/h) in normal-width lanes: off in alleys and "
+"slow streets, during lane changes, while you steer and where the lane lines "
+"are faint. Takes effect on the next drive."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"When the system detects obstacles at the vehicle's edge, lane change assist functionality will be temporarily suspended.\n"
+"NOTE: This will show 'Car Detected in Blindspot' warning."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/top_common.py
+msgid ""
+"When vehicle is stopped, enable experiment mode to prevent radar misjudgment"
+" of other moving vehicles that could cause continuous forward sliding."
+msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 msgid "Wi-Fi"
@@ -1391,6 +1628,34 @@ msgid "openpilot Unavailable"
 msgstr "openpilot ไม่พร้อมใช้งาน"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid ""
+"openpilot defaults to driving in chill mode. Experimental mode enables "
+"alpha-level features that aren't ready for chill mode. Experimental features"
+" are listed below:<br><h4>End-to-End Longitudinal Control</h4><br>Let the "
+"driving model control the gas and brakes. openpilot will drive as it thinks "
+"a human would, including stopping for red lights and stop signs. Since the "
+"driving model decides the speed to drive, the set speed will only act as an "
+"upper bound. This is an alpha quality feature; mistakes should be "
+"expected.<br><h4>New Driving Visualization</h4><br>The driving visualization"
+" will transition to the road-facing wide-angle camera at low speeds to "
+"better show some turns. The Experimental mode logo will also be shown in the"
+" top right corner."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid ""
+"openpilot is continuously calibrating, resetting is rarely required. "
+"Resetting calibration will restart openpilot if the car is powered on."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/firehose.py
+msgid ""
+"openpilot learns to drive by watching humans, like you, drive.\n"
+"\n"
+"Firehose Mode allows you to maximize your training data uploads to improve openpilot's driving models. More data means bigger models, which means better Experimental Mode."
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "openpilot longitudinal control may come in a future update."
 msgstr "ระบบควบคุมตามยาวของ openpilot อาจมาในการอัปเดตครั้งถัดไป"
 
@@ -1455,26 +1720,31 @@ msgid "✓ SUBSCRIBED"
 msgstr "✓ สมัครแล้ว"
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid ""
 "⦿ Car First: Use Speed Limit data from Car if available, else use from "
 "OpenStreetMaps"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "⦿ Car Only: Use Speed Limit data only from Car"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "⦿ Combined: Use combined Speed Limit data from Car & OpenStreetMaps"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid ""
 "⦿ Map First: Use Speed Limit data from OpenStreetMaps if available, else use"
 " from Car"
 msgstr ""
 
 #: openpilot/selfdrive/ui/layouts/settings/speed_limit.py
+#: top/system/opview_api/settings.py
 msgid "⦿ Map Only: Use Speed Limit data only from OpenStreetMaps"
 msgstr ""
 

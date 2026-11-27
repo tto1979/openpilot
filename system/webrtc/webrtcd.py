@@ -357,6 +357,10 @@ def webrtcd_thread(host: str, port: int, debug: bool):
   app.router.add_post("/notify", post_notify)
   app.router.add_get("/schema", get_schema)
 
+  # TOP: the opview app's settings, drives and downloads (dashy compatible), see top/system/opview_api
+  from openpilot.top.system.opview_api.server import setup as setup_opview_api
+  setup_opview_api(app)
+
   web.run_app(app, host=host, port=port)
 
 

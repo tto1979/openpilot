@@ -29,6 +29,7 @@ def setup_params():
   params.put("SpeedLimitValueOffset", 5)
   params.put("CarModel", "TOYOTA_COROLLA_TSS2")
   params.put_bool("NNFF", True)
+  params.put_bool("dp_dev_opview", True)
   try:
     os.makedirs(os.path.dirname(ERROR_LOG_PATH), exist_ok=True)
     with open(ERROR_LOG_PATH, "w") as f:
@@ -76,6 +77,8 @@ def main():
     ("hub_2", scroll(settings, -420)),
     ("top", show(top)),
     ("top_2", scroll(top, -1300)),
+    # the opview pairing code card, left edge of the screen
+    ("top_opview_code", lambda: scroll(top, top._scroller.scroll_panel.get_offset() - (top._opview_code_btn.rect.x - top.rect.x) + 40)()),
     ("top_car_brand_picker", lambda: (setattr(top, "_car_list", CARS), top._show_car_dialog())),
     ("top_car_model_picker", lambda: (show(top)(), top._show_model_dialog("TOYOTA"))),
     ("maps", show(maps)),

@@ -5,7 +5,7 @@ import threading
 
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.layouts.settings.top_common import TOP_TOGGLES, DISENGAGED_ONLY, NOT_SELECTED, load_car_list, \
-  apply_toggle, lag_learning_locked
+  apply_toggle, lag_learning_locked, opview_description
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr
@@ -33,7 +33,8 @@ class TopLayout(Widget):
     for param, title, desc, icon in TOP_TOGGLES:
       enabled = (lambda: not ui_state.engaged) if param in DISENGAGED_ONLY else True
       # descriptions are rendered as HTML: newlines need <br>
-      self._toggles[param] = toggle_item(lambda t=title: tr(t), lambda d=desc: tr(d).replace("\n", "<br>"), self._params.get_bool(param),
+      desc_fn = opview_description(self._params, desc) if param == "dp_dev_opview" else (lambda d=desc: tr(d))
+      self._toggles[param] = toggle_item(lambda t=title: tr(t), lambda f=desc_fn: f().replace("\n", "<br>"), self._params.get_bool(param),
                                          callback=lambda state, p=param: self._toggle_callback(p, state), icon=icon, enabled=enabled)
 
     self._scroller = Scroller([self._car_btn, *self._toggles.values()], line_separator=True, spacing=0)
