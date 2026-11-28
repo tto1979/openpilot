@@ -246,12 +246,14 @@ class StreamSession:
   def start(self):
     self.run_task = asyncio.create_task(self.run())
 
-  def stop(self):
-    if self.run_task.done():
+  async def stop(self):
+    # TOP: called from the server's shutdown, inside its event loop (asyncio.run() there crashed webrtcd on every
+    # stop with a session open)
+    if self.run_task is None or self.run_task.done():
       return
     self.run_task.cancel()
     self.run_task = None
-    asyncio.run(self.post_run_cleanup())
+    await self.post_run_cleanup()
 
   async def get_answer(self):
     return await self.stream.start()
@@ -337,8 +339,11 @@ async def post_notify(request: 'web.Request'):
   return web.Response(status=200, text="OK")
 
 async def on_shutdown(app: 'web.Application'):
-  for session in app['streams'].values():
-    session.stop()
+  for session in list(app['streams'].values()):
+    try:
+      await session.stop()
+    except Exception:
+      logging.getLogger("webrtcd").exception("Stream session cleanup failure")
   del app['streams']
 
 
