@@ -105,6 +105,10 @@ def opview(started: bool, params: Params, CP: car.CarParams) -> bool:
   # stream the road camera and HUD data to the opview phone app while driving
   return started and params.get_bool("dp_dev_opview")
 
+def opview_api(started: bool, params: Params, CP: car.CarParams) -> bool:
+  # webrtcd also serves the opview app's settings, drives and downloads (top/system/opview_api), offroad too
+  return params.get_bool("dp_dev_opview")
+
 def or_(*fns):
   return lambda *args: operator.or_(*(fn(*args) for fn in fns))
 
@@ -166,7 +170,8 @@ procs = [
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
-  PythonProcess("webrtcd", "system.webrtc.webrtcd", or_(notcar, opview)),
+  # TOP: runs the whole time opview is on, so it has to come back after a crash (it used to restart with each drive)
+  PythonProcess("webrtcd", "system.webrtc.webrtcd", or_(notcar, opview_api), restart_if_crash=True),
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
   PythonProcess("joystick", "tools.joystick.joystick_control", and_(joystick, iscar)),
 ]

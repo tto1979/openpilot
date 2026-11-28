@@ -58,6 +58,10 @@ msgstr "3G"
 msgid "5G"
 msgstr "5G"
 
+#: selfdrive/ui/layouts/settings/developer.py:22
+msgid "<b>WARNING: openpilot longitudinal control is in alpha for this car and will disable Automatic Emergency Braking (AEB).</b><br><br>On this car, openpilot defaults to the car's built-in ACC instead of openpilot's longitudinal control. Enable this to switch to openpilot longitudinal control. Enabling Experimental mode is recommended when enabling openpilot longitudinal control alpha. Changing this setting will restart openpilot if the car is powered on."
+msgstr "<b>警告：此車款的 openpilot 縱向控制仍為 alpha 版，會停用自動緊急煞車（AEB）。</b><br><br>此車款預設使用原廠 ACC，而非 openpilot 縱向控制。開啟此選項即可改用 openpilot 縱向控制。開啟 openpilot 縱向控制 alpha 時，建議同時開啟實驗模式。車輛電源開啟時變更此設定，openpilot 會重新啟動。"
+
 #: selfdrive/ui/layouts/settings/device.py:185
 #, python-format
 msgid "<br><br>Steering lag calibration is complete."
@@ -68,9 +72,13 @@ msgstr "<br><br>轉向延遲校正完成。"
 msgid "<br><br>Steering lag calibration is {}% complete."
 msgstr "<br><br>轉向延遲校正已完成 {}%。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:105
+#: selfdrive/ui/layouts/settings/top_common.py:107
 msgid "ACC +/-: Long Press Reverse"
 msgstr "ACC +/-: 反轉長按數值"
+
+#: selfdrive/ui/layouts/settings/developer.py:14
+msgid "ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info."
+msgstr "ADB（Android Debug Bridge）可透過 USB 或網路連線到裝置。詳情請見 https://docs.comma.ai/how-to/connect-to-comma"
 
 #: selfdrive/ui/widgets/ssh_key.py:30
 msgid "ADD"
@@ -87,6 +95,7 @@ msgid "APN Setting"
 msgstr "APN 設定"
 
 #: selfdrive/ui/layouts/settings/toggles.py:117
+#: top/system/opview_api/settings.py:148
 #, python-format
 msgid "Acceleration Personality"
 msgstr "個性化加速模式"
@@ -96,19 +105,19 @@ msgstr "個性化加速模式"
 msgid "Acknowledge Excessive Actuation"
 msgstr "確認過度作動"
 
-#: selfdrive/ui/layouts/settings/top_common.py:100
-msgid ""
-"Activates the car's brakes after 1 seconds stopped. (Only support on Toyota "
-"TSS2 Hybrid vehicles)"
+#: selfdrive/ui/layouts/settings/top_common.py:102
+msgid "Activates the car's brakes after 1 seconds stopped. (Only support on Toyota TSS2 Hybrid vehicles)"
 msgstr "踩煞車踏板1秒後，啟動自動煞停維持功能。(僅適用於 Toyota TSS2 油電車款)"
 
-#: system/ui/widgets/network.py:92 system/ui/widgets/network.py:74
+#: system/ui/widgets/network.py:92
+#: system/ui/widgets/network.py:74
 #, python-format
 msgid "Advanced"
 msgstr "進階"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
 #: selfdrive/ui/onroad/top_hud.py:28
+#: top/system/opview_api/settings.py:147
 #, python-format
 msgid "Aggressive"
 msgstr "積極"
@@ -118,10 +127,20 @@ msgstr "積極"
 msgid "Agree"
 msgstr "同意"
 
+#: top/system/opview_api/settings.py:85
+msgid "Always on with NNFF Torque Control."
+msgstr "使用 NNFF 扭力控制時固定開啟。"
+
 #: selfdrive/ui/layouts/settings/toggles.py:80
+#: top/system/opview_api/settings.py:43
 #, python-format
 msgid "Always-On Driver Monitoring"
 msgstr "持續啟用駕駛監控"
+
+#: selfdrive/ui/layouts/settings/toggles.py:213
+#, python-format
+msgid "An alpha version of openpilot longitudinal control can be tested, along with Experimental mode, on non-release branches."
+msgstr "在非正式版分支上，可測試 alpha 版 openpilot 縱向控制與實驗模式。"
 
 #: selfdrive/ui/layouts/settings/device.py:122
 #, python-format
@@ -154,21 +173,22 @@ msgid "Are you sure you want to uninstall?"
 msgstr "確定要解除安裝嗎？"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:125
+#: top/system/opview_api/settings.py:153
 #, python-format
 msgid "Assist"
 msgstr "輔助"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:47
-msgid ""
-"Assist: Adjusts the vehicle's cruise speed based on the current road's speed"
-" limit when operating the +/- buttons."
+#: top/system/opview_api/settings.py:67
+msgid "Assist: Adjusts the vehicle's cruise speed based on the current road's speed limit when operating the +/- buttons."
 msgstr "輔助：操作 +/- 按鈕時，依目前道路的速限調整巡航速度。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:99
+#: selfdrive/ui/layouts/settings/top_common.py:101
 msgid "Automatic Brake Hold"
 msgstr "自動煞停維持"
 
-#: system/ui/widgets/network.py:96 selfdrive/ui/layouts/onboarding.py:151
+#: system/ui/widgets/network.py:96
+#: selfdrive/ui/layouts/onboarding.py:151
 #: selfdrive/ui/layouts/settings/speed_limit.py:77
 #, python-format
 msgid "Back"
@@ -179,7 +199,7 @@ msgstr "返回"
 msgid "Become a comma prime member at connect.comma.ai"
 msgstr "前往 connect.comma.ai 成為 comma prime 會員"
 
-#: selfdrive/ui/layouts/settings/top_common.py:63
+#: selfdrive/ui/layouts/settings/top_common.py:65
 msgid "Blinker Lane Change"
 msgstr "開啟方向燈自動變換車道"
 
@@ -216,8 +236,10 @@ msgstr "設置"
 msgid "CONFIRM"
 msgstr "確認"
 
-#: system/ui/widgets/network.py:152 selfdrive/ui/layouts/sidebar.py:79
-#: selfdrive/ui/layouts/sidebar.py:146 selfdrive/ui/layouts/sidebar.py:148
+#: system/ui/widgets/network.py:152
+#: selfdrive/ui/layouts/sidebar.py:79
+#: selfdrive/ui/layouts/sidebar.py:146
+#: selfdrive/ui/layouts/sidebar.py:148
 #: selfdrive/ui/layouts/sidebar.py:150
 #, python-format
 msgid "CONNECT"
@@ -246,28 +268,32 @@ msgid "Calculating..."
 msgstr "正在計算..."
 
 #: system/ui/widgets/confirm_dialog.py:24
-#: system/ui/widgets/option_dialog.py:36 system/ui/widgets/keyboard.py:83
+#: system/ui/widgets/option_dialog.py:36
+#: system/ui/widgets/keyboard.py:83
 #: system/ui/widgets/network.py:326
 #, python-format
 msgid "Cancel"
 msgstr "取消"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:97
+#: top/system/opview_api/settings.py:155
 #, python-format
 msgid "Car First"
 msgstr "車輛優先"
 
 #: selfdrive/ui/layouts/settings/top.py:28
+#: top/system/opview_api/settings.py:136
 #, python-format
 msgid "Car Model"
 msgstr "車型"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:97
+#: top/system/opview_api/settings.py:155
 #, python-format
 msgid "Car Only"
 msgstr "僅車輛"
 
-#: selfdrive/ui/layouts/settings/top.py:112
+#: selfdrive/ui/layouts/settings/top.py:113
 #, python-format
 msgid "Car list is not available."
 msgstr "無法取得車型清單。"
@@ -282,6 +308,32 @@ msgstr "行動網路計量"
 msgid "Change Language"
 msgstr "變更語言"
 
+#: selfdrive/ui/layouts/settings/top_common.py:66
+msgid ""
+"Change lanes without the need to nudge the steering wheel first.\n"
+"Disabled: Need to nudge the steering wheel to change lanes.\n"
+"Enabled: Nudgeless.\n"
+"Speed limit: Normal mode: above 20mph, Enabled Lateral Controls Always On: above 35mph."
+msgstr ""
+"不需先輕推方向盤即可變換車道。\n"
+"關閉：需輕推方向盤才會變換車道。\n"
+"開啟：免推方向盤。\n"
+"速度限制：一般模式需高於 20 mph，開啟全時車道維持時需高於 35 mph。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:108
+msgid ""
+"Change the ACC +/- buttons behavior with cruise speed change in openpilot.\n"
+"Disabled (Stock): Short = 1, Long = 5.\n"
+"Enabled: Short and Long = 5."
+msgstr ""
+"變更 openpilot 中 ACC +/- 按鍵調整巡航速度的方式。\n"
+"關閉（原廠）：短按 = 1，長按 = 5。\n"
+"開啟：短按與長按皆 = 5。"
+
+#: top/system/opview_api/settings.py:82
+msgid "Change this on the device, or after the car is off."
+msgstr "請在裝置上變更，或熄火後再改。"
+
 #: selfdrive/ui/layouts/settings/toggles.py:150
 #, python-format
 msgid "Changing this setting will restart openpilot if the car is powered on."
@@ -289,8 +341,7 @@ msgstr "若車輛通電，變更此設定將重新啟動 openpilot。"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:131
 #, python-format
-msgid ""
-"Choose where the speed limit comes from: the car, OpenStreetMaps or both."
+msgid "Choose where the speed limit comes from: the car, OpenStreetMaps or both."
 msgstr "選擇速限資料來源：車輛、OpenStreetMaps 或兩者。"
 
 #: selfdrive/ui/widgets/pairing_dialog.py:118
@@ -304,22 +355,19 @@ msgid "Close"
 msgstr "關閉"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:97
+#: top/system/opview_api/settings.py:155
 #, python-format
 msgid "Combined"
 msgstr "合併"
 
 #: selfdrive/ui/layouts/settings/osm.py:64
 #, python-format
-msgid ""
-"Configure speed limit settings including source policy, mode, and offset "
-"options."
+msgid "Configure speed limit settings including source policy, mode, and offset options."
 msgstr "設定速限相關選項，包括來源政策、運作模式和偏移值。"
 
 #: selfdrive/ui/widgets/footage_dialog.py:100
 #, python-format
-msgid ""
-"Connect the device to Wi-Fi (or your phone's hotspot) to watch the "
-"recordings."
+msgid "Connect the device to Wi-Fi (or your phone's hotspot) to watch the recordings."
 msgstr "請將裝置連上 Wi-Fi（或手機熱點）以觀看行車記錄影像。"
 
 #: selfdrive/ui/layouts/settings/osm.py:92
@@ -381,11 +429,12 @@ msgstr "開發人員"
 msgid "Device"
 msgstr "裝置"
 
-#: selfdrive/ui/layouts/settings/top_common.py:34
+#: selfdrive/ui/layouts/settings/top_common.py:36
 msgid "Disable Steering Delay Learning"
 msgstr "關閉轉向延遲學習"
 
 #: selfdrive/ui/layouts/settings/toggles.py:68
+#: top/system/opview_api/settings.py:37
 #, python-format
 msgid "Disengage on Accelerator Pedal"
 msgstr "踩下加速踏板時脫離"
@@ -411,6 +460,7 @@ msgid "Disengage to Reset Calibration"
 msgstr "脫離以重設校正"
 
 #: selfdrive/ui/layouts/settings/toggles.py:34
+#: top/system/opview_api/settings.py:51
 msgid "Display speed in km/h instead of mph."
 msgstr "以 km/h 顯示速度（非 mph）。"
 
@@ -451,19 +501,21 @@ msgid "Driver Camera"
 msgstr "車內鏡頭"
 
 #: selfdrive/ui/layouts/settings/toggles.py:106
+#: top/system/opview_api/settings.py:146
 #, python-format
 msgid "Driving Personality"
 msgstr "駕駛風格"
 
-#: selfdrive/ui/layouts/settings/top_common.py:23
+#: selfdrive/ui/layouts/settings/top_common.py:25
 msgid "Driving Screen Off"
 msgstr "上路關閉螢幕"
 
-#: selfdrive/ui/layouts/settings/top_common.py:55
+#: selfdrive/ui/layouts/settings/top_common.py:57
 msgid "Dynamic Distance Adjustment"
 msgstr "動態距離調整"
 
-#: system/ui/widgets/network.py:120 system/ui/widgets/network.py:136
+#: system/ui/widgets/network.py:120
+#: system/ui/widgets/network.py:136
 #, python-format
 msgid "EDIT"
 msgstr "編輯"
@@ -481,12 +533,17 @@ msgstr "ETH"
 msgid "EXPERIMENTAL MODE ON"
 msgstr "實驗模式已開啟"
 
+#: selfdrive/ui/layouts/settings/top_common.py:62
+msgid "Eases off the brake in the final moments of a stop for a gentle landing. Planned braking is never softened. Requires openpilot longitudinal control."
+msgstr "停車前最後一刻放鬆煞車，讓車輛平順停下。計畫中的煞車不會被減弱。需使用 openpilot 縱向控制。"
+
 #: selfdrive/ui/layouts/settings/toggles.py:119
+#: top/system/opview_api/settings.py:149
 #, python-format
 msgid "Eco"
 msgstr "節能"
 
-#: selfdrive/ui/layouts/settings/top_common.py:68
+#: selfdrive/ui/layouts/settings/top_common.py:70
 msgid "Edge Detection During Lane Changes"
 msgstr "變換車道時進行邊緣偵測"
 
@@ -501,24 +558,25 @@ msgstr "啟用"
 msgid "Enable ADB"
 msgstr "啟用 ADB"
 
-#: selfdrive/ui/layouts/settings/top_common.py:93
+#: selfdrive/ui/layouts/settings/top_common.py:95
 msgid "Enable Door Auto Lock"
 msgstr "開啟車門自動上鎖"
 
-#: selfdrive/ui/layouts/settings/top_common.py:96
+#: selfdrive/ui/layouts/settings/top_common.py:98
 msgid "Enable Door Auto Unlock"
 msgstr "開啟車門自動解鎖"
 
-#: selfdrive/ui/layouts/settings/top_common.py:48
+#: selfdrive/ui/layouts/settings/top_common.py:50
 msgid "Enable Experiment Mode In SNG"
 msgstr "SNG時開啟實驗模式"
 
 #: selfdrive/ui/layouts/settings/toggles.py:74
+#: top/system/opview_api/settings.py:40
 #, python-format
 msgid "Enable Lane Departure Warnings"
 msgstr "啟用偏離車道警示"
 
-#: selfdrive/ui/layouts/settings/top_common.py:78
+#: selfdrive/ui/layouts/settings/top_common.py:80
 msgid "Enable Local File Server"
 msgstr "開啟檔案服務器"
 
@@ -537,54 +595,48 @@ msgstr "啟用 SSH"
 msgid "Enable Tethering"
 msgstr "啟用網路共享"
 
-#: selfdrive/ui/layouts/settings/top_common.py:90
+#: selfdrive/ui/layouts/settings/top_common.py:92
 msgid "Enable Toyota Drive Mode Button"
 msgstr "開啟Toyota 駕駛模式按鍵連動"
 
 #: selfdrive/ui/layouts/settings/toggles.py:32
+#: top/system/opview_api/settings.py:43
 msgid "Enable driver monitoring even when openpilot is not engaged."
 msgstr "即使未啟動 openpilot 亦啟用駕駛監控。"
 
 #: selfdrive/ui/layouts/settings/toggles.py:56
+#: top/system/opview_api/settings.py:33
 #, python-format
 msgid "Enable openpilot"
 msgstr "啟用 openpilot"
 
-#: selfdrive/ui/layouts/settings/top_common.py:83
+#: selfdrive/ui/layouts/settings/top_common.py:85
 msgid "Enable opview"
 msgstr "啟用 opview"
 
 #: selfdrive/ui/layouts/settings/toggles.py:216
 #, python-format
-msgid ""
-"Enable the openpilot longitudinal control (alpha) toggle to allow "
-"Experimental mode."
+msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
 msgstr "啟用 openpilot 縱向控制（alpha）切換，以使用實驗模式。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:88
+#: selfdrive/ui/layouts/settings/top_common.py:90
 msgid "Enable to use Toyota's stock longitudinal control."
 msgstr "開啟後將以Toyota原廠的蹤向控制加減速，而openpilot只進行方向盤的橫向車道維持。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:46
+#: selfdrive/ui/layouts/settings/top_common.py:48
 msgid "Enabled the Stop And Go feature and get auto hold."
 msgstr "啟用Stop And Go 功能，讓車輛跟車到停並進入auto hold。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:94
-msgid ""
-"Enabled this to lock doors when drive above 25 km/h. Only work on some "
-"Toyota vehicles."
+#: selfdrive/ui/layouts/settings/top_common.py:96
+msgid "Enabled this to lock doors when drive above 25 km/h. Only work on some Toyota vehicles."
 msgstr "啟用此功能後，當在車速超過 25 公里時將自動鎖上車門。僅適用於某些Toyota車款。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:97
-msgid ""
-"Enabled this to unlock doors when shift to gear P. Only work on some Toyota "
-"vehicles."
+#: selfdrive/ui/layouts/settings/top_common.py:99
+msgid "Enabled this to unlock doors when shift to gear P. Only work on some Toyota vehicles."
 msgstr "啟用此功能後，當檔位進到P檔時將自動解鎖車門。僅適用於某些Toyota車款。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:103
-msgid ""
-"Enhance BSM function for some Toyota vehicles that openpilot currently does "
-"not support."
+#: selfdrive/ui/layouts/settings/top_common.py:105
+msgid "Enhance BSM function for some Toyota vehicles that openpilot currently does not support."
 msgstr "修正部分Toyota車款的盲點偵測訊號以開啟openpilot支援。"
 
 #: system/ui/widgets/network.py:201
@@ -602,7 +654,8 @@ msgstr "輸入 SSID"
 msgid "Enter new tethering password"
 msgstr "輸入新的網路共享密碼"
 
-#: system/ui/widgets/network.py:238 system/ui/widgets/network.py:320
+#: system/ui/widgets/network.py:238
+#: system/ui/widgets/network.py:320
 #, python-format
 msgid "Enter password"
 msgstr "輸入密碼"
@@ -622,7 +675,8 @@ msgstr "請輸入搜尋關鍵字，或保持空白即可顯示所有州/省列�
 msgid "Enter your GitHub username"
 msgstr "輸入您的 GitHub 使用者名稱"
 
-#: system/ui/widgets/list_view.py:123 system/ui/widgets/list_view.py:160
+#: system/ui/widgets/list_view.py:123
+#: system/ui/widgets/list_view.py:160
 #, python-format
 msgid "Error"
 msgstr "錯誤"
@@ -633,15 +687,15 @@ msgid "Error Log"
 msgstr "錯誤日誌"
 
 #: selfdrive/ui/layouts/settings/toggles.py:62
+#: top/system/opview_api/settings.py:36
 #, python-format
 msgid "Experimental Mode"
 msgstr "實驗模式"
 
 #: selfdrive/ui/layouts/settings/toggles.py:208
+#: top/system/opview_api/settings.py:83
 #, python-format
-msgid ""
-"Experimental mode is currently unavailable on this car since the car's stock"
-" ACC is used for longitudinal control."
+msgid "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
 msgstr "此車款目前無法使用實驗模式，因為縱向控制使用的是原廠 ACC。"
 
 #: selfdrive/ui/layouts/settings/device.py:63
@@ -684,16 +738,18 @@ msgstr "Firehose"
 msgid "Firehose Mode"
 msgstr "Firehose 模式"
 
-#: selfdrive/ui/layouts/settings/top_common.py:102
+#: selfdrive/ui/layouts/settings/top_common.py:104
 msgid "Fix Toyota BSM Signal"
 msgstr "修正Toyota盲點偵測訊號"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:135
+#: top/system/opview_api/settings.py:157
 #, python-format
 msgid "Fixed"
 msgstr "固定值"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:52
+#: top/system/opview_api/settings.py:78
 msgid "Fixed: Adds a fixed offset [Speed Limit + Offset]"
 msgstr "固定：加上固定偏移量 [速限 + 偏移量]"
 
@@ -717,14 +773,45 @@ msgstr "已刷新！"
 msgid "Flashing..."
 msgstr "刷新中"
 
+#: selfdrive/ui/layouts/settings/firehose.py:16
+msgid ""
+"For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n"
+"\n"
+"Firehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card.\n"
+"\n"
+"\n"
+"Frequently Asked Questions\n"
+"\n"
+"Does it matter how or where I drive? Nope, just drive as you normally would.\n"
+"\n"
+"Do all of my segments get pulled in Firehose Mode? No, we selectively pull a subset of your segments.\n"
+"\n"
+"What's a good USB-C adapter? Any fast phone or laptop charger should be fine.\n"
+"\n"
+"Does it matter which software I run? Yes, only upstream openpilot (and particular forks) are able to be used for training."
+msgstr ""
+"為了發揮最大效果，請每週將裝置帶進室內，接上良好的 USB-C 充電器並連上 Wi-Fi。\n"
+"\n"
+"若連接手機熱點或無限流量 SIM 卡，Firehose 模式在行駛中也能運作。\n"
+"\n"
+"\n"
+"常見問題\n"
+"\n"
+"怎麼開、在哪裡開有差嗎？沒有，照平常方式開就好。\n"
+"\n"
+"Firehose 模式會上傳我所有的片段嗎？不會，我們只會挑選部分片段。\n"
+"\n"
+"什麼是好的 USB-C 充電器？任何快充手機或筆電充電器都可以。\n"
+"\n"
+"用哪個軟體有差嗎？有，只有上游 openpilot（以及特定分支）可用於訓練。"
+
 #: selfdrive/ui/layouts/settings/top.py:29
 #, python-format
-msgid ""
-"Force a car model instead of fingerprinting. Select [-Not selected-] to go "
-"back to automatic detection."
+msgid "Force a car model instead of fingerprinting. Select [-Not selected-] to go back to automatic detection."
 msgstr "強制指定車型，不使用自動辨識。選擇 [-Not selected-] 可恢復自動辨識。"
 
-#: system/ui/widgets/network.py:458 system/ui/widgets/network.py:326
+#: system/ui/widgets/network.py:458
+#: system/ui/widgets/network.py:326
 #, python-format
 msgid "Forget"
 msgstr "忘記"
@@ -770,11 +857,13 @@ msgid "IP Address"
 msgstr "IP 位址"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:125
+#: top/system/opview_api/settings.py:153
 #, python-format
 msgid "Info."
 msgstr "資訊"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:45
+#: top/system/opview_api/settings.py:65
 msgid "Information: Displays the current road's speed limit."
 msgstr "資訊：顯示目前道路的速限。"
 
@@ -788,12 +877,26 @@ msgstr "安裝更新"
 msgid "Joystick Debug Mode"
 msgstr "搖桿除錯模式"
 
+#: selfdrive/ui/layouts/settings/software.py:83
+#, python-format
+msgid "Keep openpilot offroad while the car is on, e.g. to change settings or update. Back to normal after a reboot. Not available while engaged."
+msgstr "車輛發動時讓 openpilot 維持在停車狀態，例如用來變更設定或更新。重新開機後恢復正常。啟用中無法使用。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:37
+msgid ""
+"Keep the fixed default steering delay instead of learning the delay of the car while driving. Turn on for cars whose steering wheel sticks: the learned delay comes out too long and the steering can wobble.\n"
+"Always on with NNFF Torque Control, which uses the fixed delay. Takes effect on the next drive."
+msgstr ""
+"使用固定的預設轉向延遲，不在行駛中學習車輛的轉向延遲。適用於方向盤較緊的車輛：學到的延遲會偏長，轉向可能晃動。\n"
+"使用 NNFF 扭力控制時固定開啟（NNFF 使用固定延遲）。下次行駛時生效。"
+
 #: selfdrive/ui/onroad/top_hud.py:268
 #, python-format
 msgid "LIMIT"
 msgstr "速限"
 
-#: selfdrive/ui/widgets/ssh_key.py:29 selfdrive/ui/layouts/settings/top.py:73
+#: selfdrive/ui/widgets/ssh_key.py:29
+#: selfdrive/ui/layouts/settings/top.py:74
 msgid "LOADING"
 msgstr "載入中"
 
@@ -801,17 +904,16 @@ msgstr "載入中"
 msgid "LTE"
 msgstr "LTE"
 
-#: selfdrive/ui/layouts/settings/top_common.py:39
+#: selfdrive/ui/layouts/settings/top_common.py:41
 msgid "Lane Centering Correction"
 msgstr "強制車道線置中"
 
-#: selfdrive/ui/layouts/settings/top_common.py:27
+#: selfdrive/ui/layouts/settings/top_common.py:29
 msgid "Lateral Controls Always On"
 msgstr "全時車道維持"
 
-#: selfdrive/ui/layouts/settings/top_common.py:28
-msgid ""
-"Lateral control will always be on and will not be interrupted by braking."
+#: selfdrive/ui/layouts/settings/top_common.py:30
+msgid "Lateral control will always be on and will not be interrupted by braking."
 msgstr "開啟此功能將會讓車道維持一直開啟，並不會被煞車給中斷。"
 
 #: selfdrive/ui/layouts/settings/osm.py:43
@@ -824,21 +926,24 @@ msgstr "載入中..."
 msgid "Longitudinal Maneuver Mode"
 msgstr "縱向操作模式"
 
-#: selfdrive/ui/onroad/hud_renderer.py:148 selfdrive/ui/onroad/top_hud.py:127
+#: selfdrive/ui/onroad/hud_renderer.py:148
+#: selfdrive/ui/onroad/top_hud.py:127
 #, python-format
 msgid "MAX"
 msgstr "最大"
 
-#: selfdrive/ui/layouts/settings/top_common.py:75
+#: selfdrive/ui/layouts/settings/top_common.py:77
 msgid "Map Based Turn Control"
 msgstr "圖資彎道減速"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:97
+#: top/system/opview_api/settings.py:155
 #, python-format
 msgid "Map First"
 msgstr "地圖優先"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:97
+#: top/system/opview_api/settings.py:155
 #, python-format
 msgid "Map Only"
 msgstr "僅地圖"
@@ -850,8 +955,7 @@ msgstr "Mapd 版本"
 
 #: selfdrive/ui/widgets/setup.py:74
 #, python-format
-msgid ""
-"Maximize your training data uploads to improve openpilot's driving models."
+msgid "Maximize your training data uploads to improve openpilot's driving models."
 msgstr "最大化上傳訓練資料，以改進 openpilot 的駕駛模型。"
 
 #: selfdrive/ui/layouts/settings/device.py:73
@@ -860,7 +964,7 @@ msgstr "最大化上傳訓練資料，以改進 openpilot 的駕駛模型。"
 msgid "N/A"
 msgstr "無"
 
-#: selfdrive/ui/layouts/settings/top_common.py:30
+#: selfdrive/ui/layouts/settings/top_common.py:32
 msgid "NNFF Torque Control"
 msgstr "開啟 NNFF 控制器"
 
@@ -868,7 +972,8 @@ msgstr "開啟 NNFF 控制器"
 msgid "NO"
 msgstr "否"
 
-#: selfdrive/ui/onroad/top_state.py:175 selfdrive/ui/onroad/top_state.py:168
+#: selfdrive/ui/onroad/top_state.py:175
+#: selfdrive/ui/onroad/top_state.py:168
 #, python-format
 msgid "Near"
 msgstr "接近"
@@ -903,29 +1008,44 @@ msgid "No results found for keywords: {}"
 msgstr "找不到符合關鍵字的結果：{}"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:135
+#: top/system/opview_api/settings.py:157
 #, python-format
 msgid "None"
 msgstr "無調整"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:51
+#: top/system/opview_api/settings.py:77
 msgid "None: No Offset"
 msgstr "無：不加偏移量"
 
 #: selfdrive/ui/layouts/settings/toggles.py:119
+#: top/system/opview_api/settings.py:149
 #, python-format
 msgid "Normal"
 msgstr "普通"
 
-#: selfdrive/ui/layouts/sidebar.py:79 selfdrive/ui/layouts/sidebar.py:146
+#: selfdrive/ui/layouts/settings/toggles.py:36
+#: top/system/opview_api/settings.py:59
+msgid "Normal is recommended. In sport mode, TOP will provide aggressive acceleration for a dynamic driving experience. In eco mode, TOP will apply smoother and more relaxed acceleration. On supported cars, you can cycle through these acceleration personality within Onroad Settings on the driving screen."
+msgstr "建議使用普通模式。運動模式下 TOP 會提供積極的加速，帶來動感的駕駛體驗；節能模式下 TOP 會以更平順、更從容的方式加速。支援的車款可在駕駛畫面的行駛中設定切換加速模式。"
+
+#: top/system/opview_api/server.py:33
+msgid "Not available while driving."
+msgstr "行駛中無法使用。"
+
+#: selfdrive/ui/layouts/sidebar.py:79
+#: selfdrive/ui/layouts/sidebar.py:146
 msgid "OFFLINE"
 msgstr "離線"
 
-#: system/ui/widgets/confirm_dialog.py:93 system/ui/widgets/html_render.py:263
+#: system/ui/widgets/confirm_dialog.py:93
+#: system/ui/widgets/html_render.py:263
 #, python-format
 msgid "OK"
 msgstr "確定"
 
-#: selfdrive/ui/layouts/sidebar.py:78 selfdrive/ui/layouts/sidebar.py:156
+#: selfdrive/ui/layouts/sidebar.py:78
+#: selfdrive/ui/layouts/sidebar.py:156
 #: selfdrive/ui/layouts/sidebar.py:148
 msgid "ONLINE"
 msgstr "線上"
@@ -935,11 +1055,13 @@ msgid "OSM"
 msgstr "離線地圖"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:125
+#: top/system/opview_api/settings.py:153
 #, python-format
 msgid "Off"
 msgstr "關閉"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:44
+#: top/system/opview_api/settings.py:64
 msgid "Off: Disables the Speed Limit functions."
 msgstr "關閉：停用速限功能。"
 
@@ -949,6 +1071,7 @@ msgid "Offline Maps ETA"
 msgstr "離線地圖預計下載時間"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:141
+#: top/system/opview_api/settings.py:158
 #, python-format
 msgid "Offset"
 msgstr "偏移量"
@@ -997,19 +1120,24 @@ msgstr "配對裝置"
 msgid "Pair your device to your comma account"
 msgstr "將裝置配對至您的 comma 帳號"
 
-#: selfdrive/ui/widgets/setup.py:47 selfdrive/ui/layouts/settings/device.py:27
+#: selfdrive/ui/widgets/setup.py:47
+#: selfdrive/ui/layouts/settings/device.py:27
 #, python-format
-msgid ""
-"Pair your device with comma connect (connect.comma.ai) and claim your comma "
-"prime offer."
+msgid "Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."
 msgstr "將裝置與 comma connect（connect.comma.ai）配對，領取您的 comma prime 優惠。"
 
+#: selfdrive/ui/layouts/settings/top_common.py:148
+msgid "Pairing code for settings and drives in the opview app: {}"
+msgstr "opview App 設定與行程的配對碼：{}"
+
 #: selfdrive/ui/layouts/settings/speed_limit.py:135
+#: top/system/opview_api/settings.py:157
 #, python-format
 msgid "Percent"
 msgstr "百分比"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:53
+#: top/system/opview_api/settings.py:79
 msgid "Percent: Adds a percent offset [Speed Limit + (Offset % Speed Limit)]"
 msgstr "百分比：加上百分比偏移量 [速限 + (偏移量 % 速限)]"
 
@@ -1035,9 +1163,7 @@ msgid "Prevent large data uploads when on a metered cellular connection"
 msgstr "在計量制行動網路時避免大量上傳"
 
 #: selfdrive/ui/layouts/settings/device.py:28
-msgid ""
-"Preview the driver facing camera to ensure that driver monitoring has good "
-"visibility. (vehicle must be off)"
+msgid "Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"
 msgstr "預覽車內鏡頭以確保駕駛監控視野良好。（車輛須熄火）"
 
 #: selfdrive/ui/widgets/pairing_dialog.py:150
@@ -1050,7 +1176,7 @@ msgstr "QR 碼錯誤"
 msgid "QR-Code"
 msgstr "QR 碼"
 
-#: selfdrive/ui/layouts/settings/top_common.py:20
+#: selfdrive/ui/layouts/settings/top_common.py:22
 msgid "Quiet Drive"
 msgstr "安靜模式"
 
@@ -1099,20 +1225,26 @@ msgstr "重新啟動並更新"
 msgid "Rebooting..."
 msgstr "重新開機中…"
 
+#: selfdrive/ui/layouts/settings/toggles.py:28
+#: top/system/opview_api/settings.py:40
+msgid "Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h)."
+msgstr "時速超過 31 mph（50 km/h）且未打方向燈時，若車輛偏離偵測到的車道線，會提醒您將車輛轉回車道內。"
+
 #: selfdrive/ui/layouts/settings/toggles.py:86
+#: top/system/opview_api/settings.py:45
 #, python-format
 msgid "Record and Upload Driver Camera"
 msgstr "錄製並上傳車內鏡頭"
 
 #: selfdrive/ui/layouts/settings/toggles.py:92
+#: top/system/opview_api/settings.py:48
 #, python-format
 msgid "Record and Upload Microphone Audio"
 msgstr "錄製並上傳麥克風音訊"
 
 #: selfdrive/ui/layouts/settings/toggles.py:35
-msgid ""
-"Record and store microphone audio while driving. The audio will be included "
-"in the dashcam video in comma connect."
+#: top/system/opview_api/settings.py:48
+msgid "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."
 msgstr "行車時錄製並儲存麥克風音訊。音訊將包含在 comma connect 的行車紀錄影片中。"
 
 #: selfdrive/ui/layouts/settings/device.py:81
@@ -1126,6 +1258,7 @@ msgstr "刷新 Panda 韌體，用以修復連線或可靠性問題。"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
 #: selfdrive/ui/onroad/top_hud.py:28
+#: top/system/opview_api/settings.py:147
 #, python-format
 msgid "Relaxed"
 msgstr "從容"
@@ -1164,7 +1297,7 @@ msgstr "檢視訓練指南"
 msgid "Review the rules, features, and limitations of openpilot"
 msgstr "檢視 openpilot 的規則、功能與限制"
 
-#: selfdrive/ui/layouts/settings/top.py:74
+#: selfdrive/ui/layouts/settings/top.py:75
 #: selfdrive/ui/layouts/settings/osm.py:54
 #: selfdrive/ui/layouts/settings/osm.py:58
 #: selfdrive/ui/layouts/settings/software.py:75
@@ -1184,8 +1317,7 @@ msgstr "SSH 金鑰"
 
 #: selfdrive/ui/widgets/footage_dialog.py:98
 #, python-format
-msgid ""
-"Scan the QR code with a phone on the same network as the device, or open:"
+msgid "Scan the QR code with a phone on the same network as the device, or open:"
 msgstr "請用與裝置在同一網路的手機掃描 QR 碼，或開啟："
 
 #: system/ui/widgets/network.py:316
@@ -1228,7 +1360,7 @@ msgstr "選取分支"
 msgid "Select a language"
 msgstr "選取語言"
 
-#: selfdrive/ui/layouts/settings/top.py:102
+#: selfdrive/ui/layouts/settings/top.py:103
 #, python-format
 msgid "Select your car"
 msgstr "選擇您的車款"
@@ -1238,7 +1370,7 @@ msgstr "選擇您的車款"
 msgid "Serial"
 msgstr "序號"
 
-#: selfdrive/ui/layouts/settings/top_common.py:59
+#: selfdrive/ui/layouts/settings/top_common.py:61
 msgid "Smooth Stops"
 msgstr "平滑煞停"
 
@@ -1252,36 +1384,47 @@ msgid "Software"
 msgstr "軟體"
 
 #: selfdrive/ui/layouts/settings/osm.py:63
+#: top/system/opview_api/settings.py:160
 #, python-format
 msgid "Speed Limit"
 msgstr "速限控制"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:124
+#: top/system/opview_api/settings.py:152
 #, python-format
 msgid "Speed Limit Mode"
 msgstr "速限模式"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:134
+#: top/system/opview_api/settings.py:156
 #, python-format
 msgid "Speed Limit Offset"
 msgstr "速限容許值"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:96
 #: selfdrive/ui/layouts/settings/speed_limit.py:130
+#: top/system/opview_api/settings.py:154
 #, python-format
 msgid "Speed Limit Source"
 msgstr "速限來源"
 
 #: selfdrive/ui/layouts/settings/toggles.py:119
+#: top/system/opview_api/settings.py:149
 #, python-format
 msgid "Sport"
 msgstr "運動"
 
 #: selfdrive/ui/layouts/settings/toggles.py:108
 #: selfdrive/ui/onroad/top_hud.py:28
+#: top/system/opview_api/settings.py:147
 #, python-format
 msgid "Standard"
 msgstr "標準"
+
+#: selfdrive/ui/layouts/settings/toggles.py:23
+#: top/system/opview_api/settings.py:55
+msgid "Standard is recommended. In aggressive mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with your steering wheel distance button."
+msgstr "建議使用標準模式。積極模式下 openpilot 會更貼近前車，油門與煞車也更積極；從容模式下 openpilot 會與前車保持較遠距離。支援的車款可用方向盤上的跟車距離按鍵切換駕駛風格。"
 
 #: selfdrive/ui/layouts/settings/osm.py:92
 #, python-format
@@ -1294,13 +1437,18 @@ msgid "State"
 msgstr "州/省份"
 
 #: selfdrive/ui/layouts/settings/toggles.py:119
+#: top/system/opview_api/settings.py:149
 #, python-format
 msgid "Stock"
 msgstr "預設"
 
-#: selfdrive/ui/layouts/settings/top_common.py:45
+#: selfdrive/ui/layouts/settings/top_common.py:47
 msgid "Stop And Go"
 msgstr "Stop And Go"
+
+#: selfdrive/ui/layouts/settings/top_common.py:86
+msgid "Stream the road camera and driving display to the opview app (Android, github.com/eFiniLan/opview) on a phone on the same Wi-Fi network as the device, such as the phone's hotspot. Uses extra CPU while driving."
+msgstr "將道路影像與駕駛畫面串流到 opview App（Android，github.com/eFiniLan/opview）。手機需與裝置在同一個 Wi-Fi 網路，例如裝置連著手機熱點。行駛中會多用一些 CPU。"
 
 #: selfdrive/ui/onroad/alert_renderer.py:59
 #: selfdrive/ui/onroad/alert_renderer.py:65
@@ -1317,18 +1465,18 @@ msgstr "T.O.P"
 msgid "TAKE CONTROL IMMEDIATELY"
 msgstr "請立刻接手控制"
 
-#: selfdrive/ui/layouts/sidebar.py:77 selfdrive/ui/layouts/sidebar.py:137
-#: selfdrive/ui/layouts/sidebar.py:139 selfdrive/ui/layouts/sidebar.py:141
+#: selfdrive/ui/layouts/sidebar.py:77
+#: selfdrive/ui/layouts/sidebar.py:137
+#: selfdrive/ui/layouts/sidebar.py:139
+#: selfdrive/ui/layouts/sidebar.py:141
 msgid "TEMP"
 msgstr "溫度"
 
-#: selfdrive/ui/layouts/settings/top_common.py:21
-msgid ""
-"TOP will display alerts but only play the most important warning sounds. "
-"This feature can be toggled while the car is on."
+#: selfdrive/ui/layouts/settings/top_common.py:23
+msgid "TOP will display alerts but only play the most important warning sounds. This feature can be toggled while the car is on."
 msgstr "Openpilot 將只會針對最重要的警示發出警告聲音。可以在汽車啟動時切換此功能。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:91
+#: selfdrive/ui/layouts/settings/top_common.py:93
 msgid ""
 "TOP will link the Acceleration Personality to the car's physical drive mode selector.\n"
 "Reboot Required."
@@ -1336,7 +1484,7 @@ msgstr ""
 "TOP 將會連結個性化加速模式與Toyota駕駛模式按鍵，開啟後可透過實體按鍵選擇個性化加速模式。\n"
 "需要重啟後生效。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:52
+#: selfdrive/ui/layouts/settings/top_common.py:54
 msgid "TSS-P Longitudinal Tuning"
 msgstr "TSS-P 縱向控制調校"
 
@@ -1349,6 +1497,20 @@ msgstr "目標分支"
 #, python-format
 msgid "Tethering Password"
 msgstr "網路共享密碼"
+
+#: selfdrive/ui/layouts/settings/top_common.py:58
+msgid "The distance to the lead car will no longer be a fixed reaction time, but will be dynamically adjusted based on the speed of the vehicle."
+msgstr "與前車的距離不再是固定的反應時間，而是依車速動態調整。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:81
+msgid ""
+"This will allow you to play or download openpilot driving record files through your browser.\n"
+"Use web interface to control it: http://[device_ip]:8082\n"
+"Internet access from mobile phone (tethering) is required."
+msgstr ""
+"可透過瀏覽器播放或下載 openpilot 行車紀錄檔案。\n"
+"使用網頁介面操作：http://[device_ip]:8082\n"
+"手機需提供網路（熱點分享）。"
 
 #: selfdrive/ui/layouts/settings/osm.py:124
 #, python-format
@@ -1363,8 +1525,7 @@ msgstr ""
 
 #: selfdrive/ui/layouts/settings/osm.py:89
 #, python-format
-msgid ""
-"This will start the download process and it might take a while to complete."
+msgid "This will start the download process and it might take a while to complete."
 msgstr "下載程序即將開始，請耐心等候完成。"
 
 #: selfdrive/ui/layouts/settings/osm.py:49
@@ -1378,8 +1539,17 @@ msgid "Time remaining: "
 msgstr "剩餘時間： "
 
 #: selfdrive/ui/layouts/settings/settings.py:65
+#: top/system/opview_api/settings.py:160
 msgid "Toggles"
 msgstr "切換"
+
+#: selfdrive/ui/layouts/settings/top_common.py:26
+msgid "Turn off the device screen to protect the OLED panel after driving starts. It automatically brightens or turns on when a touch or event occurs."
+msgstr "開始行駛後關閉裝置螢幕以保護 OLED 面板。觸碰螢幕或有事件發生時會自動亮起。"
+
+#: top/system/opview_api/settings.py:84
+msgid "Turn on Experimental Mode once on the device to confirm its description first."
+msgstr "請先在裝置上開啟一次實驗模式，確認說明內容。"
 
 #: selfdrive/ui/layouts/settings/developer.py:79
 #, python-format
@@ -1391,7 +1561,8 @@ msgstr "UI 除錯模式"
 msgid "UNINSTALL"
 msgstr "解除安裝"
 
-#: selfdrive/ui/layouts/home.py:155 selfdrive/ui/layouts/settings/osm.py:76
+#: selfdrive/ui/layouts/home.py:155
+#: selfdrive/ui/layouts/settings/osm.py:76
 #, python-format
 msgid "UPDATE"
 msgstr "更新"
@@ -1422,38 +1593,47 @@ msgid "Upgrade Now"
 msgstr "立即升級"
 
 #: selfdrive/ui/layouts/settings/toggles.py:33
-msgid ""
-"Upload data from the driver facing camera and help improve the driver "
-"monitoring algorithm."
+#: top/system/opview_api/settings.py:46
+msgid "Upload data from the driver facing camera and help improve the driver monitoring algorithm."
 msgstr "上傳車內鏡頭資料，協助改善駕駛監控演算法。"
 
 #: selfdrive/ui/layouts/settings/toggles.py:98
+#: top/system/opview_api/settings.py:51
 #, python-format
 msgid "Use Metric System"
 msgstr "使用公制"
 
-#: selfdrive/ui/layouts/settings/top_common.py:87
+#: selfdrive/ui/layouts/settings/top_common.py:89
 msgid "Use Toyota Stock Longitudinal Control"
 msgstr "使用Toyota原廠蹤向控制"
 
-#: selfdrive/ui/layouts/settings/top_common.py:76
+#: selfdrive/ui/layouts/settings/top_common.py:33
 msgid ""
-"Use map data to estimate the appropriate speed to drive through turns ahead."
+"Use Twilsonco's Neural Network Feedforward torque system for more precise lateral control.\n"
+"Changing this setting will restart openpilot."
+msgstr ""
+"使用 Twilsonco 的神經網路前饋（NNFF）扭力系統，讓橫向控制更精準。\n"
+"變更此設定會重新啟動 openpilot。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:78
+msgid "Use map data to estimate the appropriate speed to drive through turns ahead."
 msgstr "利用地圖資料計算前方轉彎處的合適車速進行減速。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:73
-msgid ""
-"Use vision path predictions to estimate the appropriate speed to drive "
-"through turns ahead."
+#: selfdrive/ui/layouts/settings/toggles.py:18
+#: top/system/opview_api/settings.py:33
+msgid "Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature."
+msgstr "使用 openpilot 系統進行主動式巡航控制與車道維持輔助。使用此功能時必須隨時保持專注。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:75
+msgid "Use vision path predictions to estimate the appropriate speed to drive through turns ahead."
 msgstr "使用視覺路徑預測來估算適當的速度，可自動降速以順利通過前方的轉彎。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:53
-msgid ""
-"Using the longitudinal tuning can improve the smoothness on Toyota TSS-P "
-"models when equipped with SDSU for longitudinal control."
+#: selfdrive/ui/layouts/settings/top_common.py:55
+msgid "Using the longitudinal tuning can improve the smoothness on Toyota TSS-P models when equipped with SDSU for longitudinal control."
 msgstr "使用此縱向調校可以提高配備 SDSU 進行縱向控制的 Toyota TSS-P 車型平順感。"
 
-#: selfdrive/ui/layouts/sidebar.py:78 selfdrive/ui/layouts/sidebar.py:156
+#: selfdrive/ui/layouts/sidebar.py:78
+#: selfdrive/ui/layouts/sidebar.py:156
 msgid "VEHICLE"
 msgstr "車輛"
 
@@ -1468,7 +1648,7 @@ msgstr "檢視"
 msgid "View the error log for debugging purposes when openpilot crashes."
 msgstr "openpilot 當機時，可查看錯誤日誌以便除錯。"
 
-#: selfdrive/ui/layouts/settings/top_common.py:72
+#: selfdrive/ui/layouts/settings/top_common.py:74
 msgid "Vision Based Turn Control"
 msgstr "視覺彎道減速"
 
@@ -1478,14 +1658,19 @@ msgid "Waiting to start"
 msgstr "等待開始"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:125
+#: top/system/opview_api/settings.py:153
 #, python-format
 msgid "Warning"
 msgstr "提示"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:46
-msgid ""
-"Warning: Provides a warning when exceeding the current road's speed limit."
+#: top/system/opview_api/settings.py:66
+msgid "Warning: Provides a warning when exceeding the current road's speed limit."
 msgstr "警告：超過目前道路速限時發出警告。"
+
+#: selfdrive/ui/layouts/settings/developer.py:18
+msgid "Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username."
+msgstr "警告：這會讓您 GitHub 設定中的所有公鑰都能透過 SSH 存取裝置。請勿輸入您以外的 GitHub 使用者名稱。comma 員工絕不會要求您加入他們的 GitHub 使用者名稱。"
 
 #: selfdrive/ui/layouts/settings/osm.py:91
 #, python-format
@@ -1504,8 +1689,25 @@ msgid "Welcome to openpilot"
 msgstr "歡迎使用 openpilot"
 
 #: selfdrive/ui/layouts/settings/toggles.py:22
+#: top/system/opview_api/settings.py:38
 msgid "When enabled, pressing the accelerator pedal will disengage openpilot."
 msgstr "啟用後，踩下加速踏板將會脫離 openpilot。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:42
+msgid "When the driving model keeps the car off the middle of a marked lane, cutting curves or hugging a line, steer it back toward the lane centre. Only from 45 km/h (full from 60 km/h) in normal-width lanes: off in alleys and slow streets, during lane changes, while you steer and where the lane lines are faint. Takes effect on the next drive."
+msgstr "當駕駛模型讓車輛偏離標線車道中央（切彎或貼著車道線）時，將車輛導回車道中央。僅在一般寬度車道、時速 45 km/h 以上作用（60 km/h 以上完全作用）：巷弄與慢速街道、變換車道中、您正在轉動方向盤，以及車道線模糊時不作用。下次行駛時生效。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:71
+msgid ""
+"When the system detects obstacles at the vehicle's edge, lane change assist functionality will be temporarily suspended.\n"
+"NOTE: This will show 'Car Detected in Blindspot' warning."
+msgstr ""
+"系統偵測到車輛邊緣有障礙物時，會暫停變換車道輔助功能。\n"
+"注意：此時會顯示「盲點偵測到車輛」警告。"
+
+#: selfdrive/ui/layouts/settings/top_common.py:51
+msgid "When vehicle is stopped, enable experiment mode to prevent radar misjudgment of other moving vehicles that could cause continuous forward sliding."
+msgstr "車輛停止時開啟實驗模式，避免雷達誤判其他移動車輛而導致車輛持續向前滑行。"
 
 #: selfdrive/ui/layouts/sidebar.py:48
 msgid "Wi-Fi"
@@ -1533,9 +1735,7 @@ msgstr "您必須接受條款與細則才能使用 openpilot。"
 
 #: selfdrive/ui/layouts/onboarding.py:116
 #, python-format
-msgid ""
-"You must accept the Terms and Conditions to use openpilot. Read the latest "
-"terms at https://comma.ai/terms before continuing."
+msgid "You must accept the Terms and Conditions to use openpilot. Read the latest terms at https://comma.ai/terms before continuing."
 msgstr "您必須接受條款與細則才能使用 openpilot。繼續前請閱讀 https://comma.ai/terms 上的最新條款。"
 
 #: selfdrive/ui/onroad/driver_camera_dialog.py:38
@@ -1578,7 +1778,8 @@ msgstr "檢查更新失敗"
 msgid "finalizing update..."
 msgstr "正在完成更新..."
 
-#: system/ui/widgets/network.py:238 system/ui/widgets/network.py:321
+#: system/ui/widgets/network.py:238
+#: system/ui/widgets/network.py:321
 #, python-format
 msgid "for \"{}\""
 msgstr "適用於「{}」"
@@ -1593,7 +1794,8 @@ msgstr "英尺"
 msgid "km"
 msgstr "公里"
 
-#: selfdrive/ui/onroad/hud_renderer.py:177 selfdrive/ui/onroad/top_hud.py:134
+#: selfdrive/ui/onroad/hud_renderer.py:177
+#: selfdrive/ui/onroad/top_hud.py:134
 #, python-format
 msgid "km/h"
 msgstr "km/h"
@@ -1628,7 +1830,8 @@ msgstr "計量"
 msgid "mi"
 msgstr "英里"
 
-#: selfdrive/ui/onroad/hud_renderer.py:177 selfdrive/ui/onroad/top_hud.py:134
+#: selfdrive/ui/onroad/hud_renderer.py:177
+#: selfdrive/ui/onroad/top_hud.py:134
 #, python-format
 msgid "mph"
 msgstr "mph"
@@ -1653,15 +1856,33 @@ msgstr "openpilot 縱向控制（Alpha）"
 msgid "openpilot Unavailable"
 msgstr "openpilot 無法使用"
 
+#: selfdrive/ui/layouts/settings/toggles.py:184
+#, python-format
+msgid "openpilot defaults to driving in chill mode. Experimental mode enables alpha-level features that aren't ready for chill mode. Experimental features are listed below:<br><h4>End-to-End Longitudinal Control</h4><br>Let the driving model control the gas and brakes. openpilot will drive as it thinks a human would, including stopping for red lights and stop signs. Since the driving model decides the speed to drive, the set speed will only act as an upper bound. This is an alpha quality feature; mistakes should be expected.<br><h4>New Driving Visualization</h4><br>The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. The Experimental mode logo will also be shown in the top right corner."
+msgstr "openpilot 預設以輕鬆模式駕駛。實驗模式會啟用尚未適合輕鬆模式的 alpha 等級功能，實驗功能如下：<br><h4>端到端縱向控制</h4><br>由駕駛模型控制油門與煞車。openpilot 會依它認為人類會怎麼開的方式駕駛，包括在紅燈與停車標誌前停車。由於車速由駕駛模型決定，設定速度只會作為上限。此功能為 alpha 品質，可能會出錯。<br><h4>新的駕駛畫面</h4><br>低速時駕駛畫面會切換到道路廣角鏡頭，以更清楚顯示轉彎。畫面右上角也會顯示實驗模式標誌。"
+
+#: selfdrive/ui/layouts/settings/device.py:202
+#, python-format
+msgid "openpilot is continuously calibrating, resetting is rarely required. Resetting calibration will restart openpilot if the car is powered on."
+msgstr "openpilot 會持續校正，很少需要重設。車輛電源開啟時重設校正，openpilot 會重新啟動。"
+
+#: selfdrive/ui/layouts/settings/firehose.py:11
+msgid ""
+"openpilot learns to drive by watching humans, like you, drive.\n"
+"\n"
+"Firehose Mode allows you to maximize your training data uploads to improve openpilot's driving models. More data means bigger models, which means better Experimental Mode."
+msgstr ""
+"openpilot 透過觀察像您這樣的人類駕駛來學習開車。\n"
+"\n"
+"Firehose 模式可讓您盡可能上傳訓練資料，以改進 openpilot 的駕駛模型。資料越多，模型越大，實驗模式就越好。"
+
 #: selfdrive/ui/layouts/settings/toggles.py:210
 #, python-format
 msgid "openpilot longitudinal control may come in a future update."
 msgstr "openpilot 縱向控制可能於未來更新提供。"
 
 #: selfdrive/ui/layouts/settings/device.py:29
-msgid ""
-"openpilot requires the device to be mounted within 4° left or right and "
-"within 5° up or 9° down."
+msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
 msgstr "openpilot 要求裝置安裝在左右 4°、上 5° 或下 9° 以內。"
 
 #: selfdrive/ui/layouts/settings/device.py:171
@@ -1740,26 +1961,27 @@ msgid "✓ SUBSCRIBED"
 msgstr "✓ 已訂閱"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:59
-msgid ""
-"⦿ Car First: Use Speed Limit data from Car if available, else use from "
-"OpenStreetMaps"
+#: top/system/opview_api/settings.py:72
+msgid "⦿ Car First: Use Speed Limit data from Car if available, else use from OpenStreetMaps"
 msgstr "⦿ 車資優先：優先使用車輛速限資料，若無則使用 OpenStreetMaps 資料"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:57
+#: top/system/opview_api/settings.py:70
 msgid "⦿ Car Only: Use Speed Limit data only from Car"
 msgstr "⦿ 僅用車資：僅使用來自車輛的速限資料"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:61
+#: top/system/opview_api/settings.py:74
 msgid "⦿ Combined: Use combined Speed Limit data from Car & OpenStreetMaps"
 msgstr "⦿ 合併資料：使用結合車輛與 OpenStreetMaps 的速限資料"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:60
-msgid ""
-"⦿ Map First: Use Speed Limit data from OpenStreetMaps if available, else use"
-" from Car"
+#: top/system/opview_api/settings.py:73
+msgid "⦿ Map First: Use Speed Limit data from OpenStreetMaps if available, else use from Car"
 msgstr "⦿ 圖資優先：優先使用 OpenStreetMaps 速限資料，若無則使用車輛資料"
 
 #: selfdrive/ui/layouts/settings/speed_limit.py:58
+#: top/system/opview_api/settings.py:71
 msgid "⦿ Map Only: Use Speed Limit data only from OpenStreetMaps"
 msgstr "⦿ 僅用圖資：僅使用來自地圖的速限資料"
 
@@ -1767,3 +1989,4 @@ msgstr "⦿ 僅用圖資：僅使用來自地圖的速限資料"
 #, python-format
 msgid "🔥 Firehose Mode 🔥"
 msgstr "🔥 Firehose 模式 🔥"
+

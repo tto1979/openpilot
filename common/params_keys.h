@@ -135,6 +135,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"Version", {PERSISTENT, STRING}},
 
     // TOP
+    {"OpviewPairingCode", {PERSISTENT | DONT_LOG, STRING}},  // opview app API (top/system/opview_api)
     {"AccelPersonality", {PERSISTENT, INT}},
     {"AleSato_AutomaticBrakeHold", {PERSISTENT, BOOL}},
     {"Dynamic_Follow", {PERSISTENT, BOOL}},

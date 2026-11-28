@@ -13,6 +13,7 @@ from openpilot.selfdrive.ui.mici.widgets.top_dialogs import CompactOptionDialog,
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets.scroller import NavScroller
+from openpilot.top.system.opview_api.pairing import pairing_code
 
 # short card titles in the mici style, same order as TOP_TOGGLES
 MICI_TITLES = {
@@ -75,7 +76,16 @@ class TopLayoutMici(NavScroller):
         toggle.set_enabled(lambda: not ui_state.engaged)
       self._toggles[param] = toggle
 
-    self._scroller.add_widgets([self._car_btn, *self._toggles.values()])
+    # the opview app asks for this code once (settings and drives), shown while opview is on
+    self._opview_code_btn = BigButton("opview pairing code", "", gui_app.texture("icons/road.png", 64, 64))
+    self._opview_code_btn.set_visible(lambda: self._toggles["dp_dev_opview"]._checked)
+
+    widgets = []
+    for param, toggle in self._toggles.items():
+      widgets.append(toggle)
+      if param == "dp_dev_opview":
+        widgets.append(self._opview_code_btn)
+    self._scroller.add_widgets([self._car_btn, *widgets])
 
   def show_event(self):
     super().show_event()
@@ -85,6 +95,7 @@ class TopLayoutMici(NavScroller):
     for toggle in self._toggles.values():
       toggle.refresh()
     self._car_btn.set_value(self._car_value())
+    self._opview_code_btn.set_value(pairing_code(self._params))
     self._lock_lag_toggle()
 
   def _lock_lag_toggle(self):

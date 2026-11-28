@@ -133,3 +133,13 @@ class TestStreamSession:
       assert abs(i + packet.pts - (start_pts + (((time.monotonic_ns() - start_ns) * VIDEO_CLOCK_RATE) // 1_000_000_000))) < 450 #5ms
       assert packet.size == 0
 
+  def test_shutdown_stops_open_sessions(self, mocker):
+    # the server's shutdown runs inside its event loop: stopping a session there must not call asyncio.run()
+    from openpilot.system.webrtc.webrtcd import StreamSession, on_shutdown
+    session = StreamSession.__new__(StreamSession)
+    session.run_task = self.loop.create_task(asyncio.sleep(10))
+    session.post_run_cleanup = mocker.AsyncMock()
+    app = {'streams': {'phone': session}}
+    self.loop.run_until_complete(on_shutdown(app))
+    session.post_run_cleanup.assert_awaited_once()
+    assert 'streams' not in app
