@@ -136,8 +136,8 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"Version", {PERSISTENT, STRING}},
 
     // TOP
-    {"PandaSignatures", {CLEAR_ON_MANAGER_START, BYTES}},
-    {"OpviewPairingCode", {PERSISTENT | DONT_LOG, STRING}},  // opview app API (top/system/opview_api)  // upstream dropped it in 0.11.1, TOP's pandad.py + "Flash Panda" use it
+    {"PandaSignatures", {CLEAR_ON_MANAGER_START, BYTES}},  // upstream dropped it in 0.11.1, TOP's pandad.py + "Flash Panda" use it
+    {"OpviewPairingCode", {PERSISTENT | DONT_LOG, STRING}},  // opview app API (top/system/opview_api)
     {"AccelPersonality", {PERSISTENT, INT}},
     {"AleSato_AutomaticBrakeHold", {PERSISTENT, BOOL}},
     {"Dynamic_Follow", {PERSISTENT, BOOL}},
