@@ -34,8 +34,11 @@ opview App 除了即時畫面，也能看行程、下載影片、直接改設定
 
 ```json
 {"isOffroad": true,
- "top": {"api": 1, "pairing": true, "device_type": "tici", "version": "0.11.1", "dongle_id": "..."}}
+ "top": {"api": 1, "pairing": true, "device_type": "tici", "version": "0.11.1", "dongle_id": "...",
+         "hud": {"is_metric": true, "speed_limit_mode": 1, "tim_signals": true, "personality_wheel": true}}}
 ```
+
+`top.hud` 是即時畫面畫 TOP HUD 用的裝置顯示設定：`is_metric`（公制）、`speed_limit_mode`（0 關／1 資訊／2 警告／3 輔助）、`tim_signals`（方向燈動畫）、`personality_wheel`（駕駛風格圖示）。
 
 有 `top` 欄位就是 TOP 裝置；dashy（dragonpilot）沒有這個欄位，回的是 `{"dp_dev_dashy": ..., "isOffroad": ...}`。
 
@@ -131,4 +134,4 @@ HLS 播放清單，給 `video_player` 之類的播放器：
 
 ### `POST /stream`
 
-即時畫面，維持 opview 現有格式，不需要配對碼。
+即時畫面，維持 opview 現有格式，不需要配對碼。TOP 的 HUD 另外要 `bridge_services_out` 加上 `longitudinalPlanTOP`、`liveMapDataTOP`、`topControlsState`、`carControl`（只對 TOP 裝置要求：dragonpilot 的 webrtcd 沒有這些服務會回錯誤）。
