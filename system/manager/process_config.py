@@ -176,7 +176,8 @@ procs = [
 
   # debug procs
   NativeProcess("bridge", "cereal/messaging", ["./bridge"], notcar),
-  PythonProcess("webrtcd", "system.webrtc.webrtcd", or_(notcar, opview_api)),
+  # TOP: runs the whole time opview is on, so it has to come back after a crash (it used to restart with each drive)
+  PythonProcess("webrtcd", "system.webrtc.webrtcd", or_(notcar, opview_api), restart_if_crash=True),
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
   PythonProcess("joystick", "tools.joystick.joystick_control", and_(joystick, iscar)),
 ]
