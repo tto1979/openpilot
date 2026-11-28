@@ -76,6 +76,15 @@ class TestOpviewAPI:
     assert data["isOffroad"] is True
     assert data["top"]["api"] == server.API_VERSION
 
+  def test_init_hud_settings(self):
+    self.params.put_bool("IsMetric", False, block=True)
+    self.params.put("SpeedLimitMode", 2, block=True)
+    self.params.put_bool("TimSignals", True, block=True)
+    self.params.put_bool("DrivingPersonalitiesUIWheel", False, block=True)
+    status, data = self.json("GET", "/api/init", auth=False)
+    assert status == 200
+    assert data["top"]["hud"] == {"is_metric": False, "speed_limit_mode": 2, "tim_signals": True, "personality_wheel": False}
+
   @pytest.mark.parametrize("path", ["/api/settings", "/api/files", "/api/routes", f"/media/{ROUTE}--0/qcamera.ts",
                                     f"/download/{ROUTE}--0/fcamera.hevc", "/api/settings/params/QuietDrive"])
   def test_needs_pairing_code(self, path):

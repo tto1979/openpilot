@@ -61,12 +61,27 @@ async def opview_auth_middleware(request: web.Request, handler):
   return await handler(request)
 
 
+def hud_settings(params: Params) -> dict:
+  """The device's display settings the app's live view draws TOP's HUD with (not sensitive: no pairing needed)"""
+  try:
+    speed_limit_mode = int(params.get("SpeedLimitMode", return_default=True) or 0)
+  except (TypeError, ValueError):
+    speed_limit_mode = 0
+  return {
+    "is_metric": params.get_bool("IsMetric"),
+    "speed_limit_mode": speed_limit_mode,
+    "tim_signals": params.get_bool("TimSignals"),
+    "personality_wheel": params.get_bool("DrivingPersonalitiesUIWheel"),
+  }
+
+
 async def init_api(request: web.Request) -> web.Response:
   params: Params = request.app[PARAMS_KEY]
   return web.json_response({
     "isOffroad": not params.get_bool("IsOnroad"),
     "top": {"api": API_VERSION, "pairing": True, "device_type": HARDWARE.get_device_type(),
-            "version": params.get("Version") or "", "dongle_id": params.get("DongleId") or ""},
+            "version": params.get("Version") or "", "dongle_id": params.get("DongleId") or "",
+            "hud": hud_settings(params)},
   })
 
 
